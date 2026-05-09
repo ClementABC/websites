@@ -1,0 +1,12 @@
+{
+  "entry": "src/App.tsx",
+  "name": "Quiz",
+  "shortcode": "dance-quiz-xgxx5fxbxyaxhxafq",
+  "slug": "dance-quiz",
+  "space_id": "xgxx5fxbxyaxhxafq",
+  "verification": {
+    "criticalActions": [],
+    "enforceBeforePublish": true,
+    "playwrightMode": "hybrid"
+  }
+}
