@@ -159,7 +159,7 @@ function render(){
       html+=`<div style="display:flex;align-items:center;gap:8px">
         <div style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600">${p[0]}</div>
         <div style="color:var(--dim)">→</div>
-        <select data-idx="${i}" style="flex:1;padding:10px;background:var(--surface-2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
+        <select data-idx="${i}" onchange="checkMatchComplete()" style="flex:1;padding:10px;background:var(--surface-2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
           <option value="">Choisir...</option>
           ${q.pairs.map(x=>`<option>${x[1]}</option>`).sort().map(o=>`<option>${o.replace('<option>','').replace('</option>','')}</option>`).join('')}
         </select>
@@ -211,6 +211,14 @@ function toggleMulti(i){
   else{selectedMulti.push(i);btn.classList.add('selected');btn.querySelector('.option-letter').textContent='✓';}
   document.getElementById('validateBtn').disabled=selectedMulti.length===0;
   state.tempAnswer=[...selectedMulti];
+}
+
+
+function checkMatchComplete(){
+  const selects=document.querySelectorAll('select[data-idx]');
+  const allFilled=Array.from(selects).every(s=>s.value!=='');
+  document.getElementById('validateBtn').disabled=!allFilled;
+  console.log('Match check:', Array.from(selects).map(s=>s.value), 'All filled:', allFilled);
 }
 
 function addWord(){
