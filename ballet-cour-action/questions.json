@@ -58,7 +58,7 @@
       "id": "Q0",
       "phase": 0,
       "type": "text",
-      "q": "Quel est ton prénom ?",
+      "q": "Avant de commencer, quel est ton prénom ?",
       "ph": "Prénom",
       "model": ""
     },
