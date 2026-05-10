@@ -241,7 +241,7 @@ function render(){
       <div class="welcome-title">${QUIZ.title}</div>
       <div class="welcome-sub">${QUIZ.subtitle}<br><br>59 activités • 7 phases • ~30 min</div>
       <input class="input-field" id="nameInput" placeholder="Ton prénom" style="margin-bottom:16px"
-        onkeydown="if(event.key==='Enter')startQuiz()">
+        onkeydown="if(event.key==='Enter')beginQuiz()">
       <div style="text-align:left;margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:13px;font-weight:600">Phases à inclure :</span>
@@ -249,7 +249,7 @@ function render(){
         </div>
         <div class="phase-selector" id="phaseSelector">${phaseOpts}</div>
       </div>
-      <button class="btn-primary" onclick="startQuiz()">Commencer</button>
+      <button class="btn-primary" onclick="beginQuiz()">Commencer</button>
     </div>`;
     return;
   }
@@ -451,7 +451,7 @@ function renderQuestion(){
 // ═══════════════════════════════════════
 // INTERACTIONS
 // ═══════════════════════════════════════
-function startQuiz(){
+window.beginQuiz = function(){
   const name=document.getElementById('nameInput').value.trim();
   if(!name)return;
   state.name=name;
@@ -785,6 +785,21 @@ function validate(){
 // Student quiz mode
 buildActiveQuestions();
 render();
+
+// Expose all functions to global scope for onclick handlers
+window.toggleAllPhases = toggleAllPhases;
+window.selectMCQ = selectMCQ;
+window.toggleMulti = toggleMulti;
+window.toggleWord = toggleWord;
+window.selectTF = selectTF;
+window.updateSlider = updateSlider;
+window.checkMatchComplete = checkMatchComplete;
+window.checkMatch3Complete = checkMatch3Complete;
+window.checkGeoComplete = checkGeoComplete;
+window.prevQ = prevQ;
+window.validate = validate;
+window.renderQuestion = renderQuestion;
+window.render = render;
 
 } // end startQuiz()
 </script>
