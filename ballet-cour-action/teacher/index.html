@@ -128,7 +128,7 @@ async function renderResponses(){
       const c=row.c||[];
       const nm=String(c[0]?.v||'Anonyme');
       if(!students[nm])students[nm]=[];
-      students[nm].push({date:c[1]?.f||c[1]?.v||'—',score:c[2]?.v||'—',pct:c[3]?.v||'—',result:c[4]?.v||'—',duration:c[5]?.v||'—',phases:c[6]?.v||''});
+      students[nm].push({date:formatGvizDate(c[1]),score:c[2]?.v||'—',pct:c[3]?.v||'—',result:c[4]?.v||'—',duration:c[5]?.v||'—',phases:c[6]?.v||''});
     });
 
     // Group answers by student
@@ -221,6 +221,20 @@ async function renderResponses(){
 }
 
 function parseGviz(text){const m=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?$/);if(!m)return[];try{return JSON.parse(m[1]).table?.rows||[];}catch(e){return[];}}
+
+function formatGvizDate(cell){
+  if(!cell)return '—';
+  const v=cell.v;
+  if(typeof v==='string'){
+    const dm=v.match(/Date\((\d+),(\d+),(\d+)/);
+    if(dm){
+      const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+      return parseInt(dm[3])+' '+months[parseInt(dm[2])]+' '+dm[1];
+    }
+  }
+  if(cell.f)return cell.f;
+  return String(v||'—');
+}
 function updateStatus(text,cls){const el=document.getElementById('status-text');if(el){el.textContent=text;el.className='status-text '+(cls||'');}}
 function showToast(msg,isError){const ex=document.querySelector('.toast');if(ex)ex.remove();const d=document.createElement('div');d.className='toast'+(isError?' error':'');d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}
 
