@@ -3,1080 +3,297 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Interactif — Du ballet de cour au ballet d'action</title>
-<!-- ============================================================
-     CONFIGURATION: Remplacez cette URL après déploiement du Apps Script
-     ============================================================ -->
+<title>Quiz — Du ballet de cour au ballet d'action</title>
 <script>
-  window.__BALLET_QUIZ_CONFIG = {
+  window.__QUIZ_CONFIG = {
     APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwb4ZdA_PvAzGBCdrTdetjjI8er3JLgZIIR7MPcTUiZOUhn14QoJ_LleGyX9-RQ1TNN/exec'
   };
 </script>
-
-<!-- ============================================================
-     Fetch interceptor: routes Space.* calls to Google Sheets
-     via the Apps Script web app URL above
-     ============================================================ -->
-<script>
-  (function() {
-    const origFetch = window.fetch;
-    
-    // Mock Space API for localStorage fallback
-    window.Space = window.Space || {};
-    
-    window.Space.save_answer = async function(data) {
-      // Save to localStorage immediately
-      const answers = JSON.parse(localStorage.getItem('ballet_quiz_answers') || '[]');
-      answers.push({
-        ...data,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('ballet_quiz_answers', JSON.stringify(answers));
-      
-      // Fire-and-forget to Google Apps Script
-      const config = window.__BALLET_QUIZ_CONFIG;
-      if (config.APPS_SCRIPT_URL && !config.APPS_SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-        const payload = {
-          action: 'save_answer',
-          answer: {
-            studentName: data.studentName,
-            questionId: data.questionId,
-            questionText: data.questionText,
-            studentAnswer: data.studentAnswer,
-            correctAnswer: data.correctAnswer,
-            isCorrect: data.isCorrect,
-            points: data.points,
-            maxPoints: data.maxPoints,
-            questionType: data.questionType
-          }
-        };
-        const encoded = encodeURIComponent(JSON.stringify(payload));
-        fetch(config.APPS_SCRIPT_URL + '?payload=' + encoded, {
-          method: 'GET',
-          mode: 'no-cors'
-        }).catch(e => console.log('GAS sync error (non-fatal):', e));
-      }
-      
-      return { ok: true };
-    };
-    
-    window.Space.save_session = async function(data) {
-      // Save to localStorage
-      const sessions = JSON.parse(localStorage.getItem('ballet_quiz_sessions') || '[]');
-      sessions.push({
-        ...data,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('ballet_quiz_sessions', JSON.stringify(sessions));
-      
-      // Fire-and-forget to Google Apps Script
-      const config = window.__BALLET_QUIZ_CONFIG;
-      if (config.APPS_SCRIPT_URL && !config.APPS_SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-        const payload = {
-          action: 'save_session',
-          session: data
-        };
-        const encoded = encodeURIComponent(JSON.stringify(payload));
-        fetch(config.APPS_SCRIPT_URL + '?payload=' + encoded, {
-          method: 'GET',
-          mode: 'no-cors'
-        }).catch(e => console.log('GAS sync error (non-fatal):', e));
-      }
-      
-      return { ok: true };
-    };
-    
-    window.Space.get_quiz_data = async function() {
-      // Return localStorage data for teacher dashboard
-      const sessions = JSON.parse(localStorage.getItem('ballet_quiz_sessions') || '[]');
-      const answers = JSON.parse(localStorage.getItem('ballet_quiz_answers') || '[]');
-      return { sessions, answers };
-    };
-  })();
-</script>
-
 <style>
-@import "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap";:root{--bg:#0a0a12;--surface:#14141f;--surface-2:#1c1c2e;--text:#f0eee6;--dim:#8a86a0;--border:#ffffff14;--accent:#d4a853;--accent-glow:#d4a8534d;--purple:#9b6dff;--purple-glow:#9b6dff33;--success:#34d399;--success-glow:#34d39926;--error:#f87171;--error-glow:#f8717126;--radius:16px;--buncss-light: ;--buncss-dark:initial;color-scheme:dark}*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif}.quiz-app{display:flex;position:relative;overflow-x:hidden;flex-direction:column;min-height:100dvh}.quiz-app:before{content:"";position:fixed;pointer-events:none;z-index:0;background:radial-gradient(at 20% 0%,#9b6dff14 0%,#0000 60%),radial-gradient(at 80% 100%,#d4a8530f 0%,#0000 60%);inset:0}.quiz-content{position:relative;z-index:1;display:flex;flex-direction:column;flex:1;width:100%;max-width:640px;margin:0 auto;padding:16px}.progress-bar-wrap{position:sticky;z-index:10;background:linear-gradient(to bottom,var(--bg)60%,transparent);padding:12px 0;top:0}.progress-track{background:var(--surface-2);overflow:hidden;border-radius:3px;height:6px}.progress-fill{background:linear-gradient(90deg,var(--purple),var(--accent));border-radius:3px;height:100%;transition:width .5s cubic-bezier(.4,0,.2,1)}.progress-label{color:var(--dim);text-align:right;margin-top:6px;font-size:12px;font-weight:500}.phase-badge{display:inline-flex;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);background:var(--purple-glow);border-radius:20px;align-items: center;gap:6px;margin-bottom:12px;padding:5px 12px;font-size:11px;font-weight:700}.question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);animation:slideUp .4s cubic-bezier(.2,0,0,1);padding:24px 20px}@keyframes slideUp{0%{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}.question-number{color:var(--dim);margin-bottom:8px;font-family:Playfair Display,serif;font-size:14px}.question-text{color:var(--text);margin-bottom:24px;font-family:Playfair Display,serif;font-size:20px;font-weight:700;line-height:1.4}.question-text em{color:var(--accent);font-style:italic}.options-grid{display:flex;flex-direction:column;gap:10px}.option-btn{display:flex;text-align:left;background:var(--surface-2);border:2px solid var(--border);color:var(--text);cursor:pointer;border-radius:12px;align-items: center;gap:12px;width:100%;padding:14px 16px;transition:all .2s;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-size:15px;font-weight:500;line-height:1.4}.option-btn:active{transform:scale(.98)}.option-btn.selected{border-color:var(--purple);background:var(--purple-glow)}.option-btn.correct{border-color:var(--success)!important;background:var(--success-glow)!important}.option-btn.incorrect{opacity:.7;border-color:var(--error)!important;background:var(--error-glow)!important}.option-btn.correct-reveal{border-color:var(--success)!important;background:var(--success-glow)!important}.option-letter{display:flex;background:#ffffff0f;border-radius:8px;flex-shrink:0;justify-content:center;align-items: center;width:28px;height:28px;font-size:13px;font-weight:700}.tf-grid{display:flex;flex-direction:column;gap:16px}.tf-statement{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}.tf-text{color:var(--text);margin-bottom:10px;font-size:14px;line-height:1.5}.tf-buttons{display:flex;gap:8px}.tf-btn{border:2px solid var(--border);color:var(--text);cursor:pointer;background:0 0;border-radius:8px;flex:1;padding:8px;transition:all .2s;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-size:14px;font-weight:600}.tf-btn.selected{border-color:var(--purple);background:var(--purple-glow)}.tf-btn.correct{border-color:var(--success)!important;background:var(--success-glow)!important}.tf-btn.incorrect{border-color:var(--error)!important;background:var(--error-glow)!important}.rank-list{display:flex;flex-direction:column;gap:8px}.rank-item{display:flex;background:var(--surface-2);border:1px solid var(--border);cursor:grab;user-select:none;touch-action:none;border-radius:10px;align-items: center;gap:10px;padding:12px 14px;transition:all .15s}.rank-item:active{cursor:grabbing}.rank-item.dragging{opacity:.5;border-color:var(--purple)}.rank-num{background:var(--purple-glow);color:var(--purple);display:flex;border-radius:50%;flex-shrink:0;justify-content:center;align-items: center;width:26px;height:26px;font-size:13px;font-weight:700}.rank-text{flex:1;font-size:14px}.rank-arrows{display:flex;flex-direction:column;gap:2px}.rank-arrow{color:var(--dim);cursor:pointer;background:0 0;border:none;padding:2px;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-size:16px;line-height:1}.rank-arrow:hover{color:var(--accent)}.match-grid{display:flex;flex-direction:column;gap:12px}.match-row{display:flex;align-items: center;gap:8px}.match-left{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;flex:1;padding:10px 12px;font-size:14px;font-weight:600}.match-arrow{color:var(--dim);flex-shrink:0;font-size:18px}.match-select{background:var(--surface-2);border:2px solid var(--border);color:var(--text);appearance:none;cursor:pointer;border-radius:8px;flex:1;padding:10px 12px;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-size:13px}.match-select:focus{border-color:var(--purple);outline:none}.quiz-input{background:var(--surface-2);border:2px solid var(--border);color:var(--text);resize:vertical;border-radius:12px;width:100%;min-height:100px;padding:14px 16px;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-size:15px;line-height:1.6}.quiz-input:focus{border-color:var(--purple);outline:none}.quiz-input::placeholder{color:var(--dim)}.slider-wrap{padding:8px 0}.slider-labels{display:flex;color:var(--dim);justify-content:space-between;margin-bottom:12px;font-size:12px}.slider-input{accent-color:var(--purple);cursor:pointer;width:100%;height:8px}.slider-value{text-align:center;color:var(--purple);margin-top:12px;font-family:Playfair Display,serif;font-size:48px;font-weight:800}.explanation{animation:fadeIn .3s ease;background:linear-gradient(135deg,#d4a85314,#9b6dff0f);border:1px solid #d4a85333;border-radius:12px;margin-top:20px;padding:16px}@keyframes fadeIn{0%{opacity:0}to{opacity:1}}.explanation-title{text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;font-size:12px;font-weight:700}.explanation-text{color:var(--text);opacity:.9;font-size:14px;line-height:1.6}.actions-row{display:flex;gap:10px;margin-top:20px}.btn-primary{cursor:pointer;background:linear-gradient(135deg,var(--purple),#7c4dff);color:#fff;border:none;border-radius:12px;flex:1;padding:14px 20px;transition:all .2s;font-family:DM Sans,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-size:15px;font-weight:700}.btn-primary:active{transform:scale(.97)}.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}.btn-validate{background:linear-gradient(135deg,var(--accent),#c0933a);color:#0a0a12}.score-pill{display:inline-flex;color:var(--accent);background:#d4a8531a;border-radius:20px;align-items: center;gap:6px;padding:4px 12px;font-size:13px;font-weight:600}.welcome{display:flex;text-align:center;animation:fadeIn .6s ease;flex-direction:column;flex:1;justify-content:center;align-items: center;gap:20px;padding:40px 20px}.welcome-icon{font-size:64px}.welcome-title{background:linear-gradient(135deg,var(--text),var(--accent));-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Playfair Display,serif;font-size:32px;font-weight:700;line-height:1.2}.welcome-sub{color:var(--dim);max-width:400px;font-size:16px;line-height:1.6}.welcome-phases{display:flex;flex-direction:column;gap:8px;width:100%;max-width:360px;margin-top:8px}.welcome-phase{display:flex;background:var(--surface);border:1px solid var(--border);text-align:left;border-radius:10px;align-items: center;gap:10px;padding:10px 14px;font-size:13px}.welcome-phase-icon{flex-shrink:0;font-size:18px}.results{display:flex;text-align:center;animation:slideUp .5s cubic-bezier(.2,0,0,1);flex-direction:column;flex:1;justify-content:center;align-items: center;gap:24px;padding:40px 20px}.results-score{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Playfair Display,serif;font-size:72px;font-weight:700}.results-label{color:var(--dim);font-size:18px}.results-message{max-width:400px;font-size:20px;font-weight:600;line-height:1.5}.results-breakdown{display:flex;flex-direction:column;gap:6px;width:100%;max-width:400px;margin-top:8px}.results-phase{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;justify-content:space-between;padding:10px 14px;font-size:13px}@media (min-width:640px){.quiz-content{padding:24px}.question-text{font-size:24px}.welcome-title{font-size:40px}}.glass-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}#hatch-footer,.hatch-footer,[class*=shared-footer],[class*=SharedFooter],[class*=share-bar],[class*=ShareBar],[data-hatch-footer]{display:none!important}:root{--buncss-light:initial;--buncss-dark: ;color-scheme:light dark}@media (prefers-color-scheme:dark){:root{--buncss-light: ;--buncss-dark:initial}}html,[data-generated-space-root]{height:100%;min-height:100%}[data-generated-space-root]{overflow:auto;position:fixed;scrollbar-width:none;inset:0}.hatch-space-root[data-hatch-space-root]{--hatch-space-bottom-padding:calc(var(--bottom-padding,0px) + env(safe-area-inset-bottom,0px));box-sizing:border-box;min-height:calc(100% + var(--header-height,0px) + var(--hatch-space-bottom-padding));min-height:calc(100dvh + var(--header-height,0px) + var(--hatch-space-bottom-padding));padding-top:var(--header-height,0px);padding-bottom:var(--hatch-space-bottom-padding);background:var(--bg,#f4f7fb);color:var(--text,#0f172a)}@media (prefers-color-scheme:dark){.hatch-space-root[data-hatch-space-root]{background:var(--bg,#0c111b);color:var(--text,#e5eef9)}}[data-generated-space-root]::-webkit-scrollbar{display:none}
-
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap");
+:root{--bg:#0a0a12;--surface:#14141f;--surface-2:#1c1c2e;--text:#f0eee6;--dim:#8a86a0;--border:#ffffff14;--accent:#d4a853;--accent-glow:#d4a8534d;--purple:#9b6dff;--purple-glow:#9b6dff33;--success:#34d399;--success-glow:#34d39926;--error:#f87171;--error-glow:#f8717126;--radius:16px;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-family:DM Sans,system-ui,sans-serif}
+.quiz-app{display:flex;position:relative;overflow-x:hidden;flex-direction:column;min-height:100dvh}
+.quiz-app:before{content:"";position:fixed;pointer-events:none;z-index:0;background:radial-gradient(at 20% 0%,#9b6dff14 0%,#0000 60%),radial-gradient(at 80% 100%,#d4a8530f 0%,#0000 60%);inset:0}
+.quiz-content{position:relative;z-index:1;display:flex;flex-direction:column;flex:1;width:100%;max-width:640px;margin:0 auto;padding:16px}
+.progress-bar-wrap{position:sticky;z-index:10;background:linear-gradient(to bottom,var(--bg)60%,transparent);padding:12px 0;top:0}
+.progress-track{background:var(--surface-2);overflow:hidden;border-radius:3px;height:6px}
+.progress-fill{background:linear-gradient(90deg,var(--purple),var(--accent));border-radius:3px;height:100%;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.progress-label{color:var(--dim);text-align:right;margin-top:6px;font-size:12px;font-weight:500}
+.phase-badge{display:inline-flex;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);background:var(--purple-glow);border-radius:20px;align-items:center;gap:6px;margin-bottom:12px;padding:5px 12px;font-size:11px;font-weight:700}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);animation:slideUp .4s cubic-bezier(.2,0,0,1);padding:24px 20px}
+@keyframes slideUp{0%{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.question-number{color:var(--dim);margin-bottom:8px;font-family:Playfair Display,serif;font-size:14px}
+.question-text{color:var(--text);margin-bottom:24px;font-family:Playfair Display,serif;font-size:20px;font-weight:700;line-height:1.4}
+.question-text em{color:var(--accent);font-style:italic}
+.options-grid{display:flex;flex-direction:column;gap:10px}
+.option-btn{display:flex;text-align:left;background:var(--surface-2);border:2px solid var(--border);color:var(--text);cursor:pointer;border-radius:12px;align-items:center;gap:12px;width:100%;padding:14px 16px;transition:all .2s;font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;line-height:1.4}
+.option-btn:active{transform:scale(.98)}
+.option-btn.selected{border-color:var(--purple);background:var(--purple-glow)}
+.option-btn.correct{border-color:var(--success)!important;background:var(--success-glow)!important}
+.option-btn.incorrect{opacity:.7;border-color:var(--error)!important;background:var(--error-glow)!important}
+.option-btn.correct-reveal{border-color:var(--success)!important;background:var(--success-glow)!important}
+.option-letter{display:flex;background:#ffffff0f;border-radius:8px;flex-shrink:0;justify-content:center;align-items:center;width:28px;height:28px;font-size:13px;font-weight:700}
+.actions-row{display:flex;gap:10px;margin-top:20px}
+.btn-primary{cursor:pointer;background:linear-gradient(135deg,var(--purple),#7c4dff);color:#fff;border:none;border-radius:12px;flex:1;padding:14px 20px;transition:all .2s;font-family:DM Sans,sans-serif;font-size:15px;font-weight:700}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-validate{background:linear-gradient(135deg,var(--accent),#c0933a);color:#0a0a12}
+.welcome,.results{display:flex;text-align:center;flex-direction:column;flex:1;justify-content:center;align-items:center;gap:20px;padding:40px 20px}
+.welcome-title{background:linear-gradient(135deg,var(--text),var(--accent));-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Playfair Display,serif;font-size:32px;font-weight:700;line-height:1.2}
+.welcome-sub{color:var(--dim);max-width:400px;font-size:16px;line-height:1.6}
+.results-score{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Playfair Display,serif;font-size:72px;font-weight:700}
+.explanation{animation:fadeIn .3s ease;background:linear-gradient(135deg,#d4a85314,#9b6dff0f);border:1px solid #d4a85333;border-radius:12px;margin-top:20px;padding:16px}
+@keyframes fadeIn{0%{opacity:0}to{opacity:1}}
+.explanation-title{text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;font-size:12px;font-weight:700}
+.explanation-text{color:var(--text);opacity:.9;font-size:14px;line-height:1.6}
+@media (min-width:640px){.quiz-content{padding:24px}.question-text{font-size:24px}.welcome-title{font-size:40px}}
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>Quiz Interactif</h1>
-    <p class="subtitle">Du ballet de cour au ballet d'action (XVII<sup>e</sup>–XVIII<sup>e</sup> s.)</p>
-  </header>
-
-  <div id="app"></div>
+<div class="quiz-app">
+  <div class="quiz-content" id="app"></div>
 </div>
-
 <script>
-const QUIZ_DATA = {
-  "title": "Quiz Interactif — Du ballet de cour au ballet d'action (XVIIe–XVIIIe s.)",
-  "subject": "Au XVIIIᵉ siècle, l'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. Vous analyserez cette tension en vous appuyant sur des chorégraphes, des œuvres et des concepts précis.",
-  "phases": [
-    {
-      "id": "phase0",
-      "title": "Identification",
-      "questions": [
-        {
-          "id": "Q0",
-          "type": "short_answer",
-          "question": "Avant de commencer, quel est ton prénom ?",
-          "placeholder": "Ton prénom"
-        }
-      ]
-    },
-    {
-      "id": "phase1",
-      "title": "Chronologie & classement des styles",
-      "questions": [
-        {
-          "id": "Q1",
-          "type": "word_cloud",
-          "question": "En lisant ce sujet, quels sont les 2 ou 3 mots qui vous semblent les plus importants ?",
-          "subtitle": "« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",
-          "maxWords": 3
-        },
-        {
-          "id": "Q2",
-          "type": "ranking",
-          "question": "Classez ces grands styles chorégraphiques du plus ancien au plus récent.",
-          "items": [
-            "Carole médiévale",
-            "Ballet de cour",
-            "Comédie-ballet",
-            "Tragédie lyrique",
-            "Belle danse",
-            "Opéra-ballet français",
-            "Ballet d'action",
-            "Ballet romantique"
-          ],
-          "correctOrder": [
-            "Carole médiévale",
-            "Ballet de cour",
-            "Comédie-ballet",
-            "Tragédie lyrique",
-            "Belle danse",
-            "Opéra-ballet français",
-            "Ballet d'action",
-            "Ballet romantique"
-          ]
-        },
-        {
-          "id": "Q3",
-          "type": "multiple_choice",
-          "question": "Quelle période correspond au « ballet de cour » en France ?",
-          "options": [
-            "1350 – 1450",
-            "1581 – vers 1670",
-            "1700 – 1760",
-            "1789 – 1830"
-          ],
-          "correct": 1
-        },
-        {
-          "id": "Q4",
-          "type": "multiple_choice",
-          "question": "Quel est le premier véritable ballet d'action ?",
-          "options": [
-            "Les Indes galantes (Rameau, 1735)",
-            "Les Saisons (Hilverding, 1743)",
-            "L'Amour et Psyché (Hilverding, 1752)",
-            "Les Horaces (Noverre, 1774)"
-          ],
-          "correct": 2
-        }
-      ]
-    },
-    {
-      "id": "phase2",
-      "title": "Définitions & vocabulaire",
-      "questions": [
-        {
-          "id": "Q11",
-          "type": "matching",
-          "question": "Associez chaque style à sa définition",
-          "pairs": [
-            {"left": "Ballet de cour", "right": "Spectacle aristocratique mêlant danse, musique et poésie"},
-            {"left": "Comédie-ballet", "right": "Forme créée par Molière et Lully"},
-            {"left": "Tragédie lyrique", "right": "Opéra français à la française avec ballet intégré"},
-            {"left": "Ballet d'action", "right": "Ballet pantomime dramatique sans chant"}
-          ]
-        },
-        {
-          "id": "Q12",
-          "type": "multiple_choice",
-          "question": "Qu'est-ce que la notation Feuillet ?",
-          "options": [
-            "Un système de notation musicale",
-            "Un système de notation chorégraphique du XVIIIe siècle",
-            "Une technique de danse baroque",
-            "Un traité de Jean-Georges Noverre"
-          ],
-          "correct": 1
-        }
-      ]
-    },
-    {
-      "id": "noverre",
-      "title": "Partie spéciale Noverre",
-      "questions": [
-        {
-          "id": "QN1",
-          "type": "multiple_choice",
-          "question": "En quelle année Jean-Georges Noverre publie-t-il ses 'Lettres sur la danse et sur les ballets' ?",
-          "options": ["1759", "1760", "1761", "1776"],
-          "correct": 1
-        },
-        {
-          "id": "QN6",
-          "type": "multiple_select",
-          "question": "Quelles sont les critiques principales de Noverre contre le ballet de son époque ? (Plusieurs réponses)",
-          "options": [
-            "Le masque empêche l'expressivité du visage",
-            "Les costumes lourds entravent le mouvement",
-            "La virtuosité technique prime sur l'expression",
-            "Les danseurs ne savent pas chanter"
-          ],
-          "correct": [0, 1, 2]
-        },
-        {
-          "id": "QN10",
-          "type": "matching",
-          "question": "Associez chaque œuvre de Noverre à sa description",
-          "pairs": [
-            {"left": "Les Fêtes chinoises", "right": "1754, premier succès à l'Opéra-Comique"},
-            {"left": "Jason et Médée", "right": "1763, Stuttgart, chef-d'œuvre du ballet d'action"},
-            {"left": "Les Petits Riens", "right": "1778, Paris, musique de Mozart"},
-            {"left": "Psyché et l'Amour", "right": "1762, Stuttgart, ballet héroïque"}
-          ]
-        }
-      ]
-    },
-    {
-      "id": "phase4",
-      "title": "Œuvres et chorégraphes",
-      "questions": [
-        {
-          "id": "Q26",
-          "type": "ranking",
-          "question": "Classez ces œuvres dans l'ordre chronologique",
-          "items": [
-            "Le Ballet comique de la reine (1581)",
-            "Les Indes galantes (1735)",
-            "Médée et Jason (1763)",
-            "Les Petits Riens (1778)"
-          ],
-          "correctOrder": [
-            "Le Ballet comique de la reine (1581)",
-            "Les Indes galantes (1735)",
-            "Médée et Jason (1763)",
-            "Les Petits Riens (1778)"
-          ]
-        },
-        {
-          "id": "Q27",
-          "type": "matching",
-          "question": "Associez chaque œuvre à son chorégraphe",
-          "pairs": [
-            {"left": "Les Indes galantes", "right": "Louis Dupré / Michel Blondy"},
-            {"left": "Médée et Jason", "right": "Jean-Georges Noverre"},
-            {"left": "Don Juan", "right": "Gasparo Angiolini"},
-            {"left": "La Fille mal gardée", "right": "Jean Dauberval"}
-          ]
-        }
-      ]
-    }
+const QUIZ = {
+  title: "Du ballet de cour au ballet d'action",
+  subtitle: "XVIIᵉ–XVIIIᵉ siècle",
+  questions: [
+    {id:"Q0",type:"text",q:"Avant de commencer, quel est ton prénom ?",ph:"Ton prénom"},
+    {id:"Q1",type:"words",q:"Quels sont les 2 ou 3 mots les plus importants ?",sub:"« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",max:3},
+    {id:"Q2",type:"rank",q:"Classez ces styles du plus ancien au plus récent",items:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse","Opéra-ballet français","Ballet d'action","Ballet romantique"],answer:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse","Opéra-ballet français","Ballet d'action","Ballet romantique"]},
+    {id:"Q3",type:"mcq",q:"Quelle période correspond au « ballet de cour » en France ?",opts:["1350 – 1450","1581 – vers 1670","1700 – 1760","1789 – 1830"],a:1},
+    {id:"Q4",type:"mcq",q:"Quel est le premier véritable ballet d'action ?",opts:["Les Indes galantes (Rameau, 1735)","Les Saisons (Hilverding, 1743)","L'Amour et Psyché (Hilverding, 1752)","Les Horaces (Noverre, 1774)"],a:2},
+    {id:"Q11",type:"match",q:"Associez chaque style à sa définition",pairs:[["Ballet de cour","Spectacle aristocratique mêlant danse, musique et poésie"],["Comédie-ballet","Forme créée par Molière et Lully"],["Tragédie lyrique","Opéra français à la française avec ballet intégré"],["Ballet d'action","Ballet pantomime dramatique sans chant"]]},
+    {id:"Q12",type:"mcq",q:"Qu'est-ce que la notation Feuillet ?",opts:["Un système de notation musicale","Un système de notation chorégraphique du XVIIIe siècle","Une technique de danse baroque","Un type de costume"],a:1},
+    {id:"QN1",type:"mcq",q:"Qui a théorisé le ballet d'action dans ses 'Lettres sur la danse' ?",opts:["Jean-Georges Noverre","Pierre Beauchamp","Louis XIV","Marie Sallé"],a:0},
+    {id:"QN6",type:"multi",q:"Quelles sont les caractéristiques du ballet d'action ? (plusieurs réponses)",opts:["Narration par la danse seule","Usage du chant","Pantomime expressive","Décors et costumes réalistes","Suivre la musique sans histoire"],a:[0,2,3]},
+    {id:"QN10",type:"match",q:"Associez les œuvres à leurs chorégraphes",pairs:[["Jason et Médée","Noverre"],["Pygmalion","Hilverding"],["La Fille mal gardée","Dauberval"]]},
+    {id:"Q27",type:"match",q:"Reliez les concepts aux définitions",pairs:[["Belle danse","Style noble et gracieux de la danse baroque"],["Pantomime","Art de s'exprimer par gestes"],["Opéra-ballet","Spectacle mêlant chant, danse et mise en scène"]]}
   ]
 };
 
-// Mock Space API for Google Apps Script interception
-window.Space = {
-  async get_quiz_data() {
-    return QUIZ_DATA;
-  },
-  async save_answer(data) {
-    console.log('Space.save_answer', data);
-    // Intercepted by Google Apps Script
-    try {
-      await fetch('/api/save_answer', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      }).catch(()=>{});
-    } catch(e) {}
-    // Local fallback
-    const answers = JSON.parse(localStorage.getItem('quiz_answers') || '[]');
-    answers.push({...data, timestamp: Date.now()});
-    localStorage.setItem('quiz_answers', JSON.stringify(answers));
-    return {ok: true};
-  },
-  async save_session(data) {
-    console.log('Space.save_session', data);
-    try {
-      await fetch('/api/save_session', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      }).catch(()=>{});
-    } catch(e) {}
-    const sessions = JSON.parse(localStorage.getItem('quiz_sessions') || '[]');
-    sessions.push({...data, timestamp: Date.now()});
-    localStorage.setItem('quiz_sessions', JSON.stringify(sessions));
-    return {ok: true, id: Date.now().toString()};
-  }
-};
+let state = {idx:0,answers:{},name:"",startTime:Date.now(),sessionId:'s_'+Math.random().toString(36).slice(2)};
 
-class QuizApp {
-  constructor() {
-    this.app = document.getElementById('app');
-    this.state = this.loadState();
-    this.currentPhaseIndex = 0;
-    this.currentQuestionIndex = 0;
-    this.sessionId = this.state.sessionId || this.generateId();
-    this.answers = this.state.answers || {};
-    this.studentName = this.state.studentName || '';
-    this.init();
-  }
+function saveSession(){localStorage.setItem('ballet_session',JSON.stringify({id:state.sessionId,name:state.name,start:state.startTime,answers:state.answers}));}
+function sendToSheets(payload){const url=window.__QUIZ_CONFIG.APPS_SCRIPT_URL;if(!url)return;fetch(url+'?payload='+encodeURIComponent(JSON.stringify(payload)),{method:'GET'}).catch(()=>{});}
 
-  loadState() {
-    try {
-      return JSON.parse(localStorage.getItem('ballet_quiz_state') || '{}');
-    } catch { return {}; }
-  }
-
-  saveState() {
-    localStorage.setItem('ballet_quiz_state', JSON.stringify({
-      sessionId: this.sessionId,
-      answers: this.answers,
-      studentName: this.studentName,
-      currentPhaseIndex: this.currentPhaseIndex,
-      currentQuestionIndex: this.currentQuestionIndex,
-      timestamp: Date.now()
-    }));
-  }
-
-  generateId() {
-    return Math.random().toString(36).substring(2, 10);
-  }
-
-  init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'teacher') {
-      this.renderTeacherLogin();
-      return;
-    }
-    
-    if (this.studentName) {
-      this.renderQuiz();
-    } else {
-      this.renderWelcome();
-    }
-  }
-
-  renderWelcome() {
-    const q0 = QUIZ_DATA.phases[0].questions[0];
-    this.app.innerHTML = `
-      <div class="card">
-        <div class="phase-title">${QUIZ_DATA.phases[0].title}</div>
-        <div class="question-text">${q0.question}</div>
-        <input type="text" id="nameInput" placeholder="${q0.placeholder}" 
-               value="${this.studentName}" autocomplete="given-name">
-        <button class="btn btn-primary btn-block mt-4" id="startBtn" disabled>
-          Commencer le quiz
-        </button>
+function render(){
+  const app=document.getElementById('app');
+  const q=QUIZ.questions[state.idx];
+  const progress=Math.round((state.idx/QUIZ.questions.length)*100);
+  
+  if(state.idx===0 && !state.name){
+    app.innerHTML=`<div class="welcome">
+      <div class="welcome-title">${QUIZ.title}</div>
+      <div class="welcome-sub">${QUIZ.subtitle}<br><br>11 questions • ~8 min</div>
+      <div style="width:100%;max-width:320px">
+        <input id="nameInput" type="text" placeholder="Ton prénom" style="width:100%;padding:14px 16px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:16px;margin-bottom:12px" autofocus>
+        <button class="btn-primary" onclick="startQuiz()">Commencer →</button>
       </div>
-    `;
+    </div>`;
+    document.getElementById('nameInput').focus();
+    document.getElementById('nameInput').onkeypress=e=>{if(e.key==='Enter')startQuiz()};
+    return;
+  }
+  
+  if(state.idx>=QUIZ.questions.length){
+    const correct=Object.values(state.answers).filter(a=>a.correct).length;
+    const total=QUIZ.questions.length-1;
+    const pct=Math.round(correct/total*100);
+    const timeMin=Math.round((Date.now()-state.startTime)/60000);
     
-    const input = document.getElementById('nameInput');
-    const btn = document.getElementById('startBtn');
+    // Save to sheets
+    sendToSheets({action:'save_student_session',args:{session_id:state.sessionId,student_name:state.name,score:`${correct}/${total}`,percentage:pct,time_minutes:timeMin,completed_at:new Date().toISOString()}});
     
-    const updateBtn = () => {
-      btn.disabled = input.value.trim().length < 2;
-    };
-    
-    input.addEventListener('input', updateBtn);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !btn.disabled) this.startQuiz();
+    app.innerHTML=`<div class="results">
+      <div class="results-score">${correct}/${total}</div>
+      <div style="color:var(--dim);font-size:18px">${pct}% • ${timeMin} min</div>
+      <div style="font-size:20px;font-weight:600;margin-top:8px">${pct>=70?'Excellent ! 🎉':pct>=50?'Bien joué ! 👍':'À revoir 📚'}</div>
+      <button class="btn-primary" style="margin-top:24px;max-width:200px" onclick="location.reload()">Recommencer</button>
+    </div>`;
+    return;
+  }
+
+  let html=`<div class="progress-bar-wrap">
+    <div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>
+    <div class="progress-label">${state.idx} / ${QUIZ.questions.length-1}</div>
+  </div>
+  <div class="question-card">
+    <div class="question-number">Question ${state.idx}</div>
+    <div class="question-text">${q.q}</div>`;
+  
+  if(q.sub) html+=`<div style="color:var(--dim);font-size:14px;margin:-12px 0 16px;font-style:italic">${q.sub}</div>`;
+  
+  if(q.type==='text'){
+    html+=`<input id="answer" type="text" placeholder="${q.ph||''}" style="width:100%;padding:14px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:15px" autofocus>`;
+  } else if(q.type==='mcq'){
+    html+='<div class="options-grid">';
+    q.opts.forEach((opt,i)=>{
+      html+=`<button class="option-btn" data-idx="${i}" onclick="selectMCQ(${i})">
+        <span class="option-letter">${String.fromCharCode(65+i)}</span>
+        <span>${opt}</span>
+      </button>`;
     });
-    btn.addEventListener('click', () => this.startQuiz());
-    input.focus();
-    updateBtn();
-  }
-
-  startQuiz() {
-    const input = document.getElementById('nameInput');
-    this.studentName = input.value.trim();
-    this.answers['Q0'] = this.studentName;
-    this.saveState();
-    Space.save_answer({
-      session_id: this.sessionId,
-      question_id: 'Q0',
-      answer: this.studentName,
-      is_correct: true
+    html+='</div>';
+  } else if(q.type==='words'){
+    html+=`<div id="words"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="wordInput" type="text" placeholder="Un mot important..." style="flex:1;padding:12px;background:var(--surface-2);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px">
+        <button class="btn-primary" style="padding:12px 16px;flex:0" onclick="addWord()">+</button>
+      </div>`;
+  } else if(q.type==='rank'){
+    html+='<div class="options-grid" id="rankList">';
+    q.items.forEach((item,i)=>{
+      html+=`<div class="option-btn" style="cursor:grab" draggable="true" data-idx="${i}">
+        <span class="option-letter">${i+1}</span>
+        <span style="flex:1">${item}</span>
+        <span style="color:var(--dim)">⋮⋮</span>
+      </div>`;
     });
-    this.currentPhaseIndex = 1;
-    this.currentQuestionIndex = 0;
-    this.renderQuiz();
-  }
-
-  getCurrentQuestion() {
-    const phase = QUIZ_DATA.phases[this.currentPhaseIndex];
-    return phase.questions[this.currentQuestionIndex];
-  }
-
-  getTotalQuestions() {
-    return QUIZ_DATA.phases.reduce((sum, p) => sum + p.questions.length, 0) - 1; // minus Q0
-  }
-
-  getAnsweredCount() {
-    return Object.keys(this.answers).filter(k => k !== 'Q0').length;
-  }
-
-  renderQuiz() {
-    const phase = QUIZ_DATA.phases[this.currentPhaseIndex];
-    const question = this.getCurrentQuestion();
-    const total = this.getTotalQuestions();
-    const answered = this.getAnsweredCount();
-    const progress = (answered / total) * 100;
-
-    let questionHTML = '';
-    
-    switch(question.type) {
-      case 'short_answer':
-        questionHTML = this.renderShortAnswer(question);
-        break;
-      case 'word_cloud':
-        questionHTML = this.renderWordCloud(question);
-        break;
-      case 'ranking':
-        questionHTML = this.renderRanking(question);
-        break;
-      case 'multiple_choice':
-        questionHTML = this.renderMultipleChoice(question);
-        break;
-      case 'multiple_select':
-        questionHTML = this.renderMultipleSelect(question);
-        break;
-      case 'matching':
-        questionHTML = this.renderMatching(question);
-        break;
-    }
-
-    this.app.innerHTML = `
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: ${progress}%"></div>
-      </div>
-      <div class="card">
-        <div class="flex-between mb-2">
-          <div class="phase-title">${phase.title}</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted);">
-            ${answered + 1} / ${total}
-          </div>
-        </div>
-        <div class="question-text">${question.question}</div>
-        ${question.subtitle ? `<div class="question-subtitle">${question.subtitle}</div>` : ''}
-        ${questionHTML}
-        <div id="feedback" class="feedback"></div>
-        <div class="flex-between mt-4">
-          <button class="btn btn-secondary" id="prevBtn" ${this.isFirstQuestion() ? 'disabled' : ''}>
-            ← Précédent
-          </button>
-          <button class="btn btn-primary" id="nextBtn" disabled>
-            ${this.isLastQuestion() ? 'Terminer' : 'Suivant →'}
-          </button>
-        </div>
-      </div>
-    `;
-
-    this.attachQuestionListeners(question);
-    document.getElementById('prevBtn').addEventListener('click', () => this.previousQuestion());
-    document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
-    
-    // Restore previous answer if exists
-    if (this.answers[question.id]) {
-      this.restoreAnswer(question);
-    }
-  }
-
-  renderShortAnswer(q) {
-    return `<input type="text" id="answerInput" placeholder="Votre réponse...">`;
-  }
-
-  renderWordCloud(q) {
-    return `
-      <div class="word-cloud-input" id="wordTags"></div>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="wordInput" placeholder="Ajouter un mot..." maxlength="20">
-        <button class="btn btn-secondary" id="addWordBtn" style="flex-shrink: 0;">Ajouter</button>
-      </div>
-      <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
-        Maximum ${q.maxWords} mots
-      </div>
-    `;
-  }
-
-  renderRanking(q) {
-    const items = [...q.items].sort(() => Math.random() - 0.5);
-    return `
-      <div class="ranking-list" id="rankingList">
-        ${items.map((item, i) => `
-          <div class="ranking-item" draggable="true" data-value="${item}">
-            <span class="drag-handle">⋮⋮</span>
-            <span class="rank-number">${i + 1}</span>
-            <span>${item}</span>
-          </div>
-        `).join('')}
-      </div>
-      <div style="font-size: 0.85rem; color: var(--text-muted);">
-        Glissez-déposez pour réordonner
-      </div>
-    `;
-  }
-
-  renderMultipleChoice(q) {
-    return `
-      <div class="options-grid">
-        ${q.options.map((opt, i) => `
-          <label class="option" data-index="${i}">
-            <input type="radio" name="mc" value="${i}">
-            <span>${opt}</span>
-          </label>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  renderMultipleSelect(q) {
-    return `
-      <div class="options-grid">
-        ${q.options.map((opt, i) => `
-          <label class="option" data-index="${i}">
-            <input type="checkbox" name="ms" value="${i}">
-            <span>${opt}</span>
-          </label>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  renderMatching(q) {
-    const shuffledRights = [...q.pairs].map(p => p.right).sort(() => Math.random() - 0.5);
-    return `
-      <div class="matching-grid">
-        ${q.pairs.map((pair, i) => `
-          <div class="match-pair">
-            <div class="match-left">${pair.left}</div>
-            <div class="match-arrow">→</div>
-            <select class="match-select" data-index="${i}">
-              <option value="">Choisir...</option>
-              ${shuffledRights.map(right => `
-                <option value="${right}">${right}</option>
-              `).join('')}
-            </select>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  attachQuestionListeners(question) {
-    const nextBtn = document.getElementById('nextBtn');
-    
-    switch(question.type) {
-      case 'short_answer':
-        const input = document.getElementById('answerInput');
-        input.addEventListener('input', () => {
-          nextBtn.disabled = input.value.trim().length === 0;
-        });
-        input.focus();
-        break;
-        
-      case 'word_cloud':
-        this.initWordCloud(question);
-        break;
-        
-      case 'ranking':
-        this.initRanking();
-        nextBtn.disabled = false;
-        break;
-        
-      case 'multiple_choice':
-        document.querySelectorAll('.option').forEach(opt => {
-          opt.addEventListener('click', () => {
-            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-            opt.classList.add('selected');
-            opt.querySelector('input').checked = true;
-            nextBtn.disabled = false;
-          });
-        });
-        break;
-        
-      case 'multiple_select':
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(cb => {
-          cb.addEventListener('change', () => {
-            cb.closest('.option').classList.toggle('selected', cb.checked);
-            nextBtn.disabled = !Array.from(checkboxes).some(c => c.checked);
-          });
-        });
-        break;
-        
-      case 'matching':
-        const selects = document.querySelectorAll('.match-select');
-        selects.forEach(sel => {
-          sel.addEventListener('change', () => {
-            const allFilled = Array.from(selects).every(s => s.value);
-            nextBtn.disabled = !allFilled;
-          });
-        });
-        break;
-    }
-  }
-
-  initWordCloud(question) {
-    const input = document.getElementById('wordInput');
-    const addBtn = document.getElementById('addWordBtn');
-    const tagsContainer = document.getElementById('wordTags');
-    const nextBtn = document.getElementById('nextBtn');
-    let words = [];
-
-    const updateUI = () => {
-      tagsContainer.innerHTML = words.map((w, i) => `
-        <span class="word-tag">
-          ${w}
-          <button data-index="${i}" aria-label="Supprimer">×</button>
-        </span>
-      `).join('');
-      
-      tagsContainer.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          words.splice(parseInt(btn.dataset.index), 1);
-          updateUI();
-        });
-      });
-      
-      nextBtn.disabled = words.length === 0;
-      addBtn.disabled = words.length >= question.maxWords;
-      input.disabled = words.length >= question.maxWords;
-    };
-
-    const addWord = () => {
-      const word = input.value.trim();
-      if (word && words.length < question.maxWords && !words.includes(word)) {
-        words.push(word);
-        input.value = '';
-        updateUI();
-      }
-    };
-
-    addBtn.addEventListener('click', addWord);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addWord();
-      }
+    html+='</div><div style="color:var(--dim);font-size:12px;margin-top:8px">Glissez-déposez pour réordonner</div>';
+  } else if(q.type==='match'){
+    html+='<div style="display:flex;flex-direction:column;gap:10px">';
+    q.pairs.forEach((p,i)=>{
+      html+=`<div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600">${p[0]}</div>
+        <div style="color:var(--dim)">→</div>
+        <select data-idx="${i}" style="flex:1;padding:10px;background:var(--surface-2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
+          <option value="">Choisir...</option>
+          ${q.pairs.map(x=>`<option>${x[1]}</option>`).sort().map(o=>`<option>${o.replace('<option>','').replace('</option>','')}</option>`).join('')}
+        </select>
+      </div>`;
     });
-    
-    updateUI();
-    input.focus();
-  }
-
-  initRanking() {
-    const list = document.getElementById('rankingList');
-    let draggedEl = null;
-
-    list.querySelectorAll('.ranking-item').forEach(item => {
-      item.addEventListener('dragstart', (e) => {
-        draggedEl = item;
-        item.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-      });
-      
-      item.addEventListener('dragend', () => {
-        item.classList.remove('dragging');
-        this.updateRankingNumbers();
-      });
-      
-      item.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const afterElement = this.getDragAfterElement(list, e.clientY);
-        if (afterElement == null) {
-          list.appendChild(draggedEl);
-        } else {
-          list.insertBefore(draggedEl, afterElement);
-        }
-      });
+    html+='</div>';
+  } else if(q.type==='multi'){
+    html+='<div class="options-grid">';
+    q.opts.forEach((opt,i)=>{
+      html+=`<button class="option-btn" data-idx="${i}" onclick="toggleMulti(${i})">
+        <span class="option-letter">□</span>
+        <span>${opt}</span>
+      </button>`;
     });
+    html+='</div>';
   }
+  
+  html+=`<div class="actions-row">
+    ${state.idx>1?'<button class="btn-primary" style="background:var(--surface-2);color:var(--text)" onclick="prevQ()">← Retour</button>':''}
+    <button class="btn-primary btn-validate" id="validateBtn" onclick="validate()" disabled>Valider →</button>
+  </div></div>`;
+  
+  app.innerHTML=html;
+  if(q.type==='text') document.getElementById('answer').focus();
+  setupInteractions(q);
+}
 
-  getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.ranking-item:not(.dragging)')];
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-  }
+function startQuiz(){
+  const name=document.getElementById('nameInput').value.trim();
+  if(!name){alert('Entre ton prénom');return}
+  state.name=name;
+  state.idx=1;
+  saveSession();
+  render();
+}
 
-  updateRankingNumbers() {
-    document.querySelectorAll('.ranking-item .rank-number').forEach((num, i) => {
-      num.textContent = i + 1;
+function selectMCQ(i){
+  document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelector(`[data-idx="${i}"]`).classList.add('selected');
+  document.getElementById('validateBtn').disabled=false;
+  state.tempAnswer=i;
+}
+
+let selectedMulti=[];
+function toggleMulti(i){
+  const btn=document.querySelector(`[data-idx="${i}"]`);
+  const idx=selectedMulti.indexOf(i);
+  if(idx>-1){selectedMulti.splice(idx,1);btn.classList.remove('selected');btn.querySelector('.option-letter').textContent='□';}
+  else{selectedMulti.push(i);btn.classList.add('selected');btn.querySelector('.option-letter').textContent='✓';}
+  document.getElementById('validateBtn').disabled=selectedMulti.length===0;
+  state.tempAnswer=[...selectedMulti];
+}
+
+function addWord(){
+  const input=document.getElementById('wordInput');
+  const word=input.value.trim();
+  if(!word)return;
+  const container=document.getElementById('words');
+  const span=document.createElement('span');
+  span.textContent=word;
+  span.style.cssText='display:inline-block;background:var(--purple-glow);color:var(--purple);padding:6px 12px;border-radius:20px;margin:0 6px 6px 0;font-size:13px;font-weight:600';
+  span.onclick=()=>span.remove();
+  container.appendChild(span);
+  input.value='';
+  state.tempAnswer=Array.from(container.children).map(s=>s.textContent);
+  document.getElementById('validateBtn').disabled=state.tempAnswer.length===0;
+}
+
+function setupInteractions(q){
+  if(q.type==='rank'){
+    const list=document.getElementById('rankList');
+    let dragged=null;
+    list.querySelectorAll('[draggable]').forEach(item=>{
+      item.ondragstart=e=>{dragged=item;item.style.opacity='0.5'};
+      item.ondragend=()=>{item.style.opacity='1';updateRankOrder()};
+      item.ondragover=e=>e.preventDefault();
+      item.ondrop=e=>{e.preventDefault();if(dragged&&dragged!==item){const items=[...list.children];const dIdx=items.indexOf(dragged);const tIdx=items.indexOf(item);if(dIdx<tIdx)item.after(dragged);else item.before(dragged);updateRankOrder()}};
     });
-  }
-
-  getAnswerValue(question) {
-    switch(question.type) {
-      case 'short_answer':
-        return document.getElementById('answerInput').value.trim();
-      case 'word_cloud':
-        return Array.from(document.querySelectorAll('.word-tag')).map(tag => 
-          tag.textContent.replace('×', '').trim()
-        );
-      case 'ranking':
-        return Array.from(document.querySelectorAll('.ranking-item')).map(item => 
-          item.dataset.value
-        );
-      case 'multiple_choice':
-        const radio = document.querySelector('input[name="mc"]:checked');
-        return radio ? parseInt(radio.value) : null;
-      case 'multiple_select':
-        return Array.from(document.querySelectorAll('input[name="ms"]:checked'))
-          .map(cb => parseInt(cb.value));
-      case 'matching':
-        const pairs = [];
-        document.querySelectorAll('.match-pair').forEach((pair, i) => {
-          const left = pair.querySelector('.match-left').textContent;
-          const right = pair.querySelector('.match-select').value;
-          pairs.push({ left, right });
-        });
-        return pairs;
+    function updateRankOrder(){
+      [...list.children].forEach((item,i)=>{item.querySelector('.option-letter').textContent=i+1});
+      state.tempAnswer=[...list.children].map(item=>item.querySelector('span:last-child').previousElementSibling.textContent);
+      document.getElementById('validateBtn').disabled=false;
     }
-  }
-
-  checkAnswer(question, value) {
-    if (value === null || value === undefined) return false;
-    
-    switch(question.type) {
-      case 'multiple_choice':
-        return value === question.correct;
-      case 'multiple_select':
-        if (!Array.isArray(value) || !Array.isArray(question.correct)) return false;
-        return value.length === question.correct.length && 
-               value.every(v => question.correct.includes(v));
-      case 'ranking':
-        return JSON.stringify(value) === JSON.stringify(question.correctOrder);
-      case 'matching':
-        return value.every(pair => {
-          const correctPair = question.pairs.find(p => p.left === pair.left);
-          return correctPair && correctPair.right === pair.right;
-        });
-      default:
-        return true; // Free-form questions always "correct" for participation
-    }
-  }
-
-  async nextQuestion() {
-    const question = this.getCurrentQuestion();
-    const value = this.getAnswerValue(question);
-    const isCorrect = this.checkAnswer(question, value);
-    
-    this.answers[question.id] = value;
-    this.saveState();
-    
-    await Space.save_answer({
-      session_id: this.sessionId,
-      question_id: question.id,
-      answer: JSON.stringify(value),
-      is_correct: isCorrect,
-      points: isCorrect ? 1 : 0
-    });
-
-    // Show feedback for scored questions
-    if (question.correct !== undefined || question.correctOrder || question.pairs) {
-      this.showFeedback(isCorrect, question);
-      setTimeout(() => this.proceedToNext(), 1200);
-    } else {
-      this.proceedToNext();
-    }
-  }
-
-  showFeedback(isCorrect, question) {
-    const feedback = document.getElementById('feedback');
-    feedback.className = `feedback show ${isCorrect ? 'correct' : 'incorrect'}`;
-    
-    if (isCorrect) {
-      feedback.innerHTML = '✓ Correct !';
-    } else {
-      let correctAnswer = '';
-      if (question.type === 'multiple_choice') {
-        correctAnswer = question.options[question.correct];
-      } else if (question.type === 'ranking') {
-        correctAnswer = 'Ordre correct : ' + question.correctOrder.join(' → ');
-      }
-      feedback.innerHTML = `✗ Incorrect${correctAnswer ? '<br><small>Réponse : ' + correctAnswer + '</small>' : ''}`;
-    }
-  }
-
-  proceedToNext() {
-    if (this.isLastQuestion()) {
-      this.finishQuiz();
-    } else {
-      // Move to next question
-      const phase = QUIZ_DATA.phases[this.currentPhaseIndex];
-      if (this.currentQuestionIndex < phase.questions.length - 1) {
-        this.currentQuestionIndex++;
-      } else {
-        this.currentPhaseIndex++;
-        this.currentQuestionIndex = 0;
-      }
-      this.saveState();
-      this.renderQuiz();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  previousQuestion() {
-    if (this.isFirstQuestion()) return;
-    
-    if (this.currentQuestionIndex > 0) {
-      this.currentQuestionIndex--;
-    } else {
-      this.currentPhaseIndex--;
-      const prevPhase = QUIZ_DATA.phases[this.currentPhaseIndex];
-      this.currentQuestionIndex = prevPhase.questions.length - 1;
-    }
-    this.saveState();
-    this.renderQuiz();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  isFirstQuestion() {
-    return this.currentPhaseIndex === 1 && this.currentQuestionIndex === 0;
-  }
-
-  isLastQuestion() {
-    const lastPhaseIndex = QUIZ_DATA.phases.length - 1;
-    const lastPhase = QUIZ_DATA.phases[lastPhaseIndex];
-    return this.currentPhaseIndex === lastPhaseIndex && 
-           this.currentQuestionIndex === lastPhase.questions.length - 1;
-  }
-
-  restoreAnswer(question) {
-    const value = this.answers[question.id];
-    if (!value) return;
-    
-    // Implementation for restoring answers would go here
-    // Simplified for brevity
-    document.getElementById('nextBtn').disabled = false;
-  }
-
-  async finishQuiz() {
-    const totalScored = QUIZ_DATA.phases
-      .flatMap(p => p.questions)
-      .filter(q => q.correct !== undefined || q.correctOrder || q.pairs).length;
-    
-    let score = 0;
-    QUIZ_DATA.phases.forEach(phase => {
-      phase.questions.forEach(q => {
-        if (this.answers[q.id] !== undefined) {
-          if (this.checkAnswer(q, this.answers[q.id])) score++;
-        }
-      });
-    });
-
-    await Space.save_session({
-      session_id: this.sessionId,
-      student_name: this.studentName,
-      score: score,
-      total: totalScored,
-      answers: this.answers,
-      completed_at: new Date().toISOString()
-    });
-
-    localStorage.removeItem('ballet_quiz_state');
-    
-    this.renderResults(score, totalScored);
-  }
-
-  renderResults(score, total) {
-    const percentage = Math.round((score / total) * 100);
-    const degrees = (percentage / 100) * 360;
-    
-    this.app.innerHTML = `
-      <div class="card">
-        <div class="results-summary">
-          <h2 style="margin-bottom: 8px;">Quiz terminé !</h2>
-          <p style="color: var(--text-muted); margin-bottom: 32px;">
-            Bravo ${this.studentName} !
-          </p>
-          
-          <div class="score-circle" style="--score-deg: ${degrees}deg">
-            <div class="score-text">
-              <div class="score-value">${score}/${total}</div>
-              <div class="score-label">${percentage}%</div>
-            </div>
-          </div>
-          
-          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="location.reload()">
-              Recommencer
-            </button>
-            <button class="btn btn-primary" onclick="window.print()">
-              Imprimer résultats
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="card">
-        <h3 style="margin-bottom: 16px;">Détail des réponses</h3>
-        <div style="font-size: 0.9rem; color: var(--text-muted);">
-          Vos réponses ont été enregistrées. L'enseignant pourra les consulter via le dashboard.
-        </div>
-      </div>
-    `;
-  }
-
-  renderTeacherLogin() {
-    this.app.innerHTML = `
-      <div class="card teacher-login">
-        <h2 class="text-center mb-2">Dashboard Enseignant</h2>
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 0.9rem;">
-          Accès réservé
-        </p>
-        <input type="password" id="teacherPass" placeholder="Mot de passe" autocomplete="current-password">
-        <button class="btn btn-primary btn-block mt-4" id="loginBtn">
-          Accéder
-        </button>
-        <p id="loginError" style="color: var(--warning); text-align: center; margin-top: 12px; display: none; font-size: 0.9rem;">
-          Mot de passe incorrect
-        </p>
-      </div>
-    `;
-    
-    const input = document.getElementById('teacherPass');
-    const btn = document.getElementById('loginBtn');
-    const error = document.getElementById('loginError');
-    
-    const tryLogin = () => {
-      if (input.value === 'Tixi') {
-        this.renderTeacherDashboard();
-      } else {
-        error.style.display = 'block';
-        input.value = '';
-        input.focus();
-      }
-    };
-    
-    btn.addEventListener('click', tryLogin);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') tryLogin();
-    });
-    input.focus();
-  }
-
-  renderTeacherDashboard() {
-    const sessions = JSON.parse(localStorage.getItem('quiz_sessions') || '[]')
-      .sort((a, b) => b.timestamp - a.timestamp);
-    
-    const answers = JSON.parse(localStorage.getItem('quiz_answers') || '[]');
-    
-    this.app.innerHTML = `
-      <div class="card">
-        <div class="flex-between mb-2">
-          <h2>Dashboard Enseignant</h2>
-          <button class="btn btn-secondary" onclick="location.href=location.pathname">
-            Retour quiz
-          </button>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin: 24px 0;">
-          <div style="text-align: center; padding: 16px; background: var(--bg); border-radius: 10px;">
-            <div style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${sessions.length}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sessions</div>
-          </div>
-          <div style="text-align: center; padding: 16px; background: var(--bg); border-radius: 10px;">
-            <div style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${answers.length}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Réponses</div>
-          </div>
-          <div style="text-align: center; padding: 16px; background: var(--bg); border-radius: 10px;">
-            <div style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">
-              ${sessions.length ? Math.round(sessions.reduce((sum, s) => sum + (s.score / s.total), 0) / sessions.length * 100) : 0}%
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Moyenne</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="card">
-        <h3 style="margin-bottom: 16px;">Sessions récentes</h3>
-        ${sessions.length === 0 ? `
-          <p style="color: var(--text-muted); text-align: center; padding: 32px 0;">
-            Aucune session enregistrée pour le moment
-          </p>
-        ` : `
-          <div style="overflow-x: auto;">
-            <table class="teacher-table">
-              <thead>
-                <tr>
-                  <th>Élève</th>
-                  <th>Score</th>
-                  <th>Date</th>
-                  <th>ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${sessions.slice(0, 50).map(s => `
-                  <tr>
-                    <td><strong>${s.student_name || 'Anonyme'}</strong></td>
-                    <td>
-                      <span style="color: ${s.score/s.total >= 0.7 ? 'var(--success)' : s.score/s.total >= 0.5 ? 'var(--warning)' : 'var(--text-muted)'};">
-                        ${s.score}/${s.total} (${Math.round(s.score/s.total*100)}%)
-                      </span>
-                    </td>
-                    <td style="font-size: 0.85rem; color: var(--text-muted);">
-                      ${new Date(s.timestamp).toLocaleString('fr-FR', { 
-                        day: '2-digit', 
-                        month: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </td>
-                    <td style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
-                      ${s.session_id.substring(0, 8)}
-                    </td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        `}
-        
-        ${sessions.length > 0 ? `
-          <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(localStorage.getItem('quiz_sessions')).then(() => alert('Données copiées !'))">
-              Copier JSON
-            </button>
-            <button class="btn btn-secondary" onclick="if(confirm('Effacer toutes les données ?')) { localStorage.removeItem('quiz_sessions'); localStorage.removeItem('quiz_answers'); location.reload(); }">
-              Effacer données
-            </button>
-          </div>
-        ` : ''}
-      </div>
-    `;
+    updateRankOrder();
   }
 }
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', () => {
-  new QuizApp();
-});
+function validate(){
+  const q=QUIZ.questions[state.idx];
+  let answer,correct=false;
+  
+  if(q.type==='text'){answer=document.getElementById('answer').value;correct=answer.length>0;}
+  else if(q.type==='mcq'){answer=state.tempAnswer;correct=answer===q.a;}
+  else if(q.type==='words'){answer=state.tempAnswer||[];correct=answer.length>0;}
+  else if(q.type==='rank'){answer=state.tempAnswer;correct=JSON.stringify(answer)===JSON.stringify(q.answer);}
+  else if(q.type==='match'){
+    const selects=document.querySelectorAll('select');
+    answer=Array.from(selects).map(s=>s.value);
+    correct=answer.every((v,i)=>v===q.pairs[i][1]);
+  }
+  else if(q.type==='multi'){answer=state.tempAnswer;correct=JSON.stringify(answer.sort())===JSON.stringify(q.a.sort());}
+  
+  state.answers[q.id]={answer,correct,ts:Date.now()};
+  saveSession();
+  
+  // Send to sheets
+  sendToSheets({
+    action:'save_student_answer',
+    args:{
+      session_id:state.sessionId,
+      student_name:state.name,
+      question_id:q.id,
+      question_text:q.q,
+      answer_json:JSON.stringify(answer),
+      is_correct:correct,
+      points_earned:correct?1:0
+    }
+  });
+  
+  // Show feedback
+  if(q.type==='mcq'){
+    document.querySelectorAll('.option-btn').forEach((btn,i)=>{
+      btn.disabled=true;
+      if(i===q.a)btn.classList.add('correct');
+      else if(i===state.tempAnswer&&!correct)btn.classList.add('incorrect');
+    });
+  }
+  
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, q.type==='mcq'?1200:300);
+}
+
+function prevQ(){if(state.idx>1){state.idx--;render();}}
+
+render();
 </script>
 </body>
 </html>
