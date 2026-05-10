@@ -325,7 +325,7 @@ function render(){
   if(state.idx===0 && !state.name){
     let phaseOpts='';
     PHASES.filter(p=>p.id!==0).forEach(p=>{
-      phaseOpts+=`<label class="phase-option" onclick="this.querySelector('input').click()">
+      phaseOpts+=`<label class="phase-option">
         <input type="checkbox" value="${p.id}" checked>
         <div class="phase-option-text">
           <div class="phase-option-title">${p.emoji} ${p.title}</div>
@@ -856,15 +856,25 @@ function validate(){
     }});
   }
 
-  // Disable validate button
+  // Disable validate button and show "Suivant" button
   document.getElementById('validateBtn').disabled=true;
+  document.getElementById('validateBtn').style.display='none';
 
-  // Advance
+  // Show next button after feedback delay
   setTimeout(()=>{
-    state.idx++;
-    state.tempAnswer=null;
-    selectedMulti=[];
-    render();
+    const navRow=document.querySelector('.nav-row');
+    if(navRow){
+      const nextBtn=document.createElement('button');
+      nextBtn.className='btn-primary';
+      nextBtn.textContent='Suivant →';
+      nextBtn.onclick=()=>{
+        state.idx++;
+        state.tempAnswer=null;
+        selectedMulti=[];
+        render();
+      };
+      navRow.appendChild(nextBtn);
+    }
   },delay);
 }
 
