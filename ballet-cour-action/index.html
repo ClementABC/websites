@@ -305,13 +305,20 @@ function validate(){
         item.classList.add('correct');
       } else {
         item.classList.add('incorrect');
-        // Show correct position
-        const pos=(item.querySelector('.option-letter').textContent=i+1);
+      }
+    });
+  } else if(q.type==='multi'){
+    document.querySelectorAll('.option-btn').forEach((btn,i)=>{
+      btn.style.pointerEvents='none';
+      if(q.a.includes(i)){
+        btn.classList.add('correct');
+      } else if(state.tempAnswer.includes(i)){
+        btn.classList.add('incorrect');
       }
     });
   }
   
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, q.type==='mcq'||q.type==='rank'?1500:300);
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, ['mcq','rank','multi'].includes(q.type)?1500:300);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
