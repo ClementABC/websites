@@ -110,7 +110,115 @@ function getGitHubToken(){return 'mjV1Fc9HXJZQWLLCjPOXEnIJM2bsFIoAGfh6JkqY5AWSlM
 
 async function saveToGitHub(){const token=getGitHubToken();if(!token)return;updateStatus('Publication en cours…','saving');const btn=document.getElementById('save-btn');if(btn)btn.disabled=true;try{const getResp=await fetch(CONFIG.GITHUB_API+'?ref='+CONFIG.GITHUB_BRANCH,{headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'});if(getResp.status===401||getResp.status===403){throw new Error('Token invalide ou expiré. Contactez Clement.');}if(!getResp.ok){throw new Error('Impossible de lire le fichier (HTTP '+getResp.status+'). Réessayez.');}const fd=await getResp.json();const sha=fd.sha;if(!sha){throw new Error('SHA manquant dans la réponse GitHub. Réessayez.');}const content=btoa(unescape(encodeURIComponent(JSON.stringify(quizData,null,2))));const body={message:'Mise à jour des questions du quiz',content:content,sha:sha,branch:CONFIG.GITHUB_BRANCH};const putResp=await fetch(CONFIG.GITHUB_API,{method:'PUT',headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});if(!putResp.ok){const ed=await putResp.json().catch(()=>({}));throw new Error(ed.message||'Erreur GitHub');}hasChanges=false;updateStatus('Publié sur GitHub ✓','saved');showToast('Publié ✓ — visible par les étudiants dans ~1 min');}catch(err){updateStatus('Erreur : '+err.message,'error');showToast(err.message,true);}finally{if(btn)btn.disabled=false;}}
 
-async function renderResponses(){const content=document.getElementById('tab-content');content.innerHTML='<div class="loading"><div class="spinner"></div>Chargement des réponses…</div>';try{const sessUrl='https://docs.google.com/spreadsheets/d/'+CONFIG.SHEET_ID+'/gviz/tq?tqx=out:json&sheet=Sheet1';const sessResp=await fetch(sessUrl);const sessText=await sessResp.text();const sessData=parseGviz(sessText);const ansUrl='https://docs.google.com/spreadsheets/d/'+CONFIG.SHEET_ID+'/gviz/tq?tqx=out:json&sheet=Answers';const ansResp=await fetch(ansUrl);const ansText=await ansResp.text();const ansData=parseGviz(ansText);let html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="font-size:16px;color:var(--text)">📋 Sessions ('+sessData.length+')</h2><button class="btn btn-secondary" onclick="renderResponses()">🔄 Rafraîchir</button></div>';if(!sessData.length){html+='<div class="empty">Aucune session enregistrée.</div>';}else{html+='<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>Nom</th><th>Date</th><th>Score</th><th>%</th><th>Résultat</th><th>Durée</th></tr></thead><tbody>';sessData.slice().reverse().forEach(row=>{const c=row.c||[];const nm=c[0]?.v||'—';const dt=c[1]?.f||c[1]?.v||'—';const sc=c[2]?.v||'—';const pc=c[3]?.v||'—';const rs=c[4]?.v||'—';const du=c[5]?.v||'—';const pass=rs==='PASS';html+='<tr><td><strong>'+esc(String(nm))+'</strong></td><td>'+esc(String(dt))+'</td><td>'+esc(String(sc))+'</td><td>'+esc(String(pc))+'</td><td><span class="'+(pass?'badge-pass':'badge-fail')+'">'+rs+'</span></td><td>'+esc(String(du))+'</td></tr>';});html+='</tbody></table></div>';}html+='<h2 style="font-size:16px;color:var(--text);margin-top:32px">📝 Réponses détaillées ('+ansData.length+')</h2>';if(!ansData.length){html+='<div class="empty">Aucune réponse détaillée.</div>';}else{html+='<div style="overflow-x:auto;margin-top:12px"><table class="resp-table"><thead><tr><th>Nom</th><th>ID</th><th>Question</th><th>Réponse</th><th>Attendu</th><th>✓/✗</th><th>Pts</th></tr></thead><tbody>';ansData.slice(-100).reverse().forEach(row=>{const c=row.c||[];const nm=c[0]?.v||'';const qid=c[1]?.v||'';const qt=c[2]?.v||'';const ans=c[3]?.v||'';const cor=c[4]?.v||'';const res=c[5]?.v||'';const pts=c[6]?.v||'';const ok=res==='✓';html+='<tr><td>'+esc(String(nm))+'</td><td class="q-id">'+esc(String(qid))+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(String(qt).substring(0,80))+'</td><td style="max-width:150px">'+esc(String(ans).substring(0,60))+'</td><td style="max-width:150px">'+esc(String(cor).substring(0,60))+'</td><td>'+(ok?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>')+'</td><td>'+esc(String(pts))+'</td></tr>';});html+='</tbody></table></div>';if(ansData.length>100)html+='<div class="empty">100 dernières sur '+ansData.length+' réponses.</div>';}content.innerHTML=html;}catch(err){content.innerHTML='<div class="loading" style="color:var(--red)">Erreur : impossible de charger les réponses.<br><small style="color:var(--dim)">'+esc(err.message)+'</small><br><button class="btn btn-secondary" style="margin-top:16px" onclick="renderResponses()">Réessayer</button></div>';}}
+let selectedStudent=null;
+let selectedAttempt=0;
+
+async function renderResponses(){
+  const content=document.getElementById('tab-content');
+  content.innerHTML='<div class="loading"><div class="spinner"></div>Chargement des réponses…</div>';
+  try{
+    const sessUrl='https://docs.google.com/spreadsheets/d/'+CONFIG.SHEET_ID+'/gviz/tq?tqx=out:json&sheet=Sheet1';
+    const sessResp=await fetch(sessUrl);const sessText=await sessResp.text();const sessData=parseGviz(sessText);
+    const ansUrl='https://docs.google.com/spreadsheets/d/'+CONFIG.SHEET_ID+'/gviz/tq?tqx=out:json&sheet=Answers';
+    const ansResp=await fetch(ansUrl);const ansText=await ansResp.text();const ansData=parseGviz(ansText);
+
+    // Group sessions by student
+    const students={};
+    sessData.forEach(row=>{
+      const c=row.c||[];
+      const nm=String(c[0]?.v||'Anonyme');
+      if(!students[nm])students[nm]=[];
+      students[nm].push({date:c[1]?.f||c[1]?.v||'—',score:c[2]?.v||'—',pct:c[3]?.v||'—',result:c[4]?.v||'—',duration:c[5]?.v||'—',phases:c[6]?.v||''});
+    });
+
+    // Group answers by student
+    const answersByStudent={};
+    ansData.forEach(row=>{
+      const c=row.c||[];
+      const nm=String(c[0]?.v||'Anonyme');
+      if(!answersByStudent[nm])answersByStudent[nm]=[];
+      answersByStudent[nm].push({qid:c[1]?.v||'',question:c[2]?.v||'',answer:c[3]?.v||'',expected:c[4]?.v||'',result:c[5]?.v||'',points:c[6]?.v||''});
+    });
+
+    // Split answers into attempts: a new attempt starts when we see Q0 or Q1 again after other questions
+    Object.keys(answersByStudent).forEach(nm=>{
+      const all=answersByStudent[nm];
+      const attempts=[[]];
+      let lastPhase=-1;
+      all.forEach(a=>{
+        const qNum=parseInt((a.qid||'').replace(/[^0-9]/g,''))||0;
+        if(attempts[attempts.length-1].length>0 && qNum===0){
+          attempts.push([]);
+        }
+        attempts[attempts.length-1].push(a);
+      });
+      answersByStudent[nm]=attempts;
+    });
+
+    const studentNames=Object.keys(students).sort();
+    if(!studentNames.length){
+      content.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="font-size:16px;color:var(--text)">📊 Réponses des élèves</h2><button class="btn btn-secondary" onclick="renderResponses()">🔄 Rafraîchir</button></div><div class="empty">Aucune session enregistrée.</div>';
+      return;
+    }
+
+    if(!selectedStudent||!students[selectedStudent])selectedStudent=studentNames[0];
+
+    let html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="font-size:16px;color:var(--text)">📊 Réponses des élèves ('+studentNames.length+')</h2><button class="btn btn-secondary" onclick="renderResponses()">🔄 Rafraîchir</button></div>';
+
+    // Student pills
+    html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">';
+    studentNames.forEach(nm=>{
+      const active=nm===selectedStudent;
+      const count=students[nm].length;
+      html+='<button onclick="selectedStudent=\''+esc(nm).replace(/'/g,"\\'")+'\';selectedAttempt=0;renderResponses()" style="padding:8px 16px;border-radius:20px;border:1px solid '+(active?'rgba(155,109,255,0.5)':'var(--border)')+';background:'+(active?'var(--purple-glow)':'transparent')+';color:'+(active?'var(--purple)':'var(--dim)')+';cursor:pointer;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:500;transition:all .2s">'+esc(nm)+' <span style="opacity:0.6">('+count+')</span></button>';
+    });
+    html+='</div>';
+
+    // Selected student's attempts
+    const sessions=students[selectedStudent]||[];
+    const attempts=answersByStudent[selectedStudent]||[[]];
+    if(selectedAttempt>=sessions.length)selectedAttempt=0;
+
+    if(sessions.length>1){
+      html+='<div style="display:flex;gap:6px;margin-bottom:16px">';
+      sessions.forEach((s,i)=>{
+        const active=i===selectedAttempt;
+        html+='<button onclick="selectedAttempt='+i+';renderResponses()" style="padding:6px 14px;border-radius:8px;border:1px solid '+(active?'rgba(155,109,255,0.5)':'var(--border)')+';background:'+(active?'var(--purple-glow)':'transparent')+';color:'+(active?'var(--purple)':'var(--dim)')+';cursor:pointer;font-family:\'DM Sans\',sans-serif;font-size:12px">Essai '+(i+1)+' — '+esc(String(s.date))+'</button>';
+      });
+      html+='</div>';
+    }
+
+    // Session summary card
+    const sess=sessions[selectedAttempt];
+    if(sess){
+      const pass=sess.result==='PASS';
+      html+='<div class="card" style="margin-bottom:20px"><div style="padding:16px;display:flex;flex-wrap:wrap;gap:20px;align-items:center">';
+      html+='<div style="font-size:28px;font-weight:700;color:var(--text)">'+esc(String(sess.score))+'</div>';
+      html+='<div style="font-size:18px;color:var(--dim)">'+esc(String(sess.pct))+'</div>';
+      html+='<span class="'+(pass?'badge-pass':'badge-fail')+'">'+sess.result+'</span>';
+      html+='<div style="color:var(--dim);font-size:13px">⏱ '+esc(String(sess.duration))+'</div>';
+      if(sess.phases)html+='<div style="color:var(--dim);font-size:12px;width:100%">'+esc(String(sess.phases))+'</div>';
+      html+='</div></div>';
+    }
+
+    // Answers table for this attempt
+    const attemptAnswers=attempts[selectedAttempt]||[];
+    if(attemptAnswers.length){
+      html+='<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>ID</th><th>Question</th><th>Réponse</th><th>Attendu</th><th>✓/✗</th><th>Pts</th></tr></thead><tbody>';
+      attemptAnswers.forEach(a=>{
+        const ok=a.result==='✓';
+        html+='<tr><td class="q-id">'+esc(String(a.qid))+'</td><td style="max-width:220px">'+esc(String(a.question).substring(0,100))+'</td><td style="max-width:180px">'+esc(String(a.answer).substring(0,80))+'</td><td style="max-width:180px">'+esc(String(a.expected).substring(0,80))+'</td><td>'+(ok?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>')+'</td><td>'+esc(String(a.points))+'</td></tr>';
+      });
+      html+='</tbody></table></div>';
+    } else {
+      html+='<div class="empty">Pas de réponses détaillées pour cet essai.</div>';
+    }
+
+    content.innerHTML=html;
+  }catch(err){
+    content.innerHTML='<div class="loading" style="color:var(--red)">Erreur : impossible de charger les réponses.<br><small style="color:var(--dim)">'+esc(err.message)+'</small><br><button class="btn btn-secondary" style="margin-top:16px" onclick="renderResponses()">Réessayer</button></div>';
+  }
+}
 
 function parseGviz(text){const m=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?$/);if(!m)return[];try{return JSON.parse(m[1]).table?.rows||[];}catch(e){return[];}}
 function updateStatus(text,cls){const el=document.getElementById('status-text');if(el){el.textContent=text;el.className='status-text '+(cls||'');}}
