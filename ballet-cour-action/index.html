@@ -750,14 +750,43 @@ function validate(){
   // Save answer
   state.answers[q.id]={answer,correct,ts:Date.now()};
 
+  // Convert answer to readable text for sheets
+  let readableAnswer=answer;
+  let readableCorrect=q.a||q.answer||q.expected||'';
+  if(q.type==='mcq'&&q.opts){
+    readableAnswer=q.opts[answer]||answer;
+    readableCorrect=q.opts[q.a]||q.a;
+  } else if(q.type==='multi'&&q.opts){
+    readableAnswer=Array.isArray(answer)?answer.map(i=>q.opts[i]||i).join(', '):answer;
+    readableCorrect=Array.isArray(q.a)?q.a.map(i=>q.opts[i]||i).join(', '):q.a;
+  } else if(q.type==='rank'){
+    readableAnswer=Array.isArray(answer)?answer.join(' → '):answer;
+    readableCorrect=Array.isArray(q.answer)?q.answer.join(' → '):q.answer;
+  } else if(q.type==='match'&&q.pairs){
+    readableAnswer=Array.isArray(answer)?q.pairs.map((p,i)=>p[0]+' → '+(answer[i]||'?')).join(', '):answer;
+    readableCorrect=q.pairs.map(p=>p[0]+' → '+p[1]).join(', ');
+  } else if(q.type==='match3'&&q.rows){
+    readableAnswer=answer&&answer.dates?q.rows.map((r,i)=>r.item+': '+(answer.dates[i]||'?')+' / '+(answer.places[i]||'?')).join('; '):answer;
+    readableCorrect=q.rows.map(r=>r.item+': '+r.date+' / '+r.place).join('; ');
+  } else if(q.type==='geo'&&q.items){
+    readableAnswer=Array.isArray(answer)?q.items.map((it,i)=>(it.text||it.label)+' → '+(answer[i]||'?')).join(', '):answer;
+    readableCorrect=q.items.map(it=>(it.text||it.label)+' → '+it.answer).join(', ');
+  } else if(q.type==='truefalse'&&q.statements){
+    readableAnswer=Array.isArray(answer)?q.statements.map((s,i)=>s.text.substring(0,40)+'… → '+(answer[i]?'Vrai':'Faux')).join('; '):answer;
+    readableCorrect=q.statements.map(s=>s.text.substring(0,40)+'… → '+(s.answer?'Vrai':'Faux')).join('; ');
+  } else if(q.type==='words'&&Array.isArray(answer)){
+    readableAnswer=answer.join(', ');
+    readableCorrect=Array.isArray(q.expected)?q.expected.join(', '):(q.expected||'');
+  }
+
   // Send to sheets
   if(q.phase!==0){
     sendToSheets({action:'save_answer',answer:{
       studentName:state.name,
       questionId:q.id,
       questionText:q.q,
-      studentAnswer:answer,
-      correctAnswer:q.a||q.answer||q.expected||'',
+      studentAnswer:readableAnswer,
+      correctAnswer:readableCorrect,
       questionType:q.type,
       isCorrect:correct,
       points:correct?1:0,
