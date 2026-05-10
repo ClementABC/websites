@@ -325,7 +325,7 @@ function renderQuestion(){
     <div class="question-phase">${phase.emoji} Phase ${q.phase===0?'0':q.phase==='N'?'Noverre':q.phase} — ${phaseIdx}/${phaseQs.length}</div>
     <div class="question-text">${q.q}</div>`;
 
-  if(q.sub) html+=`<div class="question-sub">${q.sub}</div>`;
+  if(q.sub && q.type!=='words') html+=`<div class="question-sub">${q.sub}</div>`;
 
   // ── Render by type ──
   if(q.type==='text'){
