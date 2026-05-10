@@ -700,7 +700,7 @@ function validate(){
     });
     if(!correct){
       const card=document.querySelector('.question-card');
-      card.insertAdjacentHTML('beforeend',`<div class="expected-box"><div class="expected-label">Réponses correctes :</div>${q.items.map(it=>`<div style="font-size:13px;margin:4px 0;color:var(--text)"><strong>${it.label}</strong> → ${it.answer}</div>`).join('')}</div>`);
+      card.insertAdjacentHTML('beforeend',`<div class="expected-box"><div class="expected-label">Réponses correctes :</div>${q.items.map(it=>`<div style="font-size:13px;margin:4px 0;color:var(--text)"><strong>${it.text||it.label}</strong> → ${it.answer}</div>`).join('')}</div>`);
     }
     delay=2000;
   }
