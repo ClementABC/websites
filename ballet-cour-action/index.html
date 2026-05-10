@@ -221,13 +221,6 @@ function checkMatchComplete(){
   console.log('Match check:', Array.from(selects).map(s=>s.value), 'All filled:', allFilled);
 }
 
-  else if(selected.length<3){selected.push(word);el.style.background='var(--purple-glow)';el.style.borderColor='var(--purple)';}
-  localStorage.setItem('selWords',JSON.stringify(selected));
-  document.getElementById('wordCount').textContent=selected.length;
-  document.getElementById('validateBtn').disabled=selected.length===0;
-  state.tempAnswer=selected;
-}
-
 function addWord(){
   const input=document.getElementById('wordInput');
   const word=input.value.trim();
