@@ -212,12 +212,12 @@
       "q": "Associez chaque style à son intervalle de dates ET à son lieu principal.",
       "rows": [
         {
-          "item": "Opéra-ballet (Campra, Rameau)",
+          "item": "Opéra-ballet",
           "date": "1697 – vers 1770",
           "place": "Paris (Opéra royal)"
         },
         {
-          "item": "Ballet-pantomime (Weaver, Sallé)",
+          "item": "Ballet-pantomime",
           "date": "1717 – vers 1760",
           "place": "Londres (Drury Lane)"
         },
