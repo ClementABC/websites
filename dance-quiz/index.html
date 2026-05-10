@@ -25,30 +25,27 @@
 
         window.fetch = function(url, opts) {
           // Only intercept POST calls to the ./actions endpoint
-          if (typeof url === 'string' && url.endsWith('/actions') && opts && opts.method !== 'GET') {
+          if (typeof url === 'string' && (url.endsWith('/actions') || url.includes('/actions?')) && opts) {
             try {
               const body = JSON.parse(opts.body);
               const gasUrl = window.__DANCE_QUIZ_CONFIG.APPS_SCRIPT_URL;
 
-              if (!gasUrl || gasUrl.includes('PASTE_YOUR')) {
-                // Apps Script not configured — use localStorage fallback
-                return handleLocalFallback(body);
+              // Always save to localStorage first (instant, reliable)
+              var localResult = handleLocalFallback(body);
+
+              if (gasUrl && !gasUrl.includes('PASTE_YOUR')) {
+                // Also send to Google Apps Script (fire-and-forget)
+                // Use text/plain to avoid CORS preflight; redirect: follow for GAS 302
+                origFetch(gasUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify(body),
+                  redirect: 'follow'
+                }).catch(function(e) { console.log('GAS sync error (non-fatal):', e); });
               }
 
-              // Forward to Google Apps Script
-              return origFetch(gasUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' }, // text/plain avoids CORS preflight
-                body: JSON.stringify(body),
-                mode: 'no-cors'
-              }).then(function(res) {
-                // no-cors returns opaque response, so we also save locally
-                handleLocalFallback(body);
-                // Return a synthetic response for the app
-                return makeSyntheticResponse(body);
-              }).catch(function() {
-                return handleLocalFallback(body);
-              });
+              // Return localStorage result to the app immediately
+              return localResult;
             } catch(e) {
               // Fall through to original fetch
             }
