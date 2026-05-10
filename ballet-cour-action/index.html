@@ -2,111 +2,366 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>Quiz — Du ballet de cour au ballet d'action</title>
-<script>
-  window.__QUIZ_CONFIG = {
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwb4ZdA_PvAzGBCdrTdetjjI8er3JLgZIIR7MPcTUiZOUhn14QoJ_LleGyX9-RQ1TNN/exec'
-  };
-</script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap");
-:root{--bg:#0a0a12;--surface:#14141f;--surface-2:#1c1c2e;--text:#f0eee6;--dim:#8a86a0;--border:#ffffff14;--accent:#d4a853;--accent-glow:#d4a8534d;--purple:#9b6dff;--purple-glow:#9b6dff33;--success:#34d399;--success-glow:#34d39926;--error:#f87171;--error-glow:#f8717126;--radius:16px;color-scheme:dark}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-family:DM Sans,system-ui,sans-serif}
-.quiz-app{display:flex;position:relative;overflow-x:hidden;flex-direction:column;min-height:100dvh}
-.quiz-app:before{content:"";position:fixed;pointer-events:none;z-index:0;background:radial-gradient(at 20% 0%,#9b6dff14 0%,#0000 60%),radial-gradient(at 80% 100%,#d4a8530f 0%,#0000 60%);inset:0}
-.quiz-content{position:relative;z-index:1;display:flex;flex-direction:column;flex:1;width:100%;max-width:640px;margin:0 auto;padding:16px}
-.progress-bar-wrap{position:sticky;z-index:10;background:linear-gradient(to bottom,var(--bg)60%,transparent);padding:12px 0;top:0}
-.progress-track{background:var(--surface-2);overflow:hidden;border-radius:3px;height:6px}
-.progress-fill{background:linear-gradient(90deg,var(--purple),var(--accent));border-radius:3px;height:100%;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.progress-label{color:var(--dim);text-align:right;margin-top:6px;font-size:12px;font-weight:500}
-.phase-badge{display:inline-flex;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);background:var(--purple-glow);border-radius:20px;align-items:center;gap:6px;margin-bottom:12px;padding:5px 12px;font-size:11px;font-weight:700}
-.question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);animation:slideUp .4s cubic-bezier(.2,0,0,1);padding:24px 20px}
-@keyframes slideUp{0%{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.question-number{color:var(--dim);margin-bottom:8px;font-family:Playfair Display,serif;font-size:14px}
-.question-text{color:var(--text);margin-bottom:24px;font-family:Playfair Display,serif;font-size:20px;font-weight:700;line-height:1.4}
-.question-text em{color:var(--accent);font-style:italic}
-.options-grid{display:flex;flex-direction:column;gap:10px}
-.option-btn{display:flex;text-align:left;background:var(--surface-2);border:2px solid var(--border);color:var(--text);cursor:pointer;border-radius:12px;align-items:center;gap:12px;width:100%;padding:14px 16px;transition:all .2s;font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;line-height:1.4}
-.option-btn:active{transform:scale(.98)}
+:root{--bg:#0a0a0f;--surface:rgba(255,255,255,0.04);--surface-2:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.08);--text:#e8e6e3;--dim:rgba(255,255,255,0.5);--purple:#9b6dff;--purple-glow:rgba(155,109,255,0.15);--gold:#d4a853;--gold-glow:rgba(212,168,83,0.15);--green:#4ade80;--green-glow:rgba(74,222,128,0.15);--red:#f87171;--red-glow:rgba(248,113,113,0.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.quiz-container{max-width:680px;margin:0 auto;padding:16px;min-height:100vh}
+.quiz-content{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.welcome{text-align:center;padding:40px 0}
+.welcome-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--purple),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.welcome-sub{color:var(--dim);font-size:14px;margin-bottom:32px;line-height:1.6}
+.input-field{width:100%;padding:14px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;transition:border-color .2s}
+.input-field:focus{outline:none;border-color:var(--purple)}
+.textarea-field{width:100%;padding:14px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;min-height:120px;resize:vertical;transition:border-color .2s}
+.textarea-field:focus{outline:none;border-color:var(--purple)}
+.btn-primary{background:linear-gradient(135deg,var(--purple),#7c4dff);color:white;border:none;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(155,109,255,0.3)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-secondary:hover{background:var(--surface);border-color:var(--purple)}
+.progress-bar{background:var(--surface-2);border-radius:20px;height:6px;margin-bottom:8px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--gold));border-radius:20px;transition:width .4s ease}
+.progress-text{font-size:11px;color:var(--dim);margin-bottom:16px;display:flex;justify-content:space-between}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.question-phase{font-size:11px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.question-number{font-size:12px;color:var(--dim);margin-bottom:6px}
+.question-text{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;line-height:1.4;margin-bottom:16px}
+.question-sub{color:var(--dim);font-size:14px;font-style:italic;margin-bottom:16px;padding:12px;background:var(--surface-2);border-radius:8px;line-height:1.6}
+.option-btn{width:100%;text-align:left;padding:12px 16px;background:var(--surface-2);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;cursor:pointer;margin-bottom:8px;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;gap:10px}
+.option-btn:hover{border-color:var(--purple);background:var(--purple-glow)}
 .option-btn.selected{border-color:var(--purple);background:var(--purple-glow)}
-.option-btn.correct{border-color:var(--success)!important;background:var(--success-glow)!important}
-.option-btn.incorrect{opacity:.7;border-color:var(--error)!important;background:var(--error-glow)!important}
-.option-btn.correct-reveal{border-color:var(--success)!important;background:var(--success-glow)!important}
-.option-letter{display:flex;background:#ffffff0f;border-radius:8px;flex-shrink:0;justify-content:center;align-items:center;width:28px;height:28px;font-size:13px;font-weight:700}
-.actions-row{display:flex;gap:10px;margin-top:20px}
-.btn-primary{cursor:pointer;background:linear-gradient(135deg,var(--purple),#7c4dff);color:#fff;border:none;border-radius:12px;flex:1;padding:14px 20px;transition:all .2s;font-family:DM Sans,sans-serif;font-size:15px;font-weight:700}
-.btn-primary:active{transform:scale(.97)}
-.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.btn-validate{background:linear-gradient(135deg,var(--accent),#c0933a);color:#0a0a12}
-.welcome,.results{display:flex;text-align:center;flex-direction:column;flex:1;justify-content:center;align-items:center;gap:20px;padding:40px 20px}
-.welcome-title{background:linear-gradient(135deg,var(--text),var(--accent));-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Playfair Display,serif;font-size:32px;font-weight:700;line-height:1.2}
-.welcome-sub{color:var(--dim);max-width:400px;font-size:16px;line-height:1.6}
-.results-score{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Playfair Display,serif;font-size:72px;font-weight:700}
-.explanation{animation:fadeIn .3s ease;background:linear-gradient(135deg,#d4a85314,#9b6dff0f);border:1px solid #d4a85333;border-radius:12px;margin-top:20px;padding:16px}
-@keyframes fadeIn{0%{opacity:0}to{opacity:1}}
-.explanation-title{text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;font-size:12px;font-weight:700}
-.explanation-text{color:var(--text);opacity:.9;font-size:14px;line-height:1.6}
-@media (min-width:640px){.quiz-content{padding:24px}.question-text{font-size:24px}.welcome-title{font-size:40px}}
+.option-btn.correct{border-color:var(--green)!important;background:var(--green-glow)!important;color:var(--green)!important}
+.option-btn.incorrect{border-color:var(--red)!important;background:var(--red-glow)!important;color:var(--red)!important}
+.option-letter{width:28px;height:28px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0}
+.options-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.match-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.match-label{flex:1;font-size:13px;min-width:120px;padding:8px;background:var(--surface-2);border-radius:8px;border:2px solid transparent}
+.match-select{flex:1;padding:10px;background:var(--surface-2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;min-width:140px}
+.match-select:focus{outline:none;border-color:var(--purple)}
+.match-select.correct{border-color:var(--green)!important;background:var(--green-glow)!important}
+.match-select.incorrect{border-color:var(--red)!important;background:var(--red-glow)!important}
+.match-label.correct{border-color:var(--green)!important;background:var(--green-glow)!important}
+.match-label.incorrect{border-color:var(--red)!important;background:var(--red-glow)!important}
+.tf-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px;background:var(--surface-2);border-radius:10px;border:2px solid transparent}
+.tf-text{flex:1;font-size:13px;line-height:1.4}
+.tf-btns{display:flex;gap:6px;flex-shrink:0}
+.tf-btn{padding:6px 14px;border-radius:8px;border:2px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.tf-btn.selected{border-color:var(--purple);background:var(--purple-glow);color:var(--purple)}
+.tf-btn.correct{border-color:var(--green)!important;background:var(--green-glow)!important;color:var(--green)!important}
+.tf-btn.incorrect{border-color:var(--red)!important;background:var(--red-glow)!important;color:var(--red)!important}
+.tf-row.correct{border-color:var(--green)!important}
+.tf-row.incorrect{border-color:var(--red)!important}
+.slider-container{padding:16px 0}
+.slider-input{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:var(--surface-2);outline:none}
+.slider-input::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--purple);cursor:pointer;box-shadow:0 2px 8px rgba(155,109,255,0.4)}
+.slider-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:8px}
+.slider-value{text-align:center;font-size:32px;font-weight:700;color:var(--purple);margin-bottom:12px}
+.phase-intro{text-align:center;padding:48px 16px}
+.phase-emoji{font-size:48px;margin-bottom:16px}
+.phase-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:8px}
+.phase-subtitle{color:var(--dim);font-size:14px;margin-bottom:8px}
+.phase-count{color:var(--gold);font-size:13px;font-weight:600;margin-bottom:24px}
+.phase-score{color:var(--dim);font-size:13px;margin-bottom:24px}
+.results{text-align:center;padding:40px 0}
+.results-score{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;background:linear-gradient(135deg,var(--purple),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.word-chip{display:inline-block;padding:4px 8px;margin:2px;border-radius:6px;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.word-chip.selected{background:var(--purple-glow);border-color:var(--purple);color:var(--purple)}
+.phase-selector{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.phase-option{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s}
+.phase-option:hover{border-color:var(--purple)}
+.phase-option.selected{border-color:var(--purple);background:var(--purple-glow)}
+.phase-option input[type=checkbox]{accent-color:var(--purple);width:18px;height:18px}
+.phase-option-text{flex:1}
+.phase-option-title{font-size:14px;font-weight:600}
+.phase-option-count{font-size:12px;color:var(--dim)}
+.nav-row{display:flex;gap:8px;margin-top:16px}
+.nav-row .btn-primary{flex:1}
+.nav-row .btn-secondary{flex:0 0 auto}
+.rank-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface-2);border:2px solid var(--border);border-radius:10px;cursor:grab;user-select:none;transition:all .2s}
+.rank-item:active{cursor:grabbing}
+.rank-item.correct{border-color:var(--green)!important;background:var(--green-glow)!important}
+.rank-item.incorrect{border-color:var(--red)!important;background:var(--red-glow)!important}
+.expected-box{margin-top:16px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)}
+.expected-label{color:var(--dim);font-size:12px;margin-bottom:8px}
+.expected-tags{display:flex;flex-wrap:wrap;gap:6px}
+.expected-tag{padding:4px 10px;background:var(--purple-glow);color:var(--purple);border-radius:12px;font-size:12px;font-weight:600}
+.model-answer{margin-top:12px;padding:12px;background:var(--gold-glow);border:1px solid rgba(212,168,83,0.3);border-radius:8px;font-size:13px;line-height:1.5;color:var(--gold)}
+.model-answer-label{font-weight:600;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+.correct-order{margin-top:12px;padding:12px;background:var(--green-glow);border:1px solid rgba(74,222,128,0.2);border-radius:8px}
+.correct-order-label{font-size:11px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.correct-order-item{font-size:13px;color:var(--green);padding:2px 0}
+select option{background:#1a1a2e;color:var(--text)}
 </style>
 </head>
 <body>
-<div class="quiz-app">
+<div class="quiz-container">
   <div class="quiz-content" id="app"></div>
 </div>
 <script>
+window.__QUIZ_CONFIG = {
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwb4ZdA_PvAzGBCdrTdetjjI8er3JLgZIIR7MPcTUiZOUhn14QoJ_LleGyX9-RQ1TNN/exec'
+};
+</script>
+<script>
+// ═══════════════════════════════════════
+// PHASE DEFINITIONS
+// ═══════════════════════════════════════
+const PHASES = [
+  {id:0,key:'phase0',emoji:'👤',title:'Identification',count:1},
+  {id:1,key:'phase1',emoji:'🏛️',title:'Chronologie & classement des styles',count:13},
+  {id:2,key:'phase2',emoji:'📖',title:'Définitions & vocabulaire',count:8},
+  {id:3,key:'phase3',emoji:'🌍',title:'Contextualiser',count:7},
+  {id:'N',key:'noverre',emoji:'🎭',title:'Spéciale Noverre',subtitle:"L'homme, l'œuvre, l'héritage",count:15},
+  {id:4,key:'phase4',emoji:'🎼',title:'Œuvres, chorégraphes & dates',count:10},
+  {id:5,key:'phase5',emoji:'✍️',title:'Rédiger & argumenter',count:8}
+];
+
+// ═══════════════════════════════════════
+// ALL 59 QUESTIONS
+// ═══════════════════════════════════════
 const QUIZ = {
   title: "Du ballet de cour au ballet d'action",
   subtitle: "XVIIᵉ–XVIIIᵉ siècle",
   questions: [
-    {id:"Q0",type:"text",q:"Avant de commencer, quel est ton prénom ?",ph:"Ton prénom"},
-    {id:"Q1",type:"words",q:"Quels sont les 2 ou 3 mots les plus importants ?",sub:"« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",max:3,a:["esthétique","ballet","héritage","danse","baroque","exigences","expressivité"]},
-    {id:"Q2",type:"rank",q:"Classez ces styles du plus ancien au plus récent",items:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse","Opéra-ballet français","Ballet d'action","Ballet romantique"],answer:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse","Opéra-ballet français","Ballet d'action","Ballet romantique"]},
-    {id:"Q3",type:"mcq",q:"Quelle période correspond au « ballet de cour » en France ?",opts:["1350 – 1450","1581 – vers 1670","1700 – 1760","1789 – 1830"],a:1},
-    {id:"Q4",type:"mcq",q:"Quel est le premier véritable ballet d'action ?",opts:["Les Indes galantes (Rameau, 1735)","Les Saisons (Hilverding, 1743)","L'Amour et Psyché (Hilverding, 1752)","Les Horaces (Noverre, 1774)"],a:2},
-    {id:"Q11",type:"match",q:"Associez chaque style à sa définition",pairs:[["Ballet de cour","Spectacle aristocratique mêlant danse, musique et poésie"],["Comédie-ballet","Forme créée par Molière et Lully"],["Tragédie lyrique","Opéra français à la française avec ballet intégré"],["Ballet d'action","Ballet pantomime dramatique sans chant"]]},
-    {id:"Q12",type:"mcq",q:"Qu'est-ce que la notation Feuillet ?",opts:["Un système de notation musicale","Un système de notation chorégraphique du XVIIIe siècle","Une technique de danse baroque","Un type de costume"],a:1},
-    {id:"QN1",type:"mcq",q:"Qui a théorisé le ballet d'action dans ses 'Lettres sur la danse' ?",opts:["Jean-Georges Noverre","Pierre Beauchamp","Louis XIV","Marie Sallé"],a:0},
-    {id:"QN6",type:"multi",q:"Quelles sont les caractéristiques du ballet d'action ? (plusieurs réponses)",opts:["Narration par la danse seule","Usage du chant","Pantomime expressive","Décors et costumes réalistes","Suivre la musique sans histoire"],a:[0,2,3]},
-    {id:"QN10",type:"match",q:"Associez les œuvres à leurs chorégraphes",pairs:[["Jason et Médée","Noverre"],["Pygmalion","Hilverding"],["La Fille mal gardée","Dauberval"]]},
-    {id:"Q27",type:"match",q:"Reliez les concepts aux définitions",pairs:[["Belle danse","Style noble et gracieux de la danse baroque"],["Pantomime","Art de s'exprimer par gestes"],["Opéra-ballet","Spectacle mêlant chant, danse et mise en scène"]]}
-  ]
+// ── PHASE 0 ──
+{id:"Q0",phase:0,type:"text",q:"Avant de commencer, quel est ton prénom ?",ph:"Ton prénom"},
+
+// ── PHASE 1: Chronologie & styles ──
+{id:"Q1",phase:1,type:"words",q:"En lisant ce sujet, quels sont les 2 ou 3 mots qui vous semblent les plus importants ?",sub:"« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",max:3,expected:["baroque","expressivité","évolution","ballet","héritage","réforme","XVIIIᵉ","tension"]},
+
+{id:"Q2",phase:1,type:"rank",q:"Classez ces grands styles chorégraphiques du plus ancien au plus récent.",items:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse / danse noble baroque","Opéra-ballet français","Ballet-pantomime / Ballet d'action","Ballet romantique","Grand ballet classique"],answer:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse / danse noble baroque","Opéra-ballet français","Ballet-pantomime / Ballet d'action","Ballet romantique","Grand ballet classique"]},
+
+{id:"Q3",phase:1,type:"mcq",q:"Quelle période correspond au « ballet de cour » en France ?",opts:["1350 – 1450","1581 – vers 1670","1700 – 1760","1789 – 1830"],a:1},
+
+{id:"Q4",phase:1,type:"mcq",q:"Quelle est la première œuvre considérée comme un véritable ballet-pantomime (sans chant ni paroles), précurseur direct du ballet d'action ?",opts:["L'Europe galante (Campra, 1697)","Les Indes galantes (Rameau, 1735)","Les Amours de Mars et de Vénus (Weaver, 1717)","Médée et Jason (Noverre, 1763)"],a:2},
+
+{id:"Q5",phase:1,type:"multi",q:"Quels éléments caractérisent le ballet de cour (à cocher) ?",opts:["Distribution mixte : nobles + professionnels","Figures géométriques vues d'en haut","Fonction politique et propagande monarchique","Présence du tutu et des pointes","Récit dramatique continu sans chant","Allégories mythologiques","Suppression des masques"],a:[0,1,2,5]},
+
+{id:"Q6",phase:1,type:"truefalse",q:"Vrai ou Faux ?",statements:[{text:"Le Ballet de la Nuit (1653) est le premier ballet de cour.",answer:false,explain:"Le premier est le Ballet comique de la reine (1581)"},{text:"Louis XIV danse dans des ballets de cour.",answer:true,explain:"Il y incarne le Soleil en 1653"},{text:"L'opéra-ballet place la danse au centre du spectacle, contrairement à la tragédie lyrique.",answer:true},{text:"Noverre est le premier à créer des ballets sans paroles.",answer:false,explain:"Weaver en 1717 ; Hilverding dans les années 1740"}]},
+
+{id:"Q7",phase:1,type:"rank",q:"Classez ces formes chorégraphiques du XVIIᵉ–XVIIIᵉ siècle du plus ancien au plus récent.",items:["Ballet de cour allégorique","Comédie-ballet (Molière + Lully)","Tragédie lyrique (Lully seul)","Opéra-ballet (Campra, Rameau)","Ballet-pantomime (Weaver, Sallé)","Ballet d'action théorisé (Noverre)","Ballet d'action diffusé en Europe (Angiolini, Dauberval)"],answer:["Ballet de cour allégorique","Comédie-ballet (Molière + Lully)","Tragédie lyrique (Lully seul)","Opéra-ballet (Campra, Rameau)","Ballet-pantomime (Weaver, Sallé)","Ballet d'action théorisé (Noverre)","Ballet d'action diffusé en Europe (Angiolini, Dauberval)"]},
+
+{id:"Q8a",phase:1,type:"match3",q:"Associez chaque style à son intervalle de dates ET à son lieu principal.",rows:[
+  {item:"Opéra-ballet (Campra, Rameau)",date:"1697 – vers 1770",place:"Paris (Opéra royal)"},
+  {item:"Ballet-pantomime (Weaver, Sallé)",date:"1717 – vers 1760",place:"Londres (Drury Lane)"},
+  {item:"Ballet d'action (Noverre, Angiolini, Dauberval)",date:"1760 – 1789",place:"Stuttgart, Vienne, Bordeaux"},
+  {item:"Ballet romantique (Taglioni, Coralli/Perrot)",date:"1832 – vers 1850",place:"Paris (Opéra de Paris)"},
+  {item:"Grand ballet classique (Petipa, Ivanov)",date:"1877 – 1905",place:"Saint-Pétersbourg (Mariinsky)"},
+  {item:"Ballets russes (Diaghilev)",date:"1909 – 1929",place:"Europe nomade (Paris, Monte-Carlo)"},
+  {item:"Ballet néoclassique — France (Lifar)",date:"1929 – 1958",place:"Paris (Opéra de Paris)"},
+  {item:"Ballet néoclassique — USA (Balanchine)",date:"1934 – années 1960",place:"New York (NYCB)"}
+]},
+
+{id:"Q8b",phase:1,type:"geo",q:"Associez chaque événement à sa ville.",items:[
+  {text:"Le ballet romantique — où est-il né ?",answer:"Paris",opts:["Paris","Londres","Vienne","Saint-Pétersbourg","New York","Wuppertal","Naples"]},
+  {text:"Le grand ballet classique — où s'est-il développé ?",answer:"Saint-Pétersbourg",opts:["Paris","Londres","Vienne","Saint-Pétersbourg","New York","Wuppertal","Naples"]},
+  {text:"Le Tanztheater — dans quel pays/ville ?",answer:"Wuppertal",opts:["Paris","Londres","Vienne","Saint-Pétersbourg","New York","Wuppertal","Naples"]},
+  {text:"La Tarentelle — danse traditionnelle de quelle région ?",answer:"Naples",opts:["Paris","Londres","Vienne","Saint-Pétersbourg","New York","Wuppertal","Naples"]},
+  {text:"Pygmalion (1734) — dans quelle ville ?",answer:"Londres",opts:["Paris","Londres","Vienne","Saint-Pétersbourg","New York","Wuppertal","Naples"]},
+  {text:"Agon (1957) — où a-t-il été créé ?",answer:"New York",opts:["Paris","Londres","Vienne","Saint-Pétersbourg","New York","Wuppertal","Naples"]}
+]},
+
+{id:"Q8c",phase:1,type:"mcq",q:"Laquelle de ces affirmations est historiquement correcte ?",opts:["L'opéra-ballet disparaît en 1717 quand Weaver invente le ballet-pantomime","Le ballet romantique disparaît en 1877 quand Petipa crée le grand ballet classique","En 1761, à Vienne, Angiolini crée Don Juan pendant que Rameau compose encore des opéras-ballets à Paris : deux esthétiques opposées coexistent","Balanchine invente le ballet néoclassique après la mort de Diaghilev en 1929"],a:2},
+
+{id:"Q9",phase:1,type:"truefalse",q:"Vrai ou Faux ?",statements:[{text:"Quand Noverre publie ses Lettres sur la danse en 1760, l'opéra-ballet a déjà complètement disparu.",answer:false},{text:"En 1909, année de création des Ballets russes, Marius Petipa est encore en vie.",answer:true,explain:"Il meurt en juillet 1910"},{text:"Balanchine crée son premier ballet néoclassique (Apollon musagète) en 1928, alors que les Ballets russes de Diaghilev existent encore.",answer:true},{text:"Le ballet romantique remplace directement le grand ballet classique.",answer:false}]},
+
+{id:"Q10",phase:1,type:"mcq",q:"Dans quelle logique de filiation s'inscrit Jean Dauberval par rapport à Noverre ?",opts:["Dauberval est un rival de Noverre","Dauberval est un élève de Noverre qui prolonge le ballet d'action vers la comédie populaire","Dauberval rejette les idées de Noverre","Dauberval est l'inventeur du ballet romantique"],a:1},
+
+// ── PHASE 2: Définitions & vocabulaire ──
+{id:"Q11",phase:2,type:"match",q:"Associez chaque terme à sa définition correcte.",pairs:[["Ballet de cour","Spectacle mêlant danse, chant, poésie et décors, donné à la cour royale"],["Comédie-ballet","Genre créé par Molière et Lully intégrant des intermèdes dansés"],["Tragédie lyrique","Genre lyrique français de Lully où danse et chant se mêlent"],["Opéra-ballet","Genre né en 1697 (Campra) où la danse est centrale, organisé en entrées indépendantes"],["Belle danse / Danse noble","Technique académique codifiée par Beauchamps, fondée sur les 5 positions"],["Ballet-pantomime","Ballet sans chant ni paroles, où le récit est porté par la danse et le geste"],["Ballet d'action","Concept théorisé par Noverre : ballet dramatique où chaque geste exprime une émotion"],["Tragi-comédie ballet","Genre hybride mêlant éléments tragiques et comiques à une structure dansée"]]},
+
+{id:"Q12",phase:2,type:"mcq",q:"Qu'est-ce que la notation Feuillet (Orchésographie, 1700) ?",opts:["Un recueil de partitions musicales pour la danse","Un traité sur l'esthétique du ballet romantique","Un système graphique de notation du mouvement chorégraphique permettant la transmission écrite des danses","Une méthode pour enseigner les 5 positions classiques"],a:2},
+
+{id:"Q13",phase:2,type:"mcq",q:"Quel est l'apport essentiel de l'Orchésographie de Thoinot Arbeau (1589) ?",opts:["Il théorise le ballet romantique","Il invente les 5 positions de la danse classique","Il décrit les danses de la Renaissance en associant texte, musique et dessin, première tentative de notation du mouvement","Il fonde l'Académie royale de danse"],a:2},
+
+{id:"Q14",phase:2,type:"truefalse",q:"Vrai ou Faux ?",statements:[{text:"La « belle danse » et la « danse noble » désignent la même chose.",answer:true},{text:"Dans l'opéra-ballet, la musique sert à mettre en valeur la danse, contrairement à la tragédie lyrique.",answer:true},{text:"La danse macabre est une danse physique pratiquée dans les cimetières.",answer:false},{text:"L'en dehors (piedi in fuore) est une invention de la Renaissance italienne.",answer:true,explain:"Cesare Negri, 1602"}]},
+
+{id:"Q15",phase:2,type:"multi",q:"Quels principes Noverre défend-il dans ses Lettres sur la danse (1760) ?",opts:["Chaque geste doit exprimer une émotion ou une situation dramatique","Suppression des masques pour que le visage participe à l'expression","Le ballet doit avoir une unité dramatique (début, développement, fin)","Les costumes doivent être simplifiés pour libérer le mouvement","Le danseur ne doit pas avoir de formation littéraire ou musicale","La virtuosité technique est la qualité première du danseur","La danse doit « peindre les passions » comme le ferait un tableau"],a:[0,1,2,3,6]},
+
+{id:"Q16",phase:2,type:"text",q:"En une phrase, expliquez la différence entre ballet-pantomime et ballet d'action.",ph:"Votre réponse...",model:"Le ballet-pantomime désigne tout ballet sans chant où la narration est portée par le geste ; le ballet d'action est une version plus élaborée, théorisée par Noverre, où la danse exprime véritablement les émotions et constitue un drame autonome."},
+
+{id:"Q17",phase:2,type:"mcq",q:"Dans la danse baroque, que symbolise le masque porté par les danseurs ?",opts:["Il protège le visage lors des acrobaties","Il marque l'appartenance à une compagnie professionnelle","Il est un héritage des ballets de cour masqués ; il neutralise le visage et impose un « type » codifié, mais empêche l'expression émotionnelle","Il n'est porté que par les nobles, jamais par les professionnels"],a:2},
+
+{id:"Q18",phase:2,type:"words",q:"Citez un mot qui vous vient à l'esprit pour : ballet de cour / opéra-ballet / ballet d'action",sub:"Pensez aux caractéristiques de chaque forme.",max:3,expected:["propagande","allégorie","danse","exotisme","Rameau","émotion","Noverre","geste","cour","expression"]},
+
+// ── PHASE 3: Contextualiser ──
+{id:"Q19",phase:3,type:"match",q:"Associez chaque personnage à son rôle exact dans l'histoire de la danse.",pairs:[["Balthazar de Beaujoyeulx","Chorégraphe du premier ballet de cour français (1581)"],["Pierre Beauchamps","Codificateur des 5 positions et de la notation chorégraphique"],["Jean-Baptiste Lully","Compositeur et directeur de l'Académie royale de musique, inventeur de la tragédie lyrique"],["André Campra","Créateur de l'opéra-ballet avec L'Europe galante (1697)"],["Jean-Philippe Rameau","Compositeur de l'apogée de l'opéra-ballet (Les Indes galantes, 1735)"],["Marie Sallé","Danseuse réformatrice qui abandonne masque et costume dans Pygmalion (1734)"],["Jean-Georges Noverre","Théoricien du ballet d'action (Lettres sur la danse, 1760)"],["Gasparo Angiolini","Rival de Noverre, chorégraphe de Don Juan (1761) à Vienne"]]},
+
+{id:"Q20",phase:3,type:"mcq",q:"Quel courant philosophique du XVIIIᵉ siècle favorise directement la réforme du ballet vers l'expressivité ?",opts:["Le baroque tardif (Lully, Versailles)","Les Lumières : raison, nature, vérité des émotions (Diderot, Rousseau, Encyclopédie)","La Contre-Réforme catholique","Le néoplatonisme de la Renaissance"],a:1},
+
+{id:"Q21",phase:3,type:"truefalse",q:"Vrai ou Faux ?",statements:[{text:"Louis XIV fonde l'Académie royale de danse en 1661.",answer:true},{text:"Noverre est formé à l'Académie royale de danse et en sort diplômé.",answer:false},{text:"La querelle des Bouffons (1752–1754) oppose partisans de la musique française et de la musique italienne.",answer:true},{text:"Hilverding (Autriche) expérimente le ballet d'action avant Noverre.",answer:true}]},
+
+{id:"Q22",phase:3,type:"text",q:"Citez deux éléments de contexte historique ou culturel que vous utiliseriez en introduction pour borner ce sujet.",ph:"Votre réponse...",model:"Siècle des Lumières + déclin du système de cour aristocratique ; Fondation Académie royale (1661) + public bourgeois ; Tradition baroque de Lully + critique de la virtuosité vide."},
+
+{id:"Q23",phase:3,type:"multi",q:"Quelles figures sont incontournables dans une dissertation sur ce sujet ?",opts:["Jean-Georges Noverre","Marie Sallé","Marie Camargo","Gasparo Angiolini","Marie Taglioni (ballet romantique)","Marius Petipa (XIXᵉ tardif)","Franz Hilverding","Isadora Duncan (début XXᵉ)"],a:[0,1,2,3,6]},
+
+{id:"Q24",phase:3,type:"mcq",q:"Pourquoi la réforme du ballet d'action se développe-t-elle davantage hors de Paris ?",opts:["Parce que Noverre ne parle pas français","Parce qu'il n'existe pas d'opéra à Paris au XVIIIᵉ siècle","Parce que l'Opéra de Paris est une institution conservatrice résistant aux idées de Noverre ; les cours étrangères offrent plus de liberté créative","Parce que la danse n'intéresse pas le public parisien"],a:2},
+
+{id:"Q25",phase:3,type:"slider",q:"La réforme du ballet d'action est uniquement due au génie de Jean-Georges Noverre.",hint:"Réponse attendue : 1 ou 2",labels:["Pas du tout d'accord","Tout à fait d'accord"]},
+
+// ── SPÉCIALE NOVERRE ──
+{id:"QN1",phase:"N",type:"rank",q:"Remettez ces étapes de la vie de Noverre dans l'ordre chronologique exact.",items:["Création des Fêtes chinoises à Paris (première chorégraphie à 22 ans)","Émeute à Drury Lane, Londres — décors détruits","Publication à Lyon des Lettres sur la danse et les ballets","Apogée à Stuttgart : une quinzaine de grands ballets en 10 ans","Séjour à Vienne — maître à danser de la famille impériale","Arrivée à Paris imposée par Marie-Antoinette — accueil hostile","Les Petits Riens à l'Opéra de Paris (musique de Mozart non crédité)","Retraite à Saint-Germain-en-Laye — mort en 1810"],answer:["Création des Fêtes chinoises à Paris (première chorégraphie à 22 ans)","Émeute à Drury Lane, Londres — décors détruits","Publication à Lyon des Lettres sur la danse et les ballets","Apogée à Stuttgart : une quinzaine de grands ballets en 10 ans","Séjour à Vienne — maître à danser de la famille impériale","Arrivée à Paris imposée par Marie-Antoinette — accueil hostile","Les Petits Riens à l'Opéra de Paris (musique de Mozart non crédité)","Retraite à Saint-Germain-en-Laye — mort en 1810"]},
+
+{id:"QN2",phase:"N",type:"match",q:"Associez chaque ville à l'événement qui lui correspond.",pairs:[["Paris (Opéra-Comique, 1749)","Création de sa 1ʳᵉ chorégraphie : Les Fêtes chinoises"],["Londres (Drury Lane, 1755–56)","Émeute anti-française : décors détruits"],["Lyon (1760)","Publication de la 1ʳᵉ édition des Lettres sur la danse"],["Stuttgart (1760–1770)","Apogée créative : ~15 grands ballets d'action"],["Vienne (1770–1774)","Directeur des fêtes impériales — ballets héroïques"],["Milan (1774)","Polémique avec Angiolini sur la paternité du ballet d'action"],["Paris (Opéra, 1776–1782)","Imposé par Marie-Antoinette — opposition de la troupe"],["Londres (King's Theatre, 1789–94)","Triomphe indiscuté — couronné sur scène, 21 ballets créés"]]},
+
+{id:"QN3",phase:"N",type:"mcq",q:"Pourquoi l'Opéra de Paris refuse-t-il Noverre pendant plus de 20 ans ?",opts:["Parce qu'il est étranger (né en Suisse)","Parce qu'il n'a pas les moyens financiers","Parce qu'il n'est pas passé par la filière de l'Académie royale, que son caractère est jugé abrupt, et que ses idées sont perçues comme « scandaleuses »","Parce que le roi Louis XV le lui interdit"],a:2},
+
+{id:"QN4",phase:"N",type:"truefalse",q:"Vrai ou Faux — Vie de Noverre ?",statements:[{text:"Noverre a étudié à l'Académie royale de danse et en est sorti diplômé.",answer:false},{text:"Noverre a enseigné la danse à Marie-Antoinette pendant son séjour à Vienne.",answer:false,explain:"Incertain historiquement"},{text:"À l'Opéra de Paris, Mozart est crédité à l'affiche des Petits Riens (1778).",answer:false},{text:"Noverre a composé plus de 100 ballets au cours de sa carrière.",answer:true,explain:"150 ballets"},{text:"Noverre meurt à Paris, où il avait finalement été reconnu par l'Opéra.",answer:false,explain:"Il meurt à Saint-Germain-en-Laye"}]},
+
+{id:"QN5",phase:"N",type:"slider",q:"Noverre est le père fondateur solitaire du ballet moderne.",hint:"Réponse attendue : 2 ou 3",labels:["Pas du tout d'accord","Tout à fait d'accord"]},
+
+{id:"QN6",phase:"N",type:"multi",q:"Quels principes Noverre défend-il dans ses Lettres sur la danse (1760) ?",opts:["Chaque geste doit exprimer une émotion ou une nécessité dramatique","Les masques doivent être supprimés pour que le visage participe à l'expression","Les costumes lourds doivent être remplacés par des tenues adaptées au rôle","Le ballet doit avoir une unité dramatique continue (exposition, nœud, dénouement)","La danse doit « peindre les passions » comme un tableau vivant","La virtuosité technique est la qualité première du danseur","Le danseur doit se spécialiser dans un seul type de danse","Le danseur doit être cultivé : poésie, histoire, peinture, anatomie, musique","La danse doit rester annexée à la parole et au chant"],a:[0,1,2,3,4,7]},
+
+{id:"QN7",phase:"N",type:"match",q:"Associez chaque critique de Noverre à son objet précis.",pairs:[["« Les masques sont grossiers »","Ils neutralisent le visage — organe essentiel de l'expression"],["« Les costumes tuaient l'œuvre »","Tonnelets, paniers, perruques : ils gênent le mouvement"],["« Un spectacle de singes »","Le système hiérarchique forçant des entrées sans nécessité dramatique"],["« Les danseurs sont des automates »","La formation purement mécanique, sans culture générale"],["« La virtuosité sacrifie le sens »","Entrechats et cabrioles spectaculaires mais vides de signification"],["« Contre les entrées gratuites »","Divertissements intercalés sans lien avec l'action"]]},
+
+{id:"QN8",phase:"N",type:"mcq",q:"Quelle phrase de Noverre résume le mieux sa conception du ballet d'action ?",opts:["« La danse est le plus noble des arts, car elle unit le corps et l'esprit. »","« Le danseur doit être avant tout musicien. »","« Un pas, un geste disent ce que rien ne peut exprimer. »","« La pantomime est une forme inférieure de la danse. »"],a:2},
+
+{id:"QN9",phase:"N",type:"rank",q:"Classez ces propositions de réforme de Noverre de la plus fondamentale à la plus pratique.",items:["Concevoir le ballet comme une pièce de théâtre (exposition, nœud, dénouement)","Exiger une culture générale des danseurs","Bannir les entrées sans nécessité dramatique","Remplacer les masques par l'expression du visage nu","Adapter les costumes au rôle et simplifier les tenues","Accorder une place centrale aux bras comme vecteurs d'expression"],answer:["Concevoir le ballet comme une pièce de théâtre (exposition, nœud, dénouement)","Exiger une culture générale des danseurs","Bannir les entrées sans nécessité dramatique","Remplacer les masques par l'expression du visage nu","Adapter les costumes au rôle et simplifier les tenues","Accorder une place centrale aux bras comme vecteurs d'expression"]},
+
+{id:"QN10",phase:"N",type:"match",q:"Associez chaque titre de Noverre à sa description exacte.",pairs:[["Les Fêtes chinoises (1749)","Première chorégraphie de Noverre, créée à 22 ans — thème exotique"],["Médée et Jason (Stuttgart, 1763)","Ballet tragique mythologique — Médée tue ses enfants — premier grand ballet d'action"],["Les Horaces (Vienne, 1774)","Ballet héroïque à sujet antique — tragédie chorégraphique d'inspiration racinienne"],["Les Petits Riens (Paris, 1778)","Ballet sur une musique de Mozart — dont le nom n'apparaît pas à l'affiche"],["Les Caprices de Galathée","Après l'incendie de l'Opéra (1781), Noverre supprime toutes les parties chantées"]]},
+
+{id:"QN11",phase:"N",type:"mcq",q:"Pourquoi Médée et Jason est-il considéré comme l'œuvre emblématique du ballet d'action ?",opts:["C'est la première fois qu'un ballet est accompagné d'une partition orchestrale","Noverre y utilise des pointes pour la première fois","Le drame est porté uniquement par la danse et le geste, sans chant ni paroles — conformément aux principes des Lettres","C'est le premier ballet créé hors de France"],a:2},
+
+{id:"QN12",phase:"N",type:"multi",q:"Quelles affirmations sur Les Petits Riens (1778) sont correctes ?",opts:["La musique est composée par Mozart","Le nom de Mozart n'apparaît pas à l'affiche","C'est l'une des rares créations de Noverre pendant son passage parisien","L'œuvre est légère — une pastorale galante, pas un ballet tragique","C'est la première fois que Noverre travaille avec Mozart","Le ballet sera repris en Russie par Le Picq","Mozart reçoit une commande officielle de l'Opéra de Paris"],a:[0,1,2,3]},
+
+{id:"QN13",phase:"N",type:"match",q:"Associez chaque danseur/chorégraphe à son rôle dans la diffusion de la doctrine noverrienne.",pairs:[["Jean Dauberval","Élève de Noverre, crée La Fille mal gardée (1789) — prolonge vers la comédie pastorale"],["Gaétan Vestris","Impose Médée et Jason à Paris en 1770, propageant la doctrine"],["Charles Le Picq","Diffuse le ballet d'action en Russie (Saint-Pétersbourg)"],["Salvatore Viganò","Développe en Italie le coreodramma (ballet dramatique intégral)"],["August Bournonville","Fonde au Danemark une école préservant l'expressivité du ballet d'action"]]},
+
+{id:"QN14",phase:"N",type:"slider",q:"L'Opéra de Paris est le principal vecteur de diffusion des idées de Noverre en Europe.",hint:"Réponse attendue : 1 ou 2",labels:["Pas du tout d'accord","Tout à fait d'accord"]},
+
+{id:"QN15",phase:"N",type:"mcq",q:"Parmi ces formulations, laquelle exprime le plus précisément pourquoi Noverre est une figure centrale ?",opts:["Il est le premier à créer des ballets sans paroles","Il est le premier chorégraphe à travailler avec Gluck et Mozart","Il est le premier à formuler que le ballet doit être un art dramatique autonome — un langage expressif capable de « peindre les passions »","Il est le premier à supprimer les masques sur scène"],a:2},
+
+// ── PHASE 4: Œuvres, chorégraphes & dates ──
+{id:"Q26",phase:4,type:"rank",q:"Classez ces œuvres de la plus ancienne à la plus récente.",items:["Ballet comique de la Reine — Beaujoyeulx","Le Triomphe de l'Amour — Beauchamps / Lully","L'Europe galante — Campra","Les Amours de Mars et de Vénus — Weaver","Pygmalion — Marie Sallé","Les Indes galantes — Rameau","Don Juan — Angiolini / Gluck","Médée et Jason — Noverre","La Fille mal gardée — Dauberval"],answer:["Ballet comique de la Reine — Beaujoyeulx","Le Triomphe de l'Amour — Beauchamps / Lully","L'Europe galante — Campra","Les Amours de Mars et de Vénus — Weaver","Pygmalion — Marie Sallé","Les Indes galantes — Rameau","Don Juan — Angiolini / Gluck","Médée et Jason — Noverre","La Fille mal gardée — Dauberval"]},
+
+{id:"Q27",phase:4,type:"match",q:"Associez chaque ballet à son chorégraphe / maître de ballet.",pairs:[["Ballet comique de la Reine (1581)","Balthazar de Beaujoyeulx"],["Le Triomphe de l'Amour (1681)","Charles-Louis Beauchamps"],["L'Europe galante (1697)","Louis Pécour"],["Pygmalion (1734)","Marie Sallé"],["Les Indes galantes (1735)","Michel Blondy"],["Don Juan (1761)","Gasparo Angiolini"],["Médée et Jason (1763)","Jean-Georges Noverre"],["La Fille mal gardée (1789)","Jean Dauberval"]]},
+
+{id:"Q28",phase:4,type:"match",q:"Associez chaque ballet / opéra-ballet à son compositeur.",pairs:[["Le Triomphe de l'Amour (1681)","Jean-Baptiste Lully"],["L'Europe galante (1697)","André Campra"],["Les Indes galantes (1735)","Jean-Philippe Rameau"],["Don Juan (1761)","Christoph Willibald Gluck"],["Les Petits Riens (1778)","Wolfgang Amadeus Mozart"],["Les Créatures de Prométhée (1801)","Ludwig van Beethoven"]]},
+
+{id:"Q29",phase:4,type:"mcq",q:"Quelle est la structure des Indes galantes (Rameau, 1735) ?",opts:["3 actes avec un récit continu","Un divertissement en 2 tableaux","1 prologue + 4 entrées indépendantes situées dans des pays exotiques (Turquie, Pérou, Perse, Amérique)","5 actes de tragédie lyrique"],a:2},
+
+{id:"Q30",phase:4,type:"multi",q:"Quelles affirmations sur Médée et Jason (Noverre, 1763) sont correctes ?",opts:["C'est un ballet d'action sans chant ni récitant","Il est créé à Stuttgart puis triomphe à Paris en 1770","Il illustre concrètement les principes des Lettres sur la danse","Il est composé par Rameau","C'est une tragédie chorégraphique à sujet mythologique","Il est créé directement à l'Opéra de Paris"],a:[0,1,2,4]},
+
+{id:"Q31",phase:4,type:"match",q:"Associez chaque œuvre à son genre chorégraphique.",pairs:[["Le Bourgeois gentilhomme (1670)","Comédie-ballet"],["Atys (1676, Lully/Quinault)","Tragédie lyrique"],["L'Europe galante (1697, Campra)","Opéra-ballet"],["Pygmalion (1734, Sallé)","Ballet-pantomime"],["Médée et Jason (1763, Noverre)","Ballet d'action"],["La Fille mal gardée (1789, Dauberval)","Ballet d'action / comédie pastorale"]]},
+
+{id:"Q32",phase:4,type:"text",q:"Citez trois œuvres du XVIIIᵉ siècle en indiquant pour chacune : titre, date et chorégraphe.",ph:"Ex: Pygmalion, 1734, Marie Sallé...",model:"Exemples : Pygmalion (1734, Sallé) / Don Juan (1761, Angiolini) / Médée et Jason (1763, Noverre) / La Fille mal gardée (1789, Dauberval)"},
+
+{id:"Q33",phase:4,type:"mcq",q:"Quel est le point historique fondamental sur Les Petits Riens (Noverre, 1778) ?",opts:["C'est le premier ballet d'action de Noverre","C'est le premier ballet de l'Opéra de Paris à rompre définitivement avec le style d'opéra (parties chantées supprimées après l'incendie de 1781)","C'est un ballet comique pour enfants","Mozart y est crédité comme compositeur principal à l'affiche"],a:1},
+
+{id:"Q34",phase:4,type:"rank",q:"Classez ces œuvres de Noverre du plus ancien au plus récent.",items:["Les Fêtes chinoises (première chorégraphie)","Lettres sur la danse et les ballets (manifeste théorique)","Médée et Jason (Stuttgart)","Les Horaces (Vienne puis Paris)","Les Petits Riens (Opéra de Paris, avec Mozart)"],answer:["Les Fêtes chinoises (première chorégraphie)","Lettres sur la danse et les ballets (manifeste théorique)","Médée et Jason (Stuttgart)","Les Horaces (Vienne puis Paris)","Les Petits Riens (Opéra de Paris, avec Mozart)"]},
+
+{id:"Q34b",phase:4,type:"match3",q:"Associez chaque figure à son œuvre/texte, puis à ce que cela change dans l'histoire du ballet.",rows:[
+  {item:"Jean-Georges Noverre",date:"Lettres sur la danse (1760) + Médée et Jason (1763)",place:"Ballet = drame autonome · corps comme langage"},
+  {item:"Marie Sallé",date:"Pygmalion (Londres, 1734)",place:"Réforme pratique avant Noverre · corps visible avant la théorie"},
+  {item:"Marie Camargo",date:"Carrière Opéra de Paris 1726–1751",place:"Apogée de la virtuosité baroque · pôle opposé à Sallé"},
+  {item:"Gasparo Angiolini",date:"Don Juan (1761) + Dissertation (1765)",place:"Mouvement européen collectif · Vienne = second foyer"},
+  {item:"Jean Dauberval",date:"La Fille mal gardée (1789)",place:"Démocratisation des sujets · ouverture vers le romantisme"}
+]},
+
+// ── PHASE 5: Rédiger & argumenter ──
+{id:"Q35",phase:5,type:"mcq",q:"Parmi ces formulations, laquelle est une vraie problématique (avec enjeu et tension) ?",opts:["Comment le ballet évolue-t-il au XVIIIᵉ siècle ?","Qui sont les chorégraphes du XVIIIᵉ siècle ?","En quoi la tension entre codification formelle héritée du baroque et nouvelles exigences d'expressivité conduit-elle à une redéfinition du rôle du danseur et de la fonction du ballet ?","Le XVIIIᵉ siècle est une période importante pour la danse."],a:2},
+
+{id:"Q36",phase:5,type:"rank",q:"Classez ces éléments dans l'ordre logique d'une introduction.",items:["Contextualisation historique (XVIIe – XVIIIe s.)","Présentation du sujet et de ses enjeux","Problématique","Annonce du plan"],answer:["Contextualisation historique (XVIIe – XVIIIe s.)","Présentation du sujet et de ses enjeux","Problématique","Annonce du plan"]},
+
+{id:"Q37",phase:5,type:"multi",q:"Quels axes de plan sont cohérents et pertinents pour répondre au sujet ?",opts:["L'héritage baroque : ce qui perdure (virtuosité, codification, opéra-ballet)","La révolution de l'expressivité : la réforme de Noverre et ses contemporains","De la théorie à la scène : comment les danseurs incarnent la réforme","L'histoire du ballet au Moyen Âge","La biographie complète de Rameau","L'invention des pointes et du tutu au XIXᵉ siècle"],a:[0,1,2]},
+
+{id:"Q38",phase:5,type:"mcq",q:"Quel extrait correspond à une bonne analyse (et non une simple description) ?",opts:["Marie Sallé danse dans Pygmalion en 1734 à Londres.","Jean-Georges Noverre est un chorégraphe très important du XVIIIᵉ siècle.","En abandonnant le masque et les costumes dans Pygmalion (1734), Marie Sallé prouve que l'émotion peut passer directement du corps du danseur au spectateur : c'est une révolution scénique concrète.","Au XVIIIᵉ siècle, la danse évolue beaucoup."],a:2},
+
+{id:"Q39",phase:5,type:"longtext",q:"Rédigez un paragraphe de 4–6 phrases sur la comparaison Camargo / Sallé.",sub:"Utilisez les mots-clés : virtuosité — expressivité — masque — costume — baroque — réforme — entrechats — Pygmalion",model:"Opposer les deux danseuses esthétiquement, citer les œuvres/dates, lier au sujet (tension baroque/expressivité), utiliser des connecteurs d'opposition."},
+
+{id:"Q40",phase:5,type:"slider",q:"Je suis capable d'expliquer pourquoi la réforme du ballet d'action est un « mouvement européen » et non uniquement le fait de Noverre.",hint:"Auto-évaluation",labels:["Pas du tout","Tout à fait"]},
+
+{id:"Q41",phase:5,type:"longtext",q:"En 3–4 phrases, expliquez pourquoi Don Juan (Angiolini / Gluck, 1761) est important.",sub:"Utilisez : pantomime / expressivité / Vienne / rival / polémique / ballet d'action",model:"Don Juan (Vienne, 1761), chorégraphié par Angiolini sur une musique de Gluck, démontre que la réforme du ballet d'action n'est pas le seul fait de Noverre. La polémique entre les deux chorégraphes révèle un mouvement européen collectif né dans le contexte des Lumières."},
+
+{id:"Q42",phase:5,type:"words",q:"En un seul mot, qu'est-ce que le XVIIIᵉ siècle a inventé pour la danse ?",sub:"Un seul mot !",max:1,expected:["expressivité","drame","émotion","autonomie","réforme","pantomime","liberté","geste","rupture","modernité"]}
+]};
+
+// ═══════════════════════════════════════
+// STATE & HELPERS
+// ═══════════════════════════════════════
+const state = {
+  name:'',sessionId:Date.now().toString(36),idx:0,answers:{},tempAnswer:null,
+  selectedPhases:null, // null = all, or array of phase ids
+  activeQuestions:[], // filtered questions based on phase selection
+  startTime:Date.now()
 };
+let selectedMulti=[];
+let dragged=null;
 
-let state = {idx:0,answers:{},name:"",startTime:Date.now(),sessionId:'s_'+Math.random().toString(36).slice(2)};
+function getPhaseForId(pid){return PHASES.find(p=>p.id===pid)||PHASES[0];}
+function getPhaseLabel(pid){const p=getPhaseForId(pid);return p?`${p.emoji} ${p.title}`:'';}
 
-function saveSession(){localStorage.setItem('ballet_session',JSON.stringify({id:state.sessionId,name:state.name,start:state.startTime,answers:state.answers}));}
-function sendToSheets(payload){const url=window.__QUIZ_CONFIG.APPS_SCRIPT_URL;if(!url)return;console.log('Sending to sheets:',payload);fetch(url+'?payload='+encodeURIComponent(JSON.stringify(payload)),{method:'GET'}).then(r=>r.text()).then(t=>console.log('Sheets response:',t)).catch(e=>console.error('Sheets error:',e));}
+function buildActiveQuestions(){
+  if(!state.selectedPhases){
+    state.activeQuestions=[...QUIZ.questions];
+  } else {
+    state.activeQuestions=QUIZ.questions.filter(q=>
+      q.phase===0 || state.selectedPhases.includes(q.phase)
+    );
+  }
+}
 
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function sendToSheets(payload){
+  const url=window.__QUIZ_CONFIG.APPS_SCRIPT_URL;
+  if(!url)return;
+  fetch(url+'?payload='+encodeURIComponent(JSON.stringify(payload)),{method:'GET'})
+    .then(r=>r.text()).then(t=>console.log('Sheets:',t)).catch(e=>console.error('Sheets error:',e));
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
 function render(){
   const app=document.getElementById('app');
-  const q=QUIZ.questions[state.idx];
-  const progress=Math.round((state.idx/QUIZ.questions.length)*100);
+  const questions=state.activeQuestions;
   
+  // ── Welcome screen with phase selector ──
   if(state.idx===0 && !state.name){
+    let phaseOpts='';
+    PHASES.filter(p=>p.id!==0).forEach(p=>{
+      phaseOpts+=`<label class="phase-option" onclick="this.querySelector('input').click()">
+        <input type="checkbox" value="${p.id}" checked>
+        <div class="phase-option-text">
+          <div class="phase-option-title">${p.emoji} ${p.title}</div>
+          <div class="phase-option-count">${p.count} activités${p.subtitle?' — '+p.subtitle:''}</div>
+        </div>
+      </label>`;
+    });
     app.innerHTML=`<div class="welcome">
       <div class="welcome-title">${QUIZ.title}</div>
-      <div class="welcome-sub">${QUIZ.subtitle}<br><br>11 questions • ~8 min</div>
-      <div style="width:100%;max-width:320px">
-        <input id="nameInput" type="text" placeholder="Ton prénom" style="width:100%;padding:14px 16px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:16px;margin-bottom:12px" autofocus>
-        <button class="btn-primary" onclick="startQuiz()">Commencer →</button>
+      <div class="welcome-sub">${QUIZ.subtitle}<br><br>59 activités • 7 phases • ~30 min</div>
+      <input class="input-field" id="nameInput" placeholder="Ton prénom" style="margin-bottom:16px"
+        onkeydown="if(event.key==='Enter')startQuiz()">
+      <div style="text-align:left;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:600">Phases à inclure :</span>
+          <button class="btn-secondary" onclick="toggleAllPhases()" style="font-size:11px;padding:6px 12px">Tout le quiz</button>
+        </div>
+        <div class="phase-selector" id="phaseSelector">${phaseOpts}</div>
       </div>
+      <button class="btn-primary" onclick="startQuiz()">Commencer</button>
     </div>`;
-    document.getElementById('nameInput').focus();
-    document.getElementById('nameInput').onkeypress=e=>{if(e.key==='Enter')startQuiz()};
     return;
   }
-  
-  if(state.idx>=QUIZ.questions.length){
-    const correct=Object.values(state.answers).filter(a=>a.correct).length;
-    const total=QUIZ.questions.length-1;
-    const pct=Math.round(correct/total*100);
+
+  // ── End of quiz ──
+  if(state.idx>=questions.length){
+    let correct=0,total=0;
+    questions.forEach(q=>{
+      if(q.type!=='text'&&q.type!=='longtext'&&q.type!=='slider'&&q.phase!==0){
+        total++;
+        if(state.answers[q.id]&&state.answers[q.id].correct)correct++;
+      }
+    });
+    const pct=total>0?Math.round(correct/total*100):0;
     const timeMin=Math.round((Date.now()-state.startTime)/60000);
-    
-    // Save to sheets
     sendToSheets({action:'save_session',session:{studentName:state.name,score:correct,totalQuestions:total,timestamp:Date.now(),timeTaken:`${timeMin} min`}});
-    
     app.innerHTML=`<div class="results">
       <div class="results-score">${correct}/${total}</div>
       <div style="color:var(--dim);font-size:18px">${pct}% • ${timeMin} min</div>
@@ -116,273 +371,521 @@ function render(){
     return;
   }
 
-  let html=`<div class="progress-bar-wrap">
-    <div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>
-    <div class="progress-label">${state.idx} / ${QUIZ.questions.length-1}</div>
-  </div>
-  <div class="question-card">
-    <div class="question-number">Question ${state.idx}</div>
-    <div class="question-text">${q.q}</div>`;
+  const q=questions[state.idx];
+  const qIdx=state.idx;
+  const totalQ=questions.length;
+  const progress=Math.round((qIdx/totalQ)*100);
+  const phase=getPhaseForId(q.phase);
   
-  if(q.sub) html+=`<div style="color:var(--dim);font-size:14px;margin:-12px 0 16px;font-style:italic">${q.sub}</div>`;
-  
-  if(q.type==='text'){
-    html+=`<input id="answer" type="text" placeholder="${q.ph||''}" style="width:100%;padding:14px;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:15px" autofocus>`;
-  } else if(q.type==='mcq'){
-    html+='<div class="options-grid">';
-    q.opts.forEach((opt,i)=>{
-      html+=`<button class="option-btn" data-idx="${i}" onclick="selectMCQ(${i})">
-        <span class="option-letter">${String.fromCharCode(65+i)}</span>
-        <span>${opt}</span>
-      </button>`;
+  // ── Phase intro interstitial ──
+  const prevQ=qIdx>0?questions[qIdx-1]:null;
+  if(q.phase!==0 && (!prevQ || prevQ.phase!==q.phase)){
+    let scored=0,scoredTotal=0;
+    questions.slice(0,qIdx).forEach(pq=>{
+      if(pq.type!=='text'&&pq.type!=='longtext'&&pq.type!=='slider'&&pq.phase!==0){
+        scoredTotal++;
+        if(state.answers[pq.id]&&state.answers[pq.id].correct)scored++;
+      }
     });
-    html+='</div>';
-  } else if(q.type==='words'){
-    const words=q.sub.replace(/[«»]/g,'').split(/\s+/);
+    const scoreText=scoredTotal>0?`Score actuel : ${scored}/${scoredTotal}`:'';
+    app.innerHTML=`<div class="phase-intro">
+      <div class="phase-emoji">${phase.emoji}</div>
+      <div class="phase-title">${phase.title}</div>
+      ${phase.subtitle?`<div style="color:var(--dim);font-size:14px;margin-bottom:4px">${phase.subtitle}</div>`:''}
+      <div class="phase-count">${phase.count} activités</div>
+      ${scoreText?`<div class="phase-score">${scoreText}</div>`:''}
+      <button class="btn-primary" style="max-width:200px" onclick="renderQuestion()">Continuer</button>
+    </div>`;
+    return;
+  }
+
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const app=document.getElementById('app');
+  const questions=state.activeQuestions;
+  const q=questions[state.idx];
+  const qIdx=state.idx;
+  const totalQ=questions.length;
+  const progress=Math.round((qIdx/totalQ)*100);
+  const phase=getPhaseForId(q.phase);
+
+  // Count question within its phase
+  const phaseQs=questions.filter(pq=>pq.phase===q.phase);
+  const phaseIdx=phaseQs.indexOf(q)+1;
+
+  let html=`<div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+    <div class="progress-text"><span>${phase.emoji} ${phase.title}</span><span>${qIdx+1}/${totalQ}</span></div>
+    <div class="question-card">
+    <div class="question-phase">${phase.emoji} Phase ${q.phase===0?'0':q.phase==='N'?'Noverre':q.phase} — ${phaseIdx}/${phaseQs.length}</div>
+    <div class="question-text">${q.q}</div>`;
+
+  if(q.sub) html+=`<div class="question-sub">${q.sub}</div>`;
+
+  // ── Render by type ──
+  if(q.type==='text'){
+    html+=`<input class="input-field" id="answer" placeholder="${q.ph||'Votre réponse...'}" onkeydown="if(event.key==='Enter')validate()">`;
+  }
+  else if(q.type==='longtext'){
+    html+=`<textarea class="textarea-field" id="answer" placeholder="Rédigez votre réponse ici...">${''}</textarea>`;
+  }
+  else if(q.type==='words'){
+    const words=q.sub?q.sub.replace(/[«»]/g,'').split(/\s+/):[];
     html+='<div id="wordsPhrase" style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;font-size:15px;line-height:1.9">';
     words.forEach(w=>{
-      const clean=w.replace(/[.,;]/g,'');
+      const clean=w.replace(/[.,;:!?]/g,'');
       if(clean.length>2){
-        html+=`<span class="word-chip" data-word="${clean.toLowerCase()}" onclick="toggleWord(this)" style="display:inline-block;padding:4px 8px;margin:2px;border-radius:6px;cursor:pointer;transition:all .2s;border:1px solid transparent">${w}</span> `;
-      }else{html+=w+' ';}
+        html+=`<span class="word-chip" data-word="${clean.toLowerCase()}" onclick="toggleWord(this)">${w}</span> `;
+      } else {html+=w+' ';}
     });
-    html+='</div><div style="color:var(--dim);font-size:12px">Cliquez sur 2-3 mots importants</div><div id="words" style="display:none"></div>';
-  } else if(q.type==='rank'){
-    // Shuffle items randomly each time
-    const shuffled=[...q.items].sort(()=>Math.random()-0.5);
+    html+='</div><div style="color:var(--dim);font-size:12px">Cliquez sur les mots importants</div>';
+  }
+  else if(q.type==='mcq'){
+    html+='<div class="options-grid">';
+    q.opts.forEach((opt,i)=>{
+      html+=`<button class="option-btn" onclick="selectMCQ(this,${i})"><span class="option-letter">${String.fromCharCode(65+i)}</span><span>${opt}</span></button>`;
+    });
+    html+='</div>';
+  }
+  else if(q.type==='multi'){
+    selectedMulti=[];
+    html+='<div class="options-grid">';
+    q.opts.forEach((opt,i)=>{
+      html+=`<button class="option-btn" onclick="toggleMulti(this,${i})"><span class="option-letter">☐</span><span>${opt}</span></button>`;
+    });
+    html+='</div>';
+  }
+  else if(q.type==='rank'){
+    const shuffled=shuffle(q.items);
     html+='<div class="options-grid" id="rankList">';
     shuffled.forEach((item,i)=>{
-      html+=`<div class="option-btn" style="cursor:grab" draggable="true" data-idx="${i}">
-        <span class="option-letter">${i+1}</span>
-        <span style="flex:1">${item}</span>
-        <span style="color:var(--dim)">⋮⋮</span>
-      </div>`;
+      html+=`<div class="rank-item" draggable="true" data-text="${item}"><span class="option-letter">${i+1}</span><span>${item}</span></div>`;
     });
-    html+='</div><div style="color:var(--dim);font-size:12px;margin-top:8px">Glissez-déposez pour réordonner</div>';
-  } else if(q.type==='match'){
-    html+='<div style="display:flex;flex-direction:column;gap:10px">';
-    q.pairs.forEach((p,i)=>{
-      html+=`<div style="display:flex;align-items:center;gap:8px">
-        <div style="flex:1;padding:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600">${p[0]}</div>
-        <div style="color:var(--dim)">→</div>
-        <select data-idx="${i}" onchange="checkMatchComplete()" style="flex:1;padding:10px;background:var(--surface-2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
-          <option value="">Choisir...</option>
-          ${q.pairs.map(x=>`<option>${x[1]}</option>`).sort().map(o=>`<option>${o.replace('<option>','').replace('</option>','')}</option>`).join('')}
+    html+='</div>';
+  }
+  else if(q.type==='match'){
+    const rights=shuffle(q.pairs.map(p=>p[1]));
+    html+='<div>';
+    q.pairs.forEach((pair,i)=>{
+      html+=`<div class="match-row"><div class="match-label">${pair[0]}</div>
+        <select class="match-select" data-idx="${i}" onchange="checkMatchComplete()">
+          <option value="">— Choisir —</option>
+          ${rights.map(r=>`<option value="${r}">${r}</option>`).join('')}
+        </select></div>`;
+    });
+    html+='</div>';
+  }
+  else if(q.type==='match3'){
+    const dates=shuffle(q.rows.map(r=>r.date));
+    const places=shuffle(q.rows.map(r=>r.place));
+    html+='<div>';
+    q.rows.forEach((row,i)=>{
+      html+=`<div class="match-row" style="flex-wrap:wrap;margin-bottom:12px">
+        <div class="match-label" style="flex:1 1 100%;margin-bottom:4px;font-weight:600">${row.item}</div>
+        <select class="match-select match3-date" data-idx="${i}" onchange="checkMatch3Complete()">
+          <option value="">— Date —</option>
+          ${dates.map(d=>`<option value="${d}">${d}</option>`).join('')}
+        </select>
+        <select class="match-select match3-place" data-idx="${i}" onchange="checkMatch3Complete()">
+          <option value="">— Lieu / Impact —</option>
+          ${places.map(p=>`<option value="${p}">${p}</option>`).join('')}
         </select>
       </div>`;
     });
     html+='</div>';
-  } else if(q.type==='multi'){
-    html+='<div class="options-grid">';
-    q.opts.forEach((opt,i)=>{
-      html+=`<button class="option-btn" data-idx="${i}" onclick="toggleMulti(${i})">
-        <span class="option-letter">□</span>
-        <span>${opt}</span>
-      </button>`;
+  }
+  else if(q.type==='geo'){
+    html+='<div>';
+    q.items.forEach((item,i)=>{
+      const opts=shuffle(item.opts);
+      html+=`<div class="match-row"><div class="match-label" style="flex:1.5">${item.text}</div>
+        <select class="match-select geo-select" data-idx="${i}" onchange="checkGeoComplete()">
+          <option value="">— Ville —</option>
+          ${opts.map(o=>`<option value="${o}">${o}</option>`).join('')}
+        </select></div>`;
     });
     html+='</div>';
   }
-  
-  html+=`<div class="actions-row">
-    ${state.idx>1?'<button class="btn-primary" style="background:var(--surface-2);color:var(--text)" onclick="prevQ()">← Retour</button>':''}
-    <button class="btn-primary btn-validate" id="validateBtn" onclick="validate()" disabled>Valider →</button>
-  </div></div>`;
-  
+  else if(q.type==='truefalse'){
+    html+='<div id="tfContainer">';
+    q.statements.forEach((s,i)=>{
+      html+=`<div class="tf-row" data-idx="${i}">
+        <div class="tf-text">${i+1}. ${s.text}</div>
+        <div class="tf-btns">
+          <button class="tf-btn" onclick="selectTF(${i},true,this)">Vrai</button>
+          <button class="tf-btn" onclick="selectTF(${i},false,this)">Faux</button>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+    state.tempAnswer=new Array(q.statements.length).fill(null);
+  }
+  else if(q.type==='slider'){
+    state.tempAnswer=3;
+    html+=`<div class="slider-container">
+      <div class="slider-value" id="sliderVal">3</div>
+      <input type="range" class="slider-input" min="1" max="5" value="3" oninput="updateSlider(this.value)">
+      <div class="slider-labels"><span>${q.labels?q.labels[0]:'1'}</span><span>${q.labels?q.labels[1]:'5'}</span></div>
+    </div>`;
+  }
+
+  html+='</div>'; // close question-card
+
+  // Nav buttons
+  html+=`<div class="nav-row">`;
+  if(qIdx>1) html+=`<button class="btn-secondary" onclick="prevQ()">← Retour</button>`;
+  html+=`<button class="btn-primary" id="validateBtn" onclick="validate()"${q.type==='slider'?'':'disabled'}>Valider</button>`;
+  html+=`</div>`;
+
   app.innerHTML=html;
-  if(q.type==='text') document.getElementById('answer').focus();
-  setupInteractions(q);
+
+  // Setup drag for rank
+  if(q.type==='rank') setupRankDrag();
 }
 
+// ═══════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════
 function startQuiz(){
   const name=document.getElementById('nameInput').value.trim();
-  if(!name){alert('Entre ton prénom');return}
+  if(!name)return;
   state.name=name;
-  state.idx=1;
-  saveSession();
+  // Check which phases are selected
+  const checkboxes=document.querySelectorAll('#phaseSelector input[type=checkbox]');
+  const selected=Array.from(checkboxes).filter(cb=>cb.checked).map(cb=>{
+    const v=cb.value;return v==='N'?'N':parseInt(v);
+  });
+  if(selected.length===PHASES.length-1){
+    state.selectedPhases=null; // all selected
+  } else {
+    state.selectedPhases=selected;
+  }
+  buildActiveQuestions();
+  state.answers['Q0']={answer:name,correct:true,ts:Date.now()};
+  state.idx=1; // skip Q0
   render();
 }
 
-function selectMCQ(i){
-  document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
-  document.querySelector(`[data-idx="${i}"]`).classList.add('selected');
+function toggleAllPhases(){
+  const cbs=document.querySelectorAll('#phaseSelector input[type=checkbox]');
+  const allChecked=Array.from(cbs).every(cb=>cb.checked);
+  cbs.forEach(cb=>cb.checked=!allChecked);
+}
+
+function selectMCQ(btn,idx){
+  document.querySelectorAll('.option-btn').forEach(b=>{b.classList.remove('selected');});
+  btn.classList.add('selected');
+  state.tempAnswer=idx;
   document.getElementById('validateBtn').disabled=false;
-  state.tempAnswer=i;
 }
 
-let selectedMulti=[];
-function toggleMulti(i){
-  const btn=document.querySelector(`[data-idx="${i}"]`);
-  const idx=selectedMulti.indexOf(i);
-  if(idx>-1){selectedMulti.splice(idx,1);btn.classList.remove('selected');btn.querySelector('.option-letter').textContent='□';}
-  else{selectedMulti.push(i);btn.classList.add('selected');btn.querySelector('.option-letter').textContent='✓';}
-  document.getElementById('validateBtn').disabled=selectedMulti.length===0;
+function toggleMulti(btn,idx){
+  btn.classList.toggle('selected');
+  if(selectedMulti.includes(idx)){
+    selectedMulti=selectedMulti.filter(i=>i!==idx);
+    btn.querySelector('.option-letter').textContent='☐';
+  } else {
+    selectedMulti.push(idx);
+    btn.querySelector('.option-letter').textContent='☑';
+  }
   state.tempAnswer=[...selectedMulti];
+  document.getElementById('validateBtn').disabled=selectedMulti.length===0;
 }
-
 
 function toggleWord(el){
   el.classList.toggle('selected');
-  if(el.classList.contains('selected')){
-    el.style.background='var(--purple-glow)';
-    el.style.borderColor='var(--purple)';
-    el.style.color='var(--purple)';
-  }else{
-    el.style.background='transparent';
-    el.style.borderColor='transparent';
-    el.style.color='var(--text)';
-  }
   const selected=document.querySelectorAll('.word-chip.selected');
   state.tempAnswer=Array.from(selected).map(s=>s.dataset.word);
   document.getElementById('validateBtn').disabled=selected.length===0;
+}
+
+function selectTF(idx,val,btn){
+  const row=btn.closest('.tf-row');
+  row.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.tempAnswer[idx]=val;
+  // Enable validate if all answered
+  if(state.tempAnswer.every(v=>v!==null)){
+    document.getElementById('validateBtn').disabled=false;
+  }
+}
+
+function updateSlider(val){
+  state.tempAnswer=parseInt(val);
+  document.getElementById('sliderVal').textContent=val;
 }
 
 function checkMatchComplete(){
   const selects=document.querySelectorAll('select[data-idx]');
   const allFilled=Array.from(selects).every(s=>s.value!=='');
   document.getElementById('validateBtn').disabled=!allFilled;
-  console.log('Match check:', Array.from(selects).map(s=>s.value), 'All filled:', allFilled);
 }
 
-function addWord(){
-  const input=document.getElementById('wordInput');
-  const word=input.value.trim();
-  if(!word)return;
-  const container=document.getElementById('words');
-  const span=document.createElement('span');
-  span.textContent=word;
-  span.style.cssText='display:inline-block;background:var(--purple-glow);color:var(--purple);padding:6px 12px;border-radius:20px;margin:0 6px 6px 0;font-size:13px;font-weight:600';
-  span.onclick=()=>span.remove();
-  container.appendChild(span);
-  input.value='';
-  state.tempAnswer=Array.from(container.children).map(s=>s.textContent);
-  document.getElementById('validateBtn').disabled=state.tempAnswer.length===0;
+function checkMatch3Complete(){
+  const dates=document.querySelectorAll('.match3-date');
+  const places=document.querySelectorAll('.match3-place');
+  const allFilled=Array.from(dates).every(s=>s.value!=='')&&Array.from(places).every(s=>s.value!=='');
+  document.getElementById('validateBtn').disabled=!allFilled;
 }
 
-function setupInteractions(q){
-  if(q.type==='rank'){
-    const list=document.getElementById('rankList');
-    let dragged=null;
-    list.querySelectorAll('[draggable]').forEach(item=>{
-      item.ondragstart=e=>{dragged=item;item.style.opacity='0.5'};
-      item.ondragend=()=>{item.style.opacity='1';updateRankOrder()};
-      item.ondragover=e=>e.preventDefault();
-      item.ondrop=e=>{e.preventDefault();if(dragged&&dragged!==item){const items=[...list.children];const dIdx=items.indexOf(dragged);const tIdx=items.indexOf(item);if(dIdx<tIdx)item.after(dragged);else item.before(dragged);updateRankOrder()}};
-    });
-    function updateRankOrder(){
-      [...list.children].forEach((item,i)=>{item.querySelector('.option-letter').textContent=i+1});
-      state.tempAnswer=[...list.children].map(item=>item.querySelector('span:last-child').previousElementSibling.textContent);
-      document.getElementById('validateBtn').disabled=false;
-    }
-    updateRankOrder();
-  }
+function checkGeoComplete(){
+  const selects=document.querySelectorAll('.geo-select');
+  const allFilled=Array.from(selects).every(s=>s.value!=='');
+  document.getElementById('validateBtn').disabled=!allFilled;
 }
 
-function validate(){
-  const q=QUIZ.questions[state.idx];
-  let answer,correct=false;
-  
-  if(q.type==='text'){answer=document.getElementById('answer').value;correct=answer.length>0;}
-  else if(q.type==='mcq'){answer=state.tempAnswer;correct=answer===q.a;}
-  else if(q.type==='words'){
-    answer=state.tempAnswer||[];
-    correct=answer.length>0;
-    // Show expected answers
-    const container=document.getElementById('words');
-    if(container && q.a){
-      const expectedDiv=document.createElement('div');
-      expectedDiv.style.cssText='margin-top:16px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)';
-      expectedDiv.innerHTML='<div style="color:var(--dim);font-size:12px;margin-bottom:8px">Mots attendus :</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+q.a.map(w=>`<span style="padding:4px 10px;background:var(--purple-glow);color:var(--purple);border-radius:12px;font-size:12px;font-weight:600">${w}</span>`).join('')+'</div>';
-      container.parentNode.appendChild(expectedDiv);
-      
-      // Highlight user words that match
-      Array.from(container.children).forEach(span=>{
-        const word=span.textContent.toLowerCase();
-        if(q.a.some(expected=>expected.toLowerCase()===word || expected.toLowerCase().includes(word) || word.includes(expected.toLowerCase()))){
-          span.style.background='var(--green-glow)';
-          span.style.color='var(--green)';
-          span.style.border='2px solid var(--green)';
-        }
-      });
-    }
-  }
-  else if(q.type==='rank'){answer=state.tempAnswer;correct=JSON.stringify(answer)===JSON.stringify(q.answer);}
-  else if(q.type==='match'){
-    const selects=document.querySelectorAll('select');
-    answer=Array.from(selects).map(s=>s.value);
-    correct=answer.every((v,i)=>v===q.pairs[i][1]);
-  }
-  else if(q.type==='multi'){answer=state.tempAnswer;correct=JSON.stringify(answer.sort())===JSON.stringify(q.a.sort());}
-  
-  state.answers[q.id]={answer,correct,ts:Date.now()};
-  saveSession();
-  
-  // Show visual feedback for match questions
-  if(q.type==='match'){
-    document.querySelectorAll('select').forEach((sel,i)=>{
-      sel.disabled=true;
-      if(sel.value===q.pairs[i][1]){
-        sel.style.borderColor='var(--success)';
-        sel.style.background='var(--success-glow)';
-      } else if(sel.value!==''){
-        sel.style.borderColor='var(--error)';
-        sel.style.background='var(--error-glow)';
+function setupRankDrag(){
+  const list=document.getElementById('rankList');
+  if(!list)return;
+  list.querySelectorAll('[draggable]').forEach(item=>{
+    item.ondragstart=e=>{dragged=item;item.style.opacity='0.5';};
+    item.ondragend=()=>{item.style.opacity='1';updateRankOrder();};
+    item.ondragover=e=>e.preventDefault();
+    item.ondrop=e=>{
+      e.preventDefault();
+      if(dragged&&dragged!==item){
+        const items=[...list.children];
+        const dIdx=items.indexOf(dragged);
+        const tIdx=items.indexOf(item);
+        if(dIdx<tIdx)item.after(dragged);else item.before(dragged);
+        updateRankOrder();
       }
-    });
-  }
-  
-  // Send to sheets
-  sendToSheets({
-    action:'save_answer',
-    answer:{
-      studentName:state.name,
-      questionId:q.id,
-      questionText:q.q,
-      studentAnswer:answer,
-      correctAnswer:q.a || q.answer || '',
-      questionType:q.type,
-      isCorrect:correct,
-      points:correct?1:0,
-      maxPoints:1
-    }
+    };
+    // Touch support
+    let touchY=0;
+    item.ontouchstart=e=>{dragged=item;touchY=e.touches[0].clientY;item.style.opacity='0.7';};
+    item.ontouchmove=e=>{
+      e.preventDefault();
+      const touch=e.touches[0];
+      const elements=document.elementsFromPoint(touch.clientX,touch.clientY);
+      const target=elements.find(el=>el.classList&&el.classList.contains('rank-item')&&el!==dragged);
+      if(target){
+        const rect=target.getBoundingClientRect();
+        if(touch.clientY<rect.top+rect.height/2)target.before(dragged);
+        else target.after(dragged);
+      }
+    };
+    item.ontouchend=()=>{item.style.opacity='1';updateRankOrder();};
   });
-  
-  // Show feedback
-  if(q.type==='mcq'){
-    document.querySelectorAll('.option-btn').forEach((btn,i)=>{
-      btn.disabled=true;
-      if(i===q.a)btn.classList.add('correct');
-      else if(i===state.tempAnswer&&!correct)btn.classList.add('incorrect');
-    });
-  } else if(q.type==='rank'){
-    const items=document.querySelectorAll('#rankList .option-btn');
-    items.forEach((item,i)=>{
-      item.style.cursor='default';
-      item.draggable=false;
-      const itemText=item.querySelector('span:nth-child(2)').textContent;
-      const correctIdx=q.answer.indexOf(itemText);
-      if(correctIdx===i){
-        item.classList.add('correct');
-      } else {
-        item.classList.add('incorrect');
-      }
-    });
-  } else if(q.type==='multi'){
-    document.querySelectorAll('.option-btn').forEach((btn,i)=>{
-      btn.style.pointerEvents='none';
-      if(q.a.includes(i)){
-        btn.classList.add('correct');
-      } else if(state.tempAnswer.includes(i)){
-        btn.classList.add('incorrect');
-      }
-    });
-  }
-  
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, q.type==='words'?4000:['mcq','rank','multi','match'].includes(q.type)?1500:300);
+  updateRankOrder();
+  document.getElementById('validateBtn').disabled=false;
+}
+
+function updateRankOrder(){
+  const list=document.getElementById('rankList');
+  [...list.children].forEach((item,i)=>{item.querySelector('.option-letter').textContent=i+1;});
+  state.tempAnswer=[...list.children].map(item=>item.dataset.text);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
 
-render();
+// ═══════════════════════════════════════
+// VALIDATION & FEEDBACK
+// ═══════════════════════════════════════
+function validate(){
+  const questions=state.activeQuestions;
+  const q=questions[state.idx];
+  let answer,correct=false;
+  let delay=300;
+
+  if(q.type==='text'){
+    answer=document.getElementById('answer').value.trim();
+    correct=answer.length>0;
+    if(q.model){
+      const card=document.querySelector('.question-card');
+      card.insertAdjacentHTML('beforeend',`<div class="model-answer"><div class="model-answer-label">Réponse modèle</div>${q.model}</div>`);
+      delay=4000;
+    }
+  }
+  else if(q.type==='longtext'){
+    answer=document.getElementById('answer').value.trim();
+    correct=answer.length>0;
+    if(q.model){
+      const card=document.querySelector('.question-card');
+      card.insertAdjacentHTML('beforeend',`<div class="model-answer"><div class="model-answer-label">Réponse modèle</div>${q.model}</div>`);
+      delay=5000;
+    }
+  }
+  else if(q.type==='words'){
+    answer=state.tempAnswer||[];
+    correct=answer.length>0;
+    if(q.expected){
+      const container=document.getElementById('wordsPhrase');
+      if(container){
+        // Highlight matching words
+        document.querySelectorAll('.word-chip').forEach(chip=>{
+          const w=chip.dataset.word;
+          if(q.expected.some(exp=>exp.toLowerCase()===w||exp.toLowerCase().includes(w)||w.includes(exp.toLowerCase()))){
+            if(chip.classList.contains('selected')){
+              chip.style.background='var(--green-glow)';chip.style.borderColor='var(--green)';chip.style.color='var(--green)';
+            }
+          }
+        });
+        const card=document.querySelector('.question-card');
+        card.insertAdjacentHTML('beforeend',`<div class="expected-box"><div class="expected-label">Mots attendus :</div><div class="expected-tags">${q.expected.map(w=>`<span class="expected-tag">${w}</span>`).join('')}</div></div>`);
+      }
+    }
+    delay=4000;
+  }
+  else if(q.type==='mcq'){
+    answer=state.tempAnswer;
+    correct=answer===q.a;
+    document.querySelectorAll('.option-btn').forEach((btn,i)=>{
+      btn.style.pointerEvents='none';
+      if(i===q.a)btn.classList.add('correct');
+      else if(i===answer)btn.classList.add('incorrect');
+    });
+    delay=1500;
+  }
+  else if(q.type==='multi'){
+    answer=state.tempAnswer||[];
+    correct=JSON.stringify([...answer].sort())===JSON.stringify([...q.a].sort());
+    document.querySelectorAll('.option-btn').forEach((btn,i)=>{
+      btn.style.pointerEvents='none';
+      if(q.a.includes(i))btn.classList.add('correct');
+      else if(answer.includes(i))btn.classList.add('incorrect');
+    });
+    delay=1500;
+  }
+  else if(q.type==='rank'){
+    answer=state.tempAnswer;
+    correct=JSON.stringify(answer)===JSON.stringify(q.answer);
+    const items=document.querySelectorAll('.rank-item');
+    items.forEach((item,i)=>{
+      if(item.dataset.text===q.answer[i])item.classList.add('correct');
+      else item.classList.add('incorrect');
+    });
+    if(!correct){
+      const card=document.querySelector('.question-card');
+      card.insertAdjacentHTML('beforeend',`<div class="correct-order"><div class="correct-order-label">Ordre correct :</div>${q.answer.map((a,i)=>`<div class="correct-order-item">${i+1}. ${a}</div>`).join('')}</div>`);
+      delay=3000;
+    } else {delay=1500;}
+  }
+  else if(q.type==='match'){
+    const selects=document.querySelectorAll('select[data-idx]');
+    answer=Array.from(selects).map(s=>s.value);
+    correct=answer.every((v,i)=>v===q.pairs[i][1]);
+    selects.forEach((sel,i)=>{
+      sel.disabled=true;
+      const label=sel.closest('.match-row').querySelector('.match-label');
+      if(sel.value===q.pairs[i][1]){sel.classList.add('correct');label.classList.add('correct');}
+      else{sel.classList.add('incorrect');label.classList.add('incorrect');}
+    });
+    delay=2000;
+  }
+  else if(q.type==='match3'){
+    const dates=document.querySelectorAll('.match3-date');
+    const places=document.querySelectorAll('.match3-place');
+    answer={dates:Array.from(dates).map(s=>s.value),places:Array.from(places).map(s=>s.value)};
+    let allCorrect=true;
+    dates.forEach((sel,i)=>{
+      sel.disabled=true;
+      if(sel.value===q.rows[i].date)sel.classList.add('correct');
+      else{sel.classList.add('incorrect');allCorrect=false;}
+    });
+    places.forEach((sel,i)=>{
+      sel.disabled=true;
+      if(sel.value===q.rows[i].place)sel.classList.add('correct');
+      else{sel.classList.add('incorrect');allCorrect=false;}
+    });
+    correct=allCorrect;
+    delay=2500;
+  }
+  else if(q.type==='geo'){
+    const selects=document.querySelectorAll('.geo-select');
+    answer=Array.from(selects).map(s=>s.value);
+    correct=answer.every((v,i)=>v===q.items[i].answer);
+    selects.forEach((sel,i)=>{
+      sel.disabled=true;
+      const label=sel.closest('.match-row').querySelector('.match-label');
+      if(sel.value===q.items[i].answer){sel.classList.add('correct');label.classList.add('correct');}
+      else{sel.classList.add('incorrect');label.classList.add('incorrect');}
+    });
+    delay=2000;
+  }
+  else if(q.type==='truefalse'){
+    answer=state.tempAnswer;
+    let allCorrect=true;
+    const rows=document.querySelectorAll('.tf-row');
+    rows.forEach((row,i)=>{
+      const btns=row.querySelectorAll('.tf-btn');
+      btns.forEach(btn=>btn.style.pointerEvents='none');
+      const isCorrect=answer[i]===q.statements[i].answer;
+      if(!isCorrect)allCorrect=false;
+      row.classList.add(isCorrect?'correct':'incorrect');
+      // Highlight the correct button
+      btns.forEach(btn=>{
+        const btnVal=btn.textContent==='Vrai';
+        if(btnVal===q.statements[i].answer)btn.classList.add('correct');
+        else if(btn.classList.contains('selected')&&!isCorrect)btn.classList.add('incorrect');
+      });
+      // Show explanation if exists
+      if(!isCorrect&&q.statements[i].explain){
+        row.insertAdjacentHTML('beforeend',`<div style="width:100%;font-size:11px;color:var(--gold);margin-top:4px;padding-left:4px">→ ${q.statements[i].explain}</div>`);
+      }
+    });
+    correct=allCorrect;
+    delay=2500;
+  }
+  else if(q.type==='slider'){
+    answer=state.tempAnswer;
+    correct=null; // no correct answer
+    if(q.hint){
+      const card=document.querySelector('.question-card');
+      card.insertAdjacentHTML('beforeend',`<div style="text-align:center;color:var(--dim);font-size:12px;margin-top:8px">${q.hint}</div>`);
+      delay=1500;
+    }
+  }
+
+  // Save answer
+  state.answers[q.id]={answer,correct,ts:Date.now()};
+
+  // Send to sheets
+  if(q.phase!==0){
+    sendToSheets({action:'save_answer',answer:{
+      studentName:state.name,
+      questionId:q.id,
+      questionText:q.q,
+      studentAnswer:answer,
+      correctAnswer:q.a||q.answer||q.expected||'',
+      questionType:q.type,
+      isCorrect:correct,
+      points:correct?1:0,
+      maxPoints:(q.type==='slider'||q.type==='longtext')?0:1
+    }});
+  }
+
+  // Disable validate button
+  document.getElementById('validateBtn').disabled=true;
+
+  // Advance
+  setTimeout(()=>{
+    state.idx++;
+    state.tempAnswer=null;
+    selectedMulti=[];
+    render();
+  },delay);
+}
+
+// ═══════════════════════════════════════
+// TEACHER DASHBOARD
+// ═══════════════════════════════════════
+if(new URLSearchParams(location.search).get('mode')==='teacher'){
+  const pwd=prompt('Mot de passe enseignant :');
+  if(pwd==='Tixi'){
+    document.getElementById('app').innerHTML=`<div class="welcome">
+      <div class="welcome-title">Dashboard Enseignant</div>
+      <div class="welcome-sub">Consultez les résultats sur Google Sheets</div>
+      <a href="https://docs.google.com/spreadsheets/d/1qzX4VKHRXPYR-R_daOFVdnEfIMKOUkLLEgjKDHjLwkM/edit" target="_blank" class="btn-primary" style="display:inline-block;text-decoration:none;max-width:300px">Ouvrir Google Sheets</a>
+    </div>`;
+  } else {
+    document.getElementById('app').innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">Mot de passe incorrect</div>';
+  }
+} else {
+  buildActiveQuestions();
+  render();
+}
 </script>
 </body>
 </html>
