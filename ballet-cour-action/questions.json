@@ -58,8 +58,9 @@
       "id": "Q0",
       "phase": 0,
       "type": "text",
-      "q": "Avant de commencer, quel est ton prénom ?",
-      "ph": "Ton prénom"
+      "q": "Quel est ton prénom ?",
+      "ph": "Ton prénom",
+      "model": ""
     },
     {
       "id": "Q1",
@@ -222,32 +223,32 @@
           "place": "Londres (Drury Lane)"
         },
         {
-          "item": "Ballet d'action",
+          "item": "Ballet d'action (Noverre, Angiolini, Dauberval)",
           "date": "1760 – 1789",
           "place": "Stuttgart, Vienne, Bordeaux"
         },
         {
-          "item": "Ballet romantique",
+          "item": "Ballet romantique (Taglioni, Coralli/Perrot)",
           "date": "1832 – vers 1850",
           "place": "Paris (Opéra de Paris)"
         },
         {
-          "item": "Grand ballet classique",
+          "item": "Grand ballet classique (Petipa, Ivanov)",
           "date": "1877 – 1905",
           "place": "Saint-Pétersbourg (Mariinsky)"
         },
         {
-          "item": "Ballets russes",
+          "item": "Ballets russes (Diaghilev)",
           "date": "1909 – 1929",
           "place": "Europe nomade (Paris, Monte-Carlo)"
         },
         {
-          "item": "Ballet néoclassique - Lifar",
+          "item": "Ballet néoclassique — France (Lifar)",
           "date": "1929 – 1958",
           "place": "Paris (Opéra de Paris)"
         },
         {
-          "item": "Ballet néoclassique - Balanchine",
+          "item": "Ballet néoclassique — USA (Balanchine)",
           "date": "1934 – années 1960",
           "place": "New York (NYCB)"
         }
