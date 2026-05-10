@@ -11,7 +11,7 @@
          ============================================================ -->
     <script>
       window.__DANCE_QUIZ_CONFIG = {
-        APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwGGNuA10ZVnXfdbtqH4kj68UNJ3y2D-uYZHoY1mH5cW6lKbjbGDwrB7qWMQQpvHKxpTQ/exec'
+        APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzzCQYKxslqQ__Vp2RIk9lA4ntxlRjqKp1eo2LWta5FUBiNrnKco31lv3eSdFGaUU2cJA/exec'
       };
     </script>
 
@@ -34,12 +34,11 @@
               var localResult = handleLocalFallback(body);
 
               if (gasUrl && !gasUrl.includes('PASTE_YOUR')) {
-                // Also send to Google Apps Script (fire-and-forget)
-                // Use text/plain to avoid CORS preflight; redirect: follow for GAS 302
-                origFetch(gasUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify(body),
+                // Send to Google Apps Script via GET (POST is broken for Shared Drive scripts)
+                // Encode the payload as a query parameter
+                var encoded = encodeURIComponent(JSON.stringify(body));
+                origFetch(gasUrl + '?payload=' + encoded, {
+                  method: 'GET',
                   redirect: 'follow'
                 }).catch(function(e) { console.log('GAS sync error (non-fatal):', e); });
               }

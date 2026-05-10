@@ -1,27 +1,62 @@
 // ===========================================================
-// Google Apps Script — Dance Quiz Backend
+// Google Apps Script — Dance Quiz Backend (v2 — GET-only)
 // ===========================================================
-// HOW TO DEPLOY:
-// 1. Open the Google Sheet "Dance Quiz — Résultats"
-// 2. Extensions → Apps Script
-// 3. Delete any existing code, paste this entire file
-// 4. Click Deploy → New deployment
-// 5. Type: "Web app"
-// 6. Execute as: "Me"
-// 7. Who has access: "Anyone"
-// 8. Click Deploy → copy the Web App URL
-// 9. Paste that URL into dance-quiz/index.html where it says APPS_SCRIPT_URL
+// POST is broken for Shared Drive container-bound scripts.
+// All operations go through doGet with ?payload=<encoded JSON>
 // ===========================================================
 
 const SPREADSHEET_ID = '1iSLWQmqKO_oJIwSEyESVGWLtJ3Cw1h_SXXsl8ivJKDY';
 
+function doGet(e) {
+  try {
+    // If payload param exists, this is a write operation
+    var payloadStr = (e && e.parameter && e.parameter.payload) ? e.parameter.payload : null;
+    
+    if (payloadStr) {
+      var body = JSON.parse(payloadStr);
+      var action = body.action;
+      var args = body.args || {};
+      var result;
+
+      switch (action) {
+        case 'save_student_session':
+          result = saveStudentSession(args);
+          break;
+        case 'save_student_answer':
+          result = saveStudentAnswer(args);
+          break;
+        case 'get_teacher_results':
+          result = getTeacherResults();
+          break;
+        default:
+          result = { error: 'Unknown action: ' + action };
+      }
+
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // No payload = return teacher results (default)
+    var result = getTeacherResults();
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Keep doPost as fallback (works from browsers sometimes)
 function doPost(e) {
   try {
-    const body = JSON.parse(e.postData.contents);
-    const action = body.action;
-    const args = body.args || {};
+    var body = JSON.parse(e.postData.contents);
+    var action = body.action;
+    var args = body.args || {};
+    var result;
 
-    let result;
     switch (action) {
       case 'save_student_session':
         result = saveStudentSession(args);
@@ -46,24 +81,15 @@ function doPost(e) {
   }
 }
 
-// Also handle GET for testing
-function doGet(e) {
-  const result = getTeacherResults();
-  return ContentService
-    .createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
 function saveStudentSession(args) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName('Sessions');
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('Sessions');
 
   if (args.session_id) {
-    // Update existing session (quiz completed)
-    const data = sheet.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
       if (String(data[i][0]) === String(args.session_id)) {
-        sheet.getRange(i + 1, 4).setValue(new Date().toISOString()); // completed_at
+        sheet.getRange(i + 1, 4).setValue(new Date().toISOString());
         sheet.getRange(i + 1, 5).setValue(args.total_score || 0);
         sheet.getRange(i + 1, 6).setValue(args.max_score || 0);
         sheet.getRange(i + 1, 7).setValue(args.phase_scores || '{}');
@@ -73,25 +99,20 @@ function saveStudentSession(args) {
     }
     return { session_id: args.session_id, ok: false, error: 'Session not found' };
   } else {
-    // Create new session
-    const sessionId = Date.now(); // Use timestamp as session ID
+    var sessionId = Date.now();
     sheet.appendRow([
       sessionId,
       args.student_name || '',
       new Date().toISOString(),
-      '',  // completed_at
-      0,   // total_score
-      0,   // max_score
-      '{}', // phase_scores
-      'FALSE'
+      '', 0, 0, '{}', 'FALSE'
     ]);
     return { session_id: sessionId, ok: true };
   }
 }
 
 function saveStudentAnswer(args) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName('Answers');
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('Answers');
 
   sheet.appendRow([
     args.session_id || 0,
@@ -106,20 +127,15 @@ function saveStudentAnswer(args) {
 }
 
 function getTeacherResults() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sessSheet = ss.getSheetByName('Sessions');
+  var sessData = sessSheet.getDataRange().getValues();
+  var ansSheet = ss.getSheetByName('Answers');
+  var ansData = ansSheet.getDataRange().getValues();
 
-  // Read sessions
-  const sessSheet = ss.getSheetByName('Sessions');
-  const sessData = sessSheet.getDataRange().getValues();
-
-  // Read answers
-  const ansSheet = ss.getSheetByName('Answers');
-  const ansData = ansSheet.getDataRange().getValues();
-
-  // Build answer map: session_id → [answers]
-  const answerMap = {};
-  for (let i = 1; i < ansData.length; i++) {
-    const sid = String(ansData[i][0]);
+  var answerMap = {};
+  for (var i = 1; i < ansData.length; i++) {
+    var sid = String(ansData[i][0]);
     if (!answerMap[sid]) answerMap[sid] = [];
     answerMap[sid].push({
       question_id: Number(ansData[i][1]) || 0,
@@ -130,13 +146,11 @@ function getTeacherResults() {
     });
   }
 
-  // Build sessions
-  const sessions = [];
-  for (let i = 1; i < sessData.length; i++) {
-    const sid = String(sessData[i][0]);
-    let phaseScores = {};
+  var sessions = [];
+  for (var i = 1; i < sessData.length; i++) {
+    var sid = String(sessData[i][0]);
+    var phaseScores = {};
     try { phaseScores = JSON.parse(sessData[i][6] || '{}'); } catch (_) {}
-
     sessions.push({
       id: Number(sessData[i][0]) || 0,
       student_name: sessData[i][1] || '',
@@ -149,8 +163,5 @@ function getTeacherResults() {
     });
   }
 
-  return {
-    sessions: sessions.reverse(), // newest first
-    total_students: sessions.length
-  };
+  return { sessions: sessions.reverse(), total_students: sessions.length };
 }
