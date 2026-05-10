@@ -67,7 +67,7 @@
       "phase": 1,
       "type": "words",
       "q": "En lisant ce sujet, quels sont les 2 ou 3 mots qui vous semblent les plus importants ?",
-      "sub": "« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",
+      "sub": "L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité.",
       "max": 3,
       "expected": [
         "baroque",
