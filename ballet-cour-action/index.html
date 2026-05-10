@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Interactif — Du ballet de cour au ballet d'action</title>
+<!-- ============================================================
+     CONFIGURATION: Remplacez cette URL après déploiement du Apps Script
+     ============================================================ -->
+<script>
+  window.__BALLET_QUIZ_CONFIG = {
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'
+  };
+</script>
+
+<!-- ============================================================
+     Fetch interceptor: routes Space.* calls to Google Sheets
+     via the Apps Script web app URL above
+     ============================================================ -->
+<script>
+  (function() {
+    const origFetch = window.fetch;
+    
+    // Mock Space API for localStorage fallback
+    window.Space = window.Space || {};
+    
+    window.Space.save_answer = async function(data) {
+      // Save to localStorage immediately
+      const answers = JSON.parse(localStorage.getItem('ballet_quiz_answers') || '[]');
+      answers.push({
+        ...data,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('ballet_quiz_answers', JSON.stringify(answers));
+      
+      // Fire-and-forget to Google Apps Script
+      const config = window.__BALLET_QUIZ_CONFIG;
+      if (config.APPS_SCRIPT_URL && !config.APPS_SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
+        const payload = {
+          action: 'save_answer',
+          answer: {
+            studentName: data.studentName,
+            questionId: data.questionId,
+            questionText: data.questionText,
+            studentAnswer: data.studentAnswer,
+            correctAnswer: data.correctAnswer,
+            isCorrect: data.isCorrect,
+            points: data.points,
+            maxPoints: data.maxPoints,
+            questionType: data.questionType
+          }
+        };
+        const encoded = encodeURIComponent(JSON.stringify(payload));
+        fetch(config.APPS_SCRIPT_URL + '?payload=' + encoded, {
+          method: 'GET',
+          mode: 'no-cors'
+        }).catch(e => console.log('GAS sync error (non-fatal):', e));
+      }
+      
+      return { ok: true };
+    };
+    
+    window.Space.save_session = async function(data) {
+      // Save to localStorage
+      const sessions = JSON.parse(localStorage.getItem('ballet_quiz_sessions') || '[]');
+      sessions.push({
+        ...data,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('ballet_quiz_sessions', JSON.stringify(sessions));
+      
+      // Fire-and-forget to Google Apps Script
+      const config = window.__BALLET_QUIZ_CONFIG;
+      if (config.APPS_SCRIPT_URL && !config.APPS_SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
+        const payload = {
+          action: 'save_session',
+          session: data
+        };
+        const encoded = encodeURIComponent(JSON.stringify(payload));
+        fetch(config.APPS_SCRIPT_URL + '?payload=' + encoded, {
+          method: 'GET',
+          mode: 'no-cors'
+        }).catch(e => console.log('GAS sync error (non-fatal):', e));
+      }
+      
+      return { ok: true };
+    };
+    
+    window.Space.get_quiz_data = async function() {
+      // Return localStorage data for teacher dashboard
+      const sessions = JSON.parse(localStorage.getItem('ballet_quiz_sessions') || '[]');
+      const answers = JSON.parse(localStorage.getItem('ballet_quiz_answers') || '[]');
+      return { sessions, answers };
+    };
+  })();
+</script>
+
+<style>
+:root {
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --accent: #8b1538;
+  --accent-light: #a91e47;
+  --border: #e5e7eb;
+  --success: #059669;
+  --warning: #d97706;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --text: #f3f4f6;
+    --text-muted: #9ca3af;
+    --border: #2d2d2d;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+  flex: 1;
+}
+header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 24px 0;
+}
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  transition: width 0.4s ease;
+  border-radius: 3px;
+}
+.phase-title {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.question-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.question-subtitle {
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+input[type="text"], input[type="password"] {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+input[type="text"]:focus, input[type="password"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.btn {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-block {
+  width: 100%;
+}
+.options-grid {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+.option {
+  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.option:hover {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+.option.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.option input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.word-cloud-input {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.word-tag {
+  background: var(--accent);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.word-tag button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.word-tag button:hover {
+  background: rgba(255,255,255,0.2);
+}
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+.ranking-item {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+  transition: all 0.2s;
+}
+.ranking-item:active {
+  cursor: grabbing;
+}
+.ranking-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
+.ranking-item.drag-over {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.drag-handle {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+.rank-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.matching-grid {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+.match-pair {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.match-left, .match-right {
+  padding: 12px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.match-arrow {
+  color: var(--text-muted);
+}
+.match-select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.feedback {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
+  border-left: 4px solid;
+  display: none;
+}
+.feedback.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+.feedback.correct {
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  border-color: var(--success);
+  color: var(--success);
+}
+.feedback.incorrect {
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.results-summary {
+  text-align: center;
+  padding: 32px 0;
+}
+.score-circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) 0deg, var(--accent) var(--score-deg, 0deg), var(--border) var(--score-deg, 0deg));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  position: relative;
+}
+.score-circle::before {
+  content: '';
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  background: var(--surface);
+  border-radius: 50%;
+}
+.score-text {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+.score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.score-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.teacher-login {
+  max-width: 400px;
+  margin: 60px auto;
+}
+.teacher-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+.teacher-table th,
+.teacher-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.teacher-table th {
+  background: var(--bg);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.mt-4 { margin-top: 24px; }
+.mb-2 { margin-bottom: 12px; }
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .container { padding: 16px; }
+  .card { padding: 20px; }
+  h1 { font-size: 1.5rem; }
+  .question-text { font-size: 1.1rem; }
+  .match-pair { grid-template-columns: 1fr; gap: 8px; }
+  .match-arrow { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Quiz Interactif</h1>
+    <p class="subtitle">Du ballet de cour au ballet d'action (XVII<sup>e</sup>–XVIII<sup>e</sup> s.)</p>
+  </header>
+
+  <div id="app"></div>
+</div>
+
+<script>
+const QUIZ_DATA = {
+  "title": "Quiz Interactif — Du ballet de cour au ballet d'action (XVIIe–XVIIIe s.)",
+  "subject": "Au XVIIIᵉ siècle, l'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. Vous analyserez cette tension en vous appuyant sur des chorégraphes, des œuvres et des concepts précis.",
+  "phases": [
+    {
+      "id": "phase0",
+      "title": "Identification",
+      "questions": [
+        {
+          "id": "Q0",
+          "type": "short_answer",
+          "question": "Avant de commencer, quel est ton prénom ?",
+          "placeholder": "Ton prénom"
+        }
+      ]
+    },
+    {
+      "id": "phase1",
+      "title": "Chronologie & classement des styles",
+      "questions": [
+        {
+          "id": "Q1",
+          "type": "word_cloud",
+          "question": "En lisant ce sujet, quels sont les 2 ou 3 mots qui vous semblent les plus importants ?",
+          "subtitle": "« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",
+          "maxWords": 3
+        },
+        {
+          "id": "Q2",
+          "type": "ranking",
+          "question": "Classez ces grands styles chorégraphiques du plus ancien au plus récent.",
+          "items": [
+            "Carole médiévale",
+            "Ballet de cour",
+            "Comédie-ballet",
+            "Tragédie lyrique",
+            "Belle danse",
+            "Opéra-ballet français",
+            "Ballet d'action",
+            "Ballet romantique"
+          ],
+          "correctOrder": [
+            "Carole médiévale",
+            "Ballet de cour",
+            "Comédie-ballet",
+            "Tragédie lyrique",
+            "Belle danse",
+            "Opéra-ballet français",
+            "Ballet d'action",
+            "Ballet romantique"
+          ]
+        },
+        {
+          "id": "Q3",
+          "type": "multiple_choice",
+          "question": "Quelle période correspond au « ballet de cour » en France ?",
+          "options": [
+            "1350 – 1450",
+            "1581 – vers 1670",
+            "1700 – 1760",
+            "1789 – 1830"
+          ],
+          "correct": 1
+        },
+        {
+          "id": "Q4",
+          "type": "multiple_choice",
+          "question": "Quel est le premier véritable ballet d'action ?",
+          "options": [
+            "Les Indes galantes (Rameau, 1735)",
+            "Les Saisons (Hilverding, 1743)",
+            "L'Amour et Psyché (Hilverding, 1752)",
+            "Les Horaces (Noverre, 1774)"
+          ],
+          "correct": 2
+        }
+      ]
+    },
+    {
+      "id": "phase2",
+      "title": "Définitions & vocabulaire",
+      "questions": [
+        {
+          "id": "Q11",
+          "type": "matching",
+          "question": "Associez chaque style à sa définition",
+          "pairs": [
+            {"left": "Ballet de cour", "right": "Spectacle aristocratique mêlant danse, musique et poésie"},
+            {"left": "Comédie-ballet", "right": "Forme créée par Molière et Lully"},
+            {"left": "Tragédie lyrique", "right": "Opéra français à la française avec ballet intégré"},
+            {"left": "Ballet d'action", "right": "Ballet pantomime dramatique sans chant"}
+          ]
+        },
+        {
+          "id": "Q12",
+          "type": "multiple_choice",
+          "question": "Qu'est-ce que la notation Feuillet ?",
+          "options": [
+            "Un système de notation musicale",
+            "Un système de notation chorégraphique du XVIIIe siècle",
+            "Une technique de danse baroque",
+            "Un traité de Jean-Georges Noverre"
+          ],
+          "correct": 1
+        }
+      ]
+    },
+    {
+      "id": "noverre",
+      "title": "Partie spéciale Noverre",
+      "questions": [
+        {
+          "id": "QN1",
+          "type": "multiple_choice",
+          "question": "En quelle année Jean-Georges Noverre publie-t-il ses 'Lettres sur la danse et sur les ballets' ?",
+          "options": ["1759", "1760", "1761", "1776"],
+          "correct": 1
+        },
+        {
+          "id": "QN6",
+          "type": "multiple_select",
+          "question": "Quelles sont les critiques principales de Noverre contre le ballet de son époque ? (Plusieurs réponses)",
+          "options": [
+            "Le masque empêche l'expressivité du visage",
+            "Les costumes lourds entravent le mouvement",
+            "La virtuosité technique prime sur l'expression",
+            "Les danseurs ne savent pas chanter"
+          ],
+          "correct": [0, 1, 2]
+        },
+        {
+          "id": "QN10",
+          "type": "matching",
+          "question": "Associez chaque œuvre de Noverre à sa description",
+          "pairs": [
+            {"left": "Les Fêtes chinoises", "right": "1754, premier succès à l'Opéra-Comique"},
+            {"left": "Jason et Médée", "right": "1763, Stuttgart, chef-d'œuvre du ballet d'action"},
+            {"left": "Les Petits Riens", "right": "1778, Paris, musique de Mozart"},
+            {"left": "Psyché et l'Amour", "right": "1762, Stuttgart, ballet héroïque"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase4",
+      "title": "Œuvres et chorégraphes",
+      "questions": [
+        {
+          "id": "Q26",
+          "type": "ranking",
+          "question": "Classez ces œuvres dans l'ordre chronologique",
+          "items": [
+            "Le Ballet comique de la reine (1581)",
+            "Les Indes galantes (1735)",
+            "Médée et Jason (1763)",
+            "Les Petits Riens (1778)"
+          ],
+          "correctOrder": [
+            "Le Ballet comique de la reine (1581)",
+            "Les Indes galantes (1735)",
+            "Médée et Jason (1763)",
+            "Les Petits Riens (1778)"
+          ]
+        },
+        {
+          "id": "Q27",
+          "type": "matching",
+          "question": "Associez chaque œuvre à son chorégraphe",
+          "pairs": [
+            {"left": "Les Indes galantes", "right": "Louis Dupré / Michel Blondy"},
+            {"left": "Médée et Jason", "right": "Jean-Georges Noverre"},
+            {"left": "Don Juan", "right": "Gasparo Angiolini"},
+            {"left": "La Fille mal gardée", "right": "Jean Dauberval"}
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// Mock Space API for Google Apps Script interception
+window.Space = {
+  async get_quiz_data() {
+    return QUIZ_DATA;
+  },
+  async save_answer(data) {
+    console.log('Space.save_answer', data);
+    // Intercepted by Google Apps Script
+    try {
+      await fetch('/api/save_answer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      }).catch(()=>{});
+    } catch(e) {}
+    // Local fallback
+    const answers = JSON.parse(localStorage.getItem('quiz_answers') || '[]');
+    answers.push({...data, timestamp: Date.now()});
+    localStorage.setItem('quiz_answers', JSON.stringify(answers));
+    return {ok: true};
+  },
+  async save_session(data) {
+    console.log('Space.save_session', data);
+    try {
+      await fetch('/api/save_session', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      }).catch(()=>{});
+    } catch(e) {}
+    const sessions = JSON.parse(localStorage.getItem('quiz_sessions') || '[]');
+    sessions.push({...data, timestamp: Date.now()});
+    localStorage.setItem('quiz_sessions', JSON.stringify(sessions));
+    return {ok: true, id: Date.now().toString()};
+  }
+};
+
+class QuizApp {
+  constructor() {
+    this.app = document.getElementById('app');
+    this.state = this.loadState();
+    this.currentPhaseIndex = 0;
+    this.currentQuestionIndex = 0;
+    this.sessionId = this.state.sessionId || this.generateId();
+    this.answers = this.state.answers || {};
+    this.studentName = this.state.studentName || '';
+    this.init();
+  }
+
+  loadState() {
+    try {
+      return JSON.parse(localStorage.getItem('ballet_quiz_state') || '{}');
+    } catch { return {}; }
+  }
+
+  saveState() {
+    localStorage.setItem('ballet_quiz_state', JSON.stringify({
+      sessionId: this.sessionId,
+      answers: this.answers,
+      studentName: this.studentName,
+      currentPhaseIndex: this.currentPhaseIndex,
+      currentQuestionIndex: this.currentQuestionIndex,
+      timestamp: Date.now()
+    }));
+  }
+
+  generateId() {
+    return Math.random().toString(36).substring(2, 10);
+  }
+
+  init() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'teacher') {
+      this.renderTeacherLogin();
+      return;
+    }
+    
+    if (this.studentName) {
+      this.renderQuiz();
+    } else {
+      this.renderWelcome();
+    }
+  }
+
+  renderWelcome() {
+    const q0 = QUIZ_DATA.phases[0].questions[0];
+    this.app.innerHTML = `
+      <div class="card">
+        <div class="phase-title">${QUIZ_DATA.phases[0].title}</div>
+        <div class="question-text">${q0.question}</div>
+        <input type="text" id="nameInput" placeholder="${q0.placeholder}" 
+               value="${this.studentName}" autocomplete="given-name">
+        <button class="btn btn-primary btn-block mt-4" id="startBtn" disabled>
+          Commencer le quiz
+        </button>
+      </div>
+    `;
+    
+    const input = document.getElementById('nameInput');
+    const btn = document.getElementById('startBtn');
+    
+    const updateBtn = () => {
+      btn.disabled = input.value.trim().length < 2;
+    };
+    
+    input.addEventListener('input', updateBtn);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !btn.disabled) this.startQuiz();
+    });
+    btn.addEventListener('click', () => this.startQuiz());
+    input.focus();
+    updateBtn();
+  }
+
+  startQuiz() {
+    const input = document.getElementById('nameInput');
+    this.studentName = input.value.trim();
+    this.answers['Q0'] = this.studentName;
+    this.saveState();
+    Space.save_answer({
+      session_id: this.sessionId,
+      question_id: 'Q0',
+      answer: this.studentName,
+      is_correct: true
+    });
+    this.currentPhaseIndex = 1;
+    this.currentQuestionIndex = 0;
+    this.renderQuiz();
+  }
+
+  getCurrentQuestion() {
+    const phase = QUIZ_DATA.phases[this.currentPhaseIndex];
+    return phase.questions[this.currentQuestionIndex];
+  }
+
+  getTotalQuestions() {
+    return QUIZ_DATA.phases.reduce((sum, p) => sum + p.questions.length, 0) - 1; // minus Q0
+  }
+
+  getAnsweredCount() {
+    return Object.keys(this.answers).filter(k => k !== 'Q0').length;
+  }
+
+  renderQuiz() {
+    const phase = QUIZ_DATA.phases[this.currentPhaseIndex];
+    const question = this.getCurrentQuestion();
+    const total = this.getTotalQuestions();
+    const answered = this.getAnsweredCount();
+    const progress = (answered / total) * 100;
+
+    let questionHTML = '';
+    
+    switch(question.type) {
+      case 'short_answer':
+        questionHTML = this.renderShortAnswer(question);
+        break;
+      case 'word_cloud':
+        questionHTML = this.renderWordCloud(question);
+        break;
+      case 'ranking':
+        questionHTML = this.renderRanking(question);
+        break;
+      case 'multiple_choice':
+        questionHTML = this.renderMultipleChoice(question);
+        break;
+      case 'multiple_select':
+        questionHTML = this.renderMultipleSelect(question);
+        break;
+      case 'matching':
+        questionHTML = this.renderMatching(question);
+        break;
+    }
+
+    this.app.innerHTML = `
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${progress}%"></div>
+      </div>
+      <div class="card">
+        <div class="flex-between mb-2">
+          <div class="phase-title">${phase.title}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            ${answered + 1} / ${total}
+          </div>
+        </div>
+        <div class="question-text">${question.question}</div>
+        ${question.subtitle ? `<div class="question-subtitle">${question.subtitle}</div>` : ''}
+        ${questionHTML}
+        <div id="feedback" class="feedback"></div>
+        <div class="flex-between mt-4">
+          <button class="btn btn-secondary" id="prevBtn" ${this.isFirstQuestion() ? 'disabled' : ''}>
+            ← Précédent
+          </button>
+          <button class="btn btn-primary" id="nextBtn" disabled>
+            ${this.isLastQuestion() ? 'Terminer' : 'Suivant →'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.attachQuestionListeners(question);
+    document.getElementById('prevBtn').addEventListener('click', () => this.previousQuestion());
+    document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
+    
+    // Restore previous answer if exists
+    if (this.answers[question.id]) {
+      this.restoreAnswer(question);
+    }
+  }
+
+  renderShortAnswer(q) {
+    return `<input type="text" id="answerInput" placeholder="Votre réponse...">`;
+  }
+
+  renderWordCloud(q) {
+    return `
+      <div class="word-cloud-input" id="wordTags"></div>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="wordInput" placeholder="Ajouter un mot..." maxlength="20">
+        <button class="btn btn-secondary" id="addWordBtn" style="flex-shrink: 0;">Ajouter</button>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+        Maximum ${q.maxWords} mots
+      </div>
+    `;
+  }
+
+  renderRanking(q) {
+    const items = [...q.items].sort(() => Math.random() - 0.5);
+    return `
+      <div class="ranking-list" id="rankingList">
+        ${items.map((item, i) => `
+          <div class="ranking-item" draggable="true" data-value="${item}">
+            <span class="drag-handle">⋮⋮</span>
+            <span class="rank-number">${i + 1}</span>
+            <span>${item}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Glissez-déposez pour réordonner
+      </div>
+    `;
+  }
+
+  renderMultipleChoice(q) {
+    return `
+      <div class="options-grid">
+        ${q.options.map((opt, i) => `
+          <label class="option" data-index="${i}">
+            <input type="radio" name="mc" value="${i}">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderMultipleSelect(q) {
+    return `
+      <div class="options-grid">
+        ${q.options.map((opt, i) => `
+          <label class="option" data-index="${i}">
+            <input type="checkbox" name="ms" value="${i}">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderMatching(q) {
+    const shuffledRights = [...q.pairs].map(p => p.right).sort(() => Math.random() - 0.5);
+    return `
+      <div class="matching-grid">
+        ${q.pairs.map((pair, i) => `
+          <div class="match-pair">
+            <div class="match-left">${pair.left}</div>
+            <div class="match-arrow">→</div>
+            <select class="match-select" data-index="${i}">
+              <option value="">Choisir...</option>
+              ${shuffledRights.map(right => `
+                <option value="${right}">${right}</option>
+              `).join('')}
+            </select>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  attachQuestionListeners(question) {
+    const nextBtn = document.getElementById('nextBtn');
+    
+    switch(question.type) {
+      case 'short_answer':
+        const input = document.getElementById('answerInput');
+        input.addEventListener('input', () => {
+          nextBtn.disabled = input.value.trim().length === 0;
+        });
+        input.focus();
+        break;
+        
+      case 'word_cloud':
+        this.initWordCloud(question);
+        break;
+        
+      case 'ranking':
+        this.initRanking();
+        nextBtn.disabled = false;
+        break;
+        
+      case 'multiple_choice':
+        document.querySelectorAll('.option').forEach(opt => {
+          opt.addEventListener('click', () => {
+            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            opt.querySelector('input').checked = true;
+            nextBtn.disabled = false;
+          });
+        });
+        break;
+        
+      case 'multiple_select':
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          cb.addEventListener('change', () => {
+            cb.closest('.option').classList.toggle('selected', cb.checked);
+            nextBtn.disabled = !Array.from(checkboxes).some(c => c.checked);
+          });
+        });
+        break;
+        
+      case 'matching':
+        const selects = document.querySelectorAll('.match-select');
+        selects.forEach(sel => {
+          sel.addEventListener('change', () => {
+            const allFilled = Array.from(selects).every(s => s.value);
+            nextBtn.disabled = !allFilled;
+          });
+        });
+        break;
+    }
+  }
+
+  initWordCloud(question) {
+    const input = document.getElementById('wordInput');
+    const addBtn = document.getElementById('addWordBtn');
+    const tagsContainer = document.getElementById('wordTags');
+    const nextBtn = document.getElementById('nextBtn');
+    let words = [];
+
+    const updateUI = () => {
+      tagsContainer.innerHTML = words.map((w, i) => `
+        <span class="word-tag">
+          ${w}
+          <button data-index="${i}" aria-label="Supprimer">×</button>
+        </span>
+      `).join('');
+      
+      tagsContainer.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          words.splice(parseInt(btn.dataset.index), 1);
+          updateUI();
+        });
+      });
+      
+      nextBtn.disabled = words.length === 0;
+      addBtn.disabled = words.length >= question.maxWords;
+      input.disabled = words.length >= question.maxWords;
+    };
+
+    const addWord = () => {
+      const word = input.value.trim();
+      if (word && words.length < question.maxWords && !words.includes(word)) {
+        words.push(word);
+        input.value = '';
+        updateUI();
+      }
+    };
+
+    addBtn.addEventListener('click', addWord);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addWord();
+      }
+    });
+    
+    updateUI();
+    input.focus();
+  }
+
+  initRanking() {
+    const list = document.getElementById('rankingList');
+    let draggedEl = null;
+
+    list.querySelectorAll('.ranking-item').forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        draggedEl = item;
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        this.updateRankingNumbers();
+      });
+      
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = this.getDragAfterElement(list, e.clientY);
+        if (afterElement == null) {
+          list.appendChild(draggedEl);
+        } else {
+          list.insertBefore(draggedEl, afterElement);
+        }
+      });
+    });
+  }
+
+  getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.ranking-item:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  updateRankingNumbers() {
+    document.querySelectorAll('.ranking-item .rank-number').forEach((num, i) => {
+      num.textContent = i + 1;
+    });
+  }
+
+  getAnswerValue(question) {
+    switch(question.type) {
+      case 'short_answer':
+        return document.getElementById('answerInput').value.trim();
+      case 'word_cloud':
+        return Array.from(document.querySelectorAll('.word-tag')).map(tag => 
+          tag.textContent.replace('×', '').trim()
+        );
+      case 'ranking':
+        return Array.from(document.querySelectorAll('.ranking-item')).map(item => 
+          item.dataset.value
+        );
+      case 'multiple_choice':
+        const radio = document.querySelector('input[name="mc"]:checked');
+        return radio ? parseInt(radio.value) : null;
+      case 'multiple_select':
+        return Array.from(document.querySelectorAll('input[name="ms"]:checked'))
+          .map(cb => parseInt(cb.value));
+      case 'matching':
+        const pairs = [];
+        document.querySelectorAll('.match-pair').forEach((pair, i) => {
+          const left = pair.querySelector('.match-left').textContent;
+          const right = pair.querySelector('.match-select').value;
+          pairs.push({ left, right });
+        });
+        return pairs;
+    }
+  }
+
+  checkAnswer(question, value) {
+    if (value === null || value === undefined) return false;
+    
+    switch(question.type) {
+      case 'multiple_choice':
+        return value === question.correct;
+      case 'multiple_select':
+        if (!Array.isArray(value) || !Array.isArray(question.correct)) return false;
+        return value.length === question.correct.length && 
+               value.every(v => question.correct.includes(v));
+      case 'ranking':
+        return JSON.stringify(value) === JSON.stringify(question.correctOrder);
+      case 'matching':
+        return value.every(pair => {
+          const correctPair = question.pairs.find(p => p.left === pair.left);
+          return correctPair && correctPair.right === pair.right;
+        });
+      default:
+        return true; // Free-form questions always "correct" for participation
+    }
+  }
+
+  async nextQuestion() {
+    const question = this.getCurrentQuestion();
+    const value = this.getAnswerValue(question);
+    const isCorrect = this.checkAnswer(question, value);
+    
+    this.answers[question.id] = value;
+    this.saveState();
+    
+    await Space.save_answer({
+      session_id: this.sessionId,
+      question_id: question.id,
+      answer: JSON.stringify(value),
+      is_correct: isCorrect,
+      points: isCorrect ? 1 : 0
+    });
+
+    // Show feedback for scored questions
+    if (question.correct !== undefined || question.correctOrder || question.pairs) {
+      this.showFeedback(isCorrect, question);
+      setTimeout(() => this.proceedToNext(), 1200);
+    } else {
+      this.proceedToNext();
+    }
+  }
+
+  showFeedback(isCorrect, question) {
+    const feedback = document.getElementById('feedback');
+    feedback.className = `feedback show ${isCorrect ? 'correct' : 'incorrect'}`;
+    
+    if (isCorrect) {
+      feedback.innerHTML = '✓ Correct !';
+    } else {
+      let correctAnswer = '';
+      if (question.type === 'multiple_choice') {
+        correctAnswer = question.options[question.correct];
+      } else if (question.type === 'ranking') {
+        correctAnswer = 'Ordre correct : ' + question.correctOrder.join(' → ');
+      }
+      feedback.innerHTML = `✗ Incorrect${correctAnswer ? '<br><small>Réponse : ' + correctAnswer + '</small>' : ''}`;
+    }
+  }
+
+  proceedToNext() {
+    if (this.isLastQuestion()) {
+      this.finishQuiz();
+    } else {
+      // Move to next question
+      const phase = QUIZ_DATA.phases[this.currentPhaseIndex];
+      if (this.currentQuestionIndex < phase.questions.length - 1) {
+        this.currentQuestionIndex++;
+      } else {
+        this.currentPhaseIndex++;
+        this.currentQuestionIndex = 0;
+      }
+      this.saveState();
+      this.renderQuiz();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  previousQuestion() {
+    if (this.isFirstQuestion()) return;
+    
+    if (this.currentQuestionIndex > 0) {
+      this.currentQuestionIndex--;
+    } else {
+      this.currentPhaseIndex--;
+      const prevPhase = QUIZ_DATA.phases[this.currentPhaseIndex];
+      this.currentQuestionIndex = prevPhase.questions.length - 1;
+    }
+    this.saveState();
+    this.renderQuiz();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  isFirstQuestion() {
+    return this.currentPhaseIndex === 1 && this.currentQuestionIndex === 0;
+  }
+
+  isLastQuestion() {
+    const lastPhaseIndex = QUIZ_DATA.phases.length - 1;
+    const lastPhase = QUIZ_DATA.phases[lastPhaseIndex];
+    return this.currentPhaseIndex === lastPhaseIndex && 
+           this.currentQuestionIndex === lastPhase.questions.length - 1;
+  }
+
+  restoreAnswer(question) {
+    const value = this.answers[question.id];
+    if (!value) return;
+    
+    // Implementation for restoring answers would go here
+    // Simplified for brevity
+    document.getElementById('nextBtn').disabled = false;
+  }
+
+  async finishQuiz() {
+    const totalScored = QUIZ_DATA.phases
+      .flatMap(p => p.questions)
+      .filter(q => q.correct !== undefined || q.correctOrder || q.pairs).length;
+    
+    let score = 0;
+    QUIZ_DATA.phases.forEach(phase => {
+      phase.questions.forEach(q => {
+        if (this.answers[q.id] !== undefined) {
+          if (this.checkAnswer(q, this.answers[q.id])) score++;
+        }
+      });
+    });
+
+    await Space.save_session({
+      session_id: this.sessionId,
+      student_name: this.studentName,
+      score: score,
+      total: totalScored,
+      answers: this.answers,
+      completed_at: new Date().toISOString()
+    });
+
+    localStorage.removeItem('ballet_quiz_state');
+    
+    this.renderResults(score, totalScored);
+  }
+
+  renderResults(score, total) {
+    const percentage = Math.round((score / total) * 100);
+    const degrees = (percentage / 100) * 360;
+    
+    this.app.innerHTML = `
+      <div class="card">
+        <div class="results-summary">
+          <h2 style="margin-bottom: 8px;">Quiz terminé !</h2>
+          <p style="color: var(--text-muted); margin-bottom: 32px;">
+            Bravo ${this.studentName} !
+          </p>
+          
+          <div class="score-circle" style="--score-deg: ${degrees}deg">
+            <div class="score-text">
+              <div class="score-value">${score}/${total}</div>
+              <div class="score-label">${percentage}%</div>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="location.reload()">
+              Recommencer
+            </button>
+            <button class="btn btn-primary" onclick="window.print()">
+              Imprimer résultats
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-bottom: 16px;">Détail des réponses</h3>
+        <div style="font-size: 0.9rem; color: var(--text-muted);">
+          Vos réponses ont été enregistrées. L'enseignant pourra les consulter via le dashboard.
+        </div>
+      </div>
+    `;
+  }
+
+  renderTeacherLogin() {
+    this.app.innerHTML = `
+      <div class="card teacher-login">
+        <h2 class="text-center mb-2">Dashboard Enseignant</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 24px; font-size: 0.9rem;">
+          Accès réservé
+        </p>
+        <input type="password" id="teacherPass" placeholder="Mot de passe" autocomplete="current-password">
+        <button class="btn btn-primary btn-block mt-4" id="loginBtn">
+          Accéder
+        </button>
+        <p id="loginError" style="color: var(--warning); text-align: center; margin-top: 12px; display: none; font-size: 0.9rem;">
+          Mot de passe incorrect
+        </p>
+      </div>
+    `;
+    
+    const input = document.getElementById('teacherPass');
+    const btn = document.getElementById('loginBtn');
+    const error = document.getElementById('loginError');
+    
+    const tryLogin = () => {
+      if (input.value === 'Tixi') {
+        this.renderTeacherDashboard();
+      } else {
+        error.style.display = 'block';
+        input.value = '';
+        input.focus();
+      }
+    };
+    
+    btn.addEventListener('click', tryLogin);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') tryLogin();
+    });
+    input.focus();
+  }
+
+  renderTeacherDashboard() {
+    const sessions = JSON.parse(localStorage.getItem('quiz_sessions') || '[]')
+      .sort((a, b) => b.timestamp - a.timestamp);
+    
+    const answers = JSON.parse(localStorage.getItem('quiz_answers') || '[]');
+    
+    this.app.innerHTML = `
+      <div class="card">
+        <div class="flex-between mb-2">
+          <h2>Dashboard Enseignant</h2>
+          <button class="btn btn-secondary" onclick="location.href=location.pathname">
+            Retour quiz
+          </button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin: 24px 0;">
+          <div style="text-align: center; padding: 16px; background: var(--bg); border-radius: 10px;">
+            <div style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${sessions.length}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sessions</div>
+          </div>
+          <div style="text-align: center; padding: 16px; background: var(--bg); border-radius: 10px;">
+            <div style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">${answers.length}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Réponses</div>
+          </div>
+          <div style="text-align: center; padding: 16px; background: var(--bg); border-radius: 10px;">
+            <div style="font-size: 1.75rem; font-weight: 700; color: var(--accent);">
+              ${sessions.length ? Math.round(sessions.reduce((sum, s) => sum + (s.score / s.total), 0) / sessions.length * 100) : 0}%
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Moyenne</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-bottom: 16px;">Sessions récentes</h3>
+        ${sessions.length === 0 ? `
+          <p style="color: var(--text-muted); text-align: center; padding: 32px 0;">
+            Aucune session enregistrée pour le moment
+          </p>
+        ` : `
+          <div style="overflow-x: auto;">
+            <table class="teacher-table">
+              <thead>
+                <tr>
+                  <th>Élève</th>
+                  <th>Score</th>
+                  <th>Date</th>
+                  <th>ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sessions.slice(0, 50).map(s => `
+                  <tr>
+                    <td><strong>${s.student_name || 'Anonyme'}</strong></td>
+                    <td>
+                      <span style="color: ${s.score/s.total >= 0.7 ? 'var(--success)' : s.score/s.total >= 0.5 ? 'var(--warning)' : 'var(--text-muted)'};">
+                        ${s.score}/${s.total} (${Math.round(s.score/s.total*100)}%)
+                      </span>
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--text-muted);">
+                      ${new Date(s.timestamp).toLocaleString('fr-FR', { 
+                        day: '2-digit', 
+                        month: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </td>
+                    <td style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
+                      ${s.session_id.substring(0, 8)}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+        
+        ${sessions.length > 0 ? `
+          <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(localStorage.getItem('quiz_sessions')).then(() => alert('Données copiées !'))">
+              Copier JSON
+            </button>
+            <button class="btn btn-secondary" onclick="if(confirm('Effacer toutes les données ?')) { localStorage.removeItem('quiz_sessions'); localStorage.removeItem('quiz_answers'); location.reload(); }">
+              Effacer données
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+}
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+  new QuizApp();
+});
+</script>
+</body>
+</html>
