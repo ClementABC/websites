@@ -138,15 +138,11 @@ function render(){
     });
     html+='</div>';
   } else if(q.type==='words'){
-    const words=q.sub.replace(/[«»]/g,'').split(/\s+/);
-    html+='<div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;font-size:15px;line-height:1.9">';
-    words.forEach(w=>{
-      const clean=w.replace(/[.,;]/g,'');
-      if(clean.length>2){
-        html+=`<span class="word-chip" data-word="${clean.toLowerCase()}" onclick="toggleWord(this)" style="display:inline-block;padding:4px 8px;margin:2px;border-radius:6px;cursor:pointer;transition:all .2s;border:1px solid transparent">${w}</span> `;
-      }else{html+=w+' ';}
-    });
-    html+='</div><div style="color:var(--dim);font-size:12px">Cliquez sur 2-3 mots • <span id="wordCount">0</span>/3</div>';
+    html+=`<div id="words"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="wordInput" type="text" placeholder="Un mot important..." style="flex:1;padding:12px;background:var(--surface-2);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px">
+        <button class="btn-primary" style="padding:12px 16px;flex:0" onclick="addWord()">+</button>
+      </div>`;
   } else if(q.type==='rank'){
     html+='<div class="options-grid" id="rankList">';
     q.items.forEach((item,i)=>{
@@ -225,11 +221,6 @@ function checkMatchComplete(){
   console.log('Match check:', Array.from(selects).map(s=>s.value), 'All filled:', allFilled);
 }
 
-function toggleWord(el){
-  const word=el.dataset.word;
-  let selected=JSON.parse(localStorage.getItem('selWords')||'[]');
-  const idx=selected.indexOf(word);
-  if(idx>-1){selected.splice(idx,1);el.style.background='transparent';el.style.borderColor='transparent';}
   else if(selected.length<3){selected.push(word);el.style.background='var(--purple-glow)';el.style.borderColor='var(--purple)';}
   localStorage.setItem('selWords',JSON.stringify(selected));
   document.getElementById('wordCount').textContent=selected.length;
@@ -348,7 +339,7 @@ function validate(){
     });
   }
   
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];localStorage.removeItem('selWords');render();}, ['mcq','rank','multi','words','match'].includes(q.type)?1500:300);
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, ['mcq','rank','multi','words','match'].includes(q.type)?1500:300);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
