@@ -270,6 +270,15 @@ function render(){
       <div class="results-score">${correct}/${total}</div>
       <div style="color:var(--dim);font-size:18px">${pct}% • ${timeMin} min</div>
       <div style="font-size:20px;font-weight:600;margin-top:8px">${pct>=70?'Excellent ! 🎉':pct>=50?'Bien joué ! 👍':'À revoir 📚'}</div>
+      <div style="margin-top:24px;font-size:15px;line-height:1.7;color:var(--text)">
+        🎉 <strong>Bravo, tu as terminé le quiz !</strong><br>
+        Tu as répondu à toutes les questions — c'est déjà un excellent travail de révision.
+      </div>
+      <div style="margin-top:20px;font-size:14px;line-height:1.6;color:var(--dim)">
+        📌 Pour continuer à préparer ton examen, retrouve toutes les ressources sur le Padlet du cours :<br>
+        👉 <a href="http://padlet.com/comdesoblique/histoire-de-la-danse-promotion-25-26-wzvbhzz0temfufnq" target="_blank" style="color:var(--purple);text-decoration:underline">Padlet — Histoire de la danse</a>
+      </div>
+      <div style="margin-top:16px;font-size:15px">Bon courage ! 💪</div>
       <button class="btn-primary" style="margin-top:24px;max-width:200px" onclick="location.reload()">Recommencer</button>
     </div>`;
     return;

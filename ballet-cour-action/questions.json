@@ -1174,7 +1174,7 @@
       "phase": 4,
       "type": "text",
       "q": "Citez trois œuvres du XVIIIᵉ siècle en indiquant pour chacune : titre, date et chorégraphe.",
-      "ph": "Ex: Pygmalion, 1734, Marie Sallé...",
+      "ph": "Ex : Le Sacre du printemps — 1913 — Vaslav Nijinsky",
       "model": "Exemples : Pygmalion (1734, Sallé) / Don Juan (1761, Angiolini) / Médée et Jason (1763, Noverre) / La Fille mal gardée (1789, Dauberval)"
     },
     {
