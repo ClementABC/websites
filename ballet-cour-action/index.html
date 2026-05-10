@@ -97,6 +97,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .correct-order-label{font-size:11px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
 .correct-order-item{font-size:13px;color:var(--green);padding:2px 0}
 select option{background:#1a1a2e;color:var(--text)}
+/* ── Editor styles ── */
+.editor-header{text-align:center;padding:24px 0;position:sticky;top:0;background:var(--bg);z-index:100;border-bottom:1px solid var(--border)}
+.editor-header .welcome-title{margin-bottom:4px}
+.editor-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.editor-actions .btn-secondary{font-size:12px;padding:8px 14px}
+.phase-group{margin-bottom:24px}
+.phase-group-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;cursor:pointer;user-select:none;transition:all .2s;margin-bottom:8px}
+.phase-group-header:hover{border-color:var(--purple)}
+.phase-group-header .arrow{transition:transform .2s;font-size:12px;color:var(--dim)}
+.phase-group-header .arrow.open{transform:rotate(90deg)}
+.phase-group-header .phase-name{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;flex:1}
+.phase-group-header .phase-badge{font-size:11px;color:var(--dim);background:var(--surface);padding:3px 8px;border-radius:6px}
+.phase-group-body{display:none;padding-left:0}
+.phase-group-body.open{display:block}
+.eq-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;transition:border-color .2s}
+.eq-card.modified{border-color:var(--green)}
+.eq-card-header{display:flex;align-items:center;gap:8px;padding:12px 16px;cursor:pointer;user-select:none}
+.eq-card-header:hover{background:var(--surface-2)}
+.eq-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.eq-badge.type{background:var(--purple-glow);color:var(--purple)}
+.eq-badge.id{background:var(--surface-2);color:var(--dim)}
+.eq-badge.mod{background:var(--green-glow);color:var(--green)}
+.eq-preview{flex:1;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq-card-body{display:none;padding:16px;border-top:1px solid var(--border)}
+.eq-card-body.open{display:block}
+.eq-field{margin-bottom:14px}
+.eq-field label{display:block;font-size:11px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.eq-field .input-field,.eq-field .textarea-field{font-size:13px;padding:10px 12px}
+.eq-field .textarea-field{min-height:70px}
+.eq-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.eq-row .input-field{flex:1;padding:8px 10px;font-size:12px}
+.eq-row-actions{display:flex;gap:4px;flex-shrink:0}
+.eq-row-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--dim);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.eq-row-btn:hover{border-color:var(--purple);color:var(--purple)}
+.eq-row-btn.del:hover{border-color:var(--red);color:var(--red)}
+.eq-card-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.eq-card-actions .btn-primary{font-size:12px;padding:8px 16px;width:auto}
+.eq-card-actions .btn-secondary{font-size:12px;padding:8px 16px}
+.tf-toggle{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:11px}
+.tf-toggle span{padding:4px 10px;cursor:pointer;transition:all .2s}
+.tf-toggle span.active-true{background:var(--green-glow);color:var(--green);font-weight:600}
+.tf-toggle span.active-false{background:var(--red-glow);color:var(--red);font-weight:600}
+.eq-correct-radio{width:16px;height:16px;accent-color:var(--green);flex-shrink:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;animation:fadeIn .3s ease}
 </style>
 </head>
 <body>
@@ -296,11 +340,17 @@ let dragged=null;
 function getPhaseForId(pid){return PHASES.find(p=>p.id===pid)||PHASES[0];}
 function getPhaseLabel(pid){const p=getPhaseForId(pid);return p?`${p.emoji} ${p.title}`:'';}
 
+function getQuestions(){
+  const overrides=JSON.parse(localStorage.getItem('quiz-overrides')||'{}');
+  return QUIZ.questions.map(q=>overrides[q.id]?{...q,...overrides[q.id]}:q);
+}
+
 function buildActiveQuestions(){
+  const questions=getQuestions();
   if(!state.selectedPhases){
-    state.activeQuestions=[...QUIZ.questions];
+    state.activeQuestions=[...questions];
   } else {
-    state.activeQuestions=QUIZ.questions.filter(q=>
+    state.activeQuestions=questions.filter(q=>
       q.phase===0 || state.selectedPhases.includes(q.phase)
     );
   }
@@ -882,7 +932,9 @@ function validate(){
 // ═══════════════════════════════════════
 // TEACHER DASHBOARD
 // ═══════════════════════════════════════
-if(new URLSearchParams(location.search).get('mode')==='teacher'){
+const urlMode=new URLSearchParams(location.search).get('mode');
+
+if(urlMode==='teacher'){
   const pwd=prompt('Mot de passe enseignant :');
   if(pwd==='Tixi'){
     document.getElementById('app').innerHTML=`<div class="welcome">
@@ -893,9 +945,579 @@ if(new URLSearchParams(location.search).get('mode')==='teacher'){
   } else {
     document.getElementById('app').innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">Mot de passe incorrect</div>';
   }
-} else {
+}
+// ═══════════════════════════════════════
+// QUESTION EDITOR (?mode=edit)
+// ═══════════════════════════════════════
+else if(urlMode==='edit'){
+  const pwd=prompt('Mot de passe enseignant :');
+  if(pwd!=='Tixi'){
+    document.getElementById('app').innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">Mot de passe incorrect</div>';
+  } else {
+    initEditor();
+  }
+}
+else {
   buildActiveQuestions();
   render();
+}
+
+// ═══════════════════════════════════════
+// EDITOR ENGINE
+// ═══════════════════════════════════════
+function initEditor(){
+  const app=document.getElementById('app');
+  const overrides=JSON.parse(localStorage.getItem('quiz-overrides')||'{}');
+  const questions=getQuestions();
+
+  // Group questions by phase
+  const groups={};
+  PHASES.forEach(p=>{groups[p.id]=[];});
+  questions.forEach(q=>{if(groups[q.phase])groups[q.phase].push(q);else{groups[q.phase]=[q];}});
+
+  let html=`<div class="editor-header">
+    <div class="welcome-title">✏️ Éditeur de questions</div>
+    <div style="color:var(--dim);font-size:13px">${questions.length} questions • Les modifications sont sauvegardées localement</div>
+    <div class="editor-actions">
+      <button class="btn-secondary" onclick="editorSaveAll()">💾 Tout sauvegarder</button>
+      <button class="btn-secondary" onclick="editorResetAll()">🗑️ Réinitialiser tout</button>
+      <button class="btn-secondary" onclick="editorExport()">📤 Exporter JSON</button>
+      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📥 Importer JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="editorImport(event)">
+      <button class="btn-secondary" onclick="location.href=location.pathname">← Retour au quiz</button>
+    </div>
+  </div>`;
+
+  PHASES.forEach(phase=>{
+    const pqs=groups[phase.id]||[];
+    if(!pqs.length)return;
+    const modCount=pqs.filter(q=>overrides[q.id]).length;
+    html+=`<div class="phase-group">
+      <div class="phase-group-header" onclick="togglePhaseGroup(this)">
+        <span class="arrow">▶</span>
+        <span class="phase-name">${phase.emoji} ${phase.title}</span>
+        <span class="phase-badge">${pqs.length} questions${modCount?` • ${modCount} modifiée${modCount>1?'s':''}`:''}
+        </span>
+      </div>
+      <div class="phase-group-body">`;
+
+    pqs.forEach(q=>{
+      const isMod=!!overrides[q.id];
+      html+=`<div class="eq-card${isMod?' modified':''}" id="eqcard-${q.id}">
+        <div class="eq-card-header" onclick="toggleEqCard('${q.id}')">
+          <span class="eq-badge type">${q.type}</span>
+          <span class="eq-badge id">${q.id}</span>
+          ${isMod?'<span class="eq-badge mod">modifié</span>':''}
+          <span class="eq-preview">${escHtml(q.q)}</span>
+        </div>
+        <div class="eq-card-body" id="eqbody-${q.id}"></div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+
+  app.innerHTML=html;
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function togglePhaseGroup(header){
+  const arrow=header.querySelector('.arrow');
+  const body=header.nextElementSibling;
+  arrow.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+function toggleEqCard(id){
+  const body=document.getElementById('eqbody-'+id);
+  if(body.classList.contains('open')){body.classList.remove('open');return;}
+  // Render the edit form if empty
+  if(!body.innerHTML)renderEditForm(id);
+  body.classList.add('open');
+}
+
+function renderEditForm(id){
+  const overrides=JSON.parse(localStorage.getItem('quiz-overrides')||'{}');
+  const base=QUIZ.questions.find(q=>q.id===id);
+  const q=overrides[id]?{...base,...overrides[id]}:base;
+  const body=document.getElementById('eqbody-'+id);
+  let html='';
+
+  // Common: question text
+  html+=eqTextField('Question','q',q.q,id);
+
+  // Sub-text (for words, longtext, etc.)
+  if('sub' in base) html+=eqTextAreaField('Sous-texte / citation','sub',q.sub||'',id);
+
+  // Type-specific fields
+  switch(q.type){
+    case 'text':
+      html+=eqTextField('Placeholder','ph',q.ph||'',id);
+      html+=eqTextAreaField('Réponse modèle','model',q.model||'',id);
+      break;
+    case 'longtext':
+      html+=eqTextAreaField('Réponse modèle','model',q.model||'',id);
+      break;
+    case 'words':
+      html+=eqTextField('Nombre max de mots','max',q.max||3,id);
+      html+=eqArrayField('Mots attendus','expected',q.expected||[],id);
+      break;
+    case 'mcq':
+      html+=eqMcqField(q,id);
+      break;
+    case 'multi':
+      html+=eqMultiField(q,id);
+      break;
+    case 'rank':
+      html+=eqArrayField('Éléments (ordre correct)','items',q.items||[],id);
+      break;
+    case 'match':
+      html+=eqPairsField(q,id);
+      break;
+    case 'match3':
+      html+=eqMatch3Field(q,id);
+      break;
+    case 'geo':
+      html+=eqGeoField(q,id);
+      break;
+    case 'truefalse':
+      html+=eqTFField(q,id);
+      break;
+    case 'slider':
+      html+=eqTextField('Label gauche','label0',q.labels?q.labels[0]:'',id);
+      html+=eqTextField('Label droite','label1',q.labels?q.labels[1]:'',id);
+      html+=eqTextField('Indice (hint)','hint',q.hint||'',id);
+      break;
+  }
+
+  // Action buttons
+  html+=`<div class="eq-card-actions">
+    <button class="btn-primary" onclick="editorSaveQ('${id}')">💾 Sauvegarder</button>
+    <button class="btn-secondary" onclick="editorResetQ('${id}')">↩ Réinitialiser</button>
+  </div>`;
+
+  body.innerHTML=html;
+}
+
+// ── Field renderers ──
+function eqTextField(label,field,value,id){
+  return `<div class="eq-field"><label>${label}</label>
+    <input class="input-field" data-qid="${id}" data-field="${field}" value="${escHtml(value)}"></div>`;
+}
+
+function eqTextAreaField(label,field,value,id){
+  return `<div class="eq-field"><label>${label}</label>
+    <textarea class="textarea-field" data-qid="${id}" data-field="${field}">${escHtml(value)}</textarea></div>`;
+}
+
+function eqArrayField(label,field,arr,id){
+  let html=`<div class="eq-field"><label>${label}</label><div id="eqarr-${id}-${field}">`;
+  arr.forEach((val,i)=>{
+    html+=`<div class="eq-row">
+      <input class="input-field" data-qid="${id}" data-field="${field}" data-idx="${i}" value="${escHtml(val)}">
+      <div class="eq-row-actions">
+        <button class="eq-row-btn del" onclick="eqRemoveRow('${id}','${field}',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddRow('${id}','${field}')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqMcqField(q,id){
+  let html=`<div class="eq-field"><label>Options (sélectionnez la bonne réponse)</label><div id="eqarr-${id}-opts">`;
+  (q.opts||[]).forEach((opt,i)=>{
+    html+=`<div class="eq-row">
+      <input type="radio" name="mcq-${id}" class="eq-correct-radio" data-qid="${id}" data-field="a" value="${i}" ${i===q.a?'checked':''}>
+      <input class="input-field" data-qid="${id}" data-field="opts" data-idx="${i}" value="${escHtml(opt)}">
+      <div class="eq-row-actions">
+        <button class="eq-row-btn del" onclick="eqRemoveOpt('${id}','mcq',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddOpt('${id}','mcq')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqMultiField(q,id){
+  let html=`<div class="eq-field"><label>Options (cochez les bonnes réponses)</label><div id="eqarr-${id}-opts">`;
+  (q.opts||[]).forEach((opt,i)=>{
+    html+=`<div class="eq-row">
+      <input type="checkbox" class="eq-correct-radio" data-qid="${id}" data-field="a" value="${i}" ${(q.a||[]).includes(i)?'checked':''}>
+      <input class="input-field" data-qid="${id}" data-field="opts" data-idx="${i}" value="${escHtml(opt)}">
+      <div class="eq-row-actions">
+        <button class="eq-row-btn del" onclick="eqRemoveOpt('${id}','multi',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddOpt('${id}','multi')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqPairsField(q,id){
+  let html=`<div class="eq-field"><label>Paires (gauche → droite)</label><div id="eqarr-${id}-pairs">`;
+  (q.pairs||[]).forEach((pair,i)=>{
+    html+=`<div class="eq-row">
+      <input class="input-field" data-qid="${id}" data-field="pairs-left" data-idx="${i}" value="${escHtml(pair[0])}" placeholder="Gauche">
+      <span style="color:var(--dim)">→</span>
+      <input class="input-field" data-qid="${id}" data-field="pairs-right" data-idx="${i}" value="${escHtml(pair[1])}" placeholder="Droite">
+      <div class="eq-row-actions">
+        <button class="eq-row-btn del" onclick="eqRemovePair('${id}',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddPair('${id}')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqMatch3Field(q,id){
+  let html=`<div class="eq-field"><label>Lignes (Élément • Date • Lieu/Impact)</label><div id="eqarr-${id}-rows">`;
+  (q.rows||[]).forEach((row,i)=>{
+    html+=`<div class="eq-row" style="flex-wrap:wrap;gap:4px">
+      <input class="input-field" style="flex:2;min-width:150px" data-qid="${id}" data-field="m3-item" data-idx="${i}" value="${escHtml(row.item)}" placeholder="Élément">
+      <input class="input-field" style="flex:1;min-width:100px" data-qid="${id}" data-field="m3-date" data-idx="${i}" value="${escHtml(row.date)}" placeholder="Date">
+      <input class="input-field" style="flex:1;min-width:100px" data-qid="${id}" data-field="m3-place" data-idx="${i}" value="${escHtml(row.place)}" placeholder="Lieu">
+      <div class="eq-row-actions">
+        <button class="eq-row-btn del" onclick="eqRemoveM3('${id}',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddM3('${id}')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqGeoField(q,id){
+  let html=`<div class="eq-field"><label>Questions géographiques</label><div id="eqarr-${id}-geo">`;
+  (q.items||[]).forEach((item,i)=>{
+    html+=`<div style="background:var(--surface-2);border-radius:8px;padding:10px;margin-bottom:8px">
+      <div class="eq-row"><input class="input-field" data-qid="${id}" data-field="geo-text" data-idx="${i}" value="${escHtml(item.text)}" placeholder="Question"></div>
+      <div class="eq-row"><input class="input-field" style="border-color:var(--green)" data-qid="${id}" data-field="geo-answer" data-idx="${i}" value="${escHtml(item.answer)}" placeholder="Bonne réponse"></div>
+      <div class="eq-row"><input class="input-field" data-qid="${id}" data-field="geo-opts" data-idx="${i}" value="${escHtml((item.opts||[]).join(', '))}" placeholder="Options (séparées par virgule)"></div>
+      <div class="eq-row-actions" style="justify-content:flex-end">
+        <button class="eq-row-btn del" onclick="eqRemoveGeo('${id}',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddGeo('${id}')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqTFField(q,id){
+  let html=`<div class="eq-field"><label>Affirmations Vrai/Faux</label><div id="eqarr-${id}-tf">`;
+  (q.statements||[]).forEach((s,i)=>{
+    html+=`<div style="background:var(--surface-2);border-radius:8px;padding:10px;margin-bottom:8px">
+      <div class="eq-row"><input class="input-field" data-qid="${id}" data-field="tf-text" data-idx="${i}" value="${escHtml(s.text)}" placeholder="Affirmation"></div>
+      <div class="eq-row" style="gap:12px">
+        <div class="tf-toggle" data-qid="${id}" data-field="tf-answer" data-idx="${i}">
+          <span onclick="eqSetTF(this,true)" class="${s.answer?'active-true':''}">Vrai</span>
+          <span onclick="eqSetTF(this,false)" class="${!s.answer?'active-false':''}">Faux</span>
+        </div>
+        <input class="input-field" style="flex:1" data-qid="${id}" data-field="tf-explain" data-idx="${i}" value="${escHtml(s.explain||'')}" placeholder="Explication (optionnel)">
+      </div>
+      <div class="eq-row-actions" style="justify-content:flex-end">
+        <button class="eq-row-btn del" onclick="eqRemoveTF('${id}',${i})">×</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div><button class="eq-row-btn" onclick="eqAddTF('${id}')" style="width:auto;padding:4px 10px;font-size:11px;margin-top:4px">+ Ajouter</button></div>`;
+  return html;
+}
+
+function eqSetTF(span,val){
+  const toggle=span.parentElement;
+  toggle.querySelectorAll('span').forEach(s=>{s.className='';});
+  span.className=val?'active-true':'active-false';
+  toggle.dataset.tfval=val;
+}
+
+// ── Array manipulation ──
+function eqAddRow(id,field){
+  const container=document.getElementById('eqarr-'+id+'-'+field);
+  const idx=container.querySelectorAll('.eq-row').length;
+  const div=document.createElement('div');div.className='eq-row';
+  div.innerHTML=`<input class="input-field" data-qid="${id}" data-field="${field}" data-idx="${idx}" value="">
+    <div class="eq-row-actions"><button class="eq-row-btn del" onclick="this.closest('.eq-row').remove()">×</button></div>`;
+  container.appendChild(div);
+}
+
+function eqRemoveRow(id,field,idx){
+  const container=document.getElementById('eqarr-'+id+'-'+field);
+  const rows=container.querySelectorAll('.eq-row');
+  if(rows[idx])rows[idx].remove();
+}
+
+function eqAddOpt(id,type){
+  const container=document.getElementById('eqarr-'+id+'-opts');
+  const idx=container.querySelectorAll('.eq-row').length;
+  const inputType=type==='mcq'?'radio':'checkbox';
+  const div=document.createElement('div');div.className='eq-row';
+  div.innerHTML=`<input type="${inputType}" name="${type}-${id}" class="eq-correct-radio" data-qid="${id}" data-field="a" value="${idx}">
+    <input class="input-field" data-qid="${id}" data-field="opts" data-idx="${idx}" value="">
+    <div class="eq-row-actions"><button class="eq-row-btn del" onclick="this.closest('.eq-row').remove()">×</button></div>`;
+  container.appendChild(div);
+}
+
+function eqRemoveOpt(id,type,idx){
+  const container=document.getElementById('eqarr-'+id+'-opts');
+  const rows=container.querySelectorAll('.eq-row');
+  if(rows[idx])rows[idx].remove();
+}
+
+function eqAddPair(id){
+  const container=document.getElementById('eqarr-'+id+'-pairs');
+  const idx=container.querySelectorAll('.eq-row').length;
+  const div=document.createElement('div');div.className='eq-row';
+  div.innerHTML=`<input class="input-field" data-qid="${id}" data-field="pairs-left" data-idx="${idx}" value="" placeholder="Gauche">
+    <span style="color:var(--dim)">→</span>
+    <input class="input-field" data-qid="${id}" data-field="pairs-right" data-idx="${idx}" value="" placeholder="Droite">
+    <div class="eq-row-actions"><button class="eq-row-btn del" onclick="this.closest('.eq-row').remove()">×</button></div>`;
+  container.appendChild(div);
+}
+
+function eqRemovePair(id,idx){
+  const container=document.getElementById('eqarr-'+id+'-pairs');
+  const rows=container.querySelectorAll('.eq-row');
+  if(rows[idx])rows[idx].remove();
+}
+
+function eqAddM3(id){
+  const container=document.getElementById('eqarr-'+id+'-rows');
+  const idx=container.querySelectorAll('.eq-row').length;
+  const div=document.createElement('div');div.className='eq-row';div.style.cssText='flex-wrap:wrap;gap:4px';
+  div.innerHTML=`<input class="input-field" style="flex:2;min-width:150px" data-qid="${id}" data-field="m3-item" data-idx="${idx}" value="" placeholder="Élément">
+    <input class="input-field" style="flex:1;min-width:100px" data-qid="${id}" data-field="m3-date" data-idx="${idx}" value="" placeholder="Date">
+    <input class="input-field" style="flex:1;min-width:100px" data-qid="${id}" data-field="m3-place" data-idx="${idx}" value="" placeholder="Lieu">
+    <div class="eq-row-actions"><button class="eq-row-btn del" onclick="this.closest('.eq-row').remove()">×</button></div>`;
+  container.appendChild(div);
+}
+
+function eqRemoveM3(id,idx){
+  const container=document.getElementById('eqarr-'+id+'-rows');
+  const rows=container.querySelectorAll('.eq-row');
+  if(rows[idx])rows[idx].remove();
+}
+
+function eqAddGeo(id){
+  const container=document.getElementById('eqarr-'+id+'-geo');
+  const div=document.createElement('div');
+  div.style.cssText='background:var(--surface-2);border-radius:8px;padding:10px;margin-bottom:8px';
+  const idx=container.children.length;
+  div.innerHTML=`<div class="eq-row"><input class="input-field" data-qid="${id}" data-field="geo-text" data-idx="${idx}" value="" placeholder="Question"></div>
+    <div class="eq-row"><input class="input-field" style="border-color:var(--green)" data-qid="${id}" data-field="geo-answer" data-idx="${idx}" value="" placeholder="Bonne réponse"></div>
+    <div class="eq-row"><input class="input-field" data-qid="${id}" data-field="geo-opts" data-idx="${idx}" value="" placeholder="Options (séparées par virgule)"></div>
+    <div class="eq-row-actions" style="justify-content:flex-end"><button class="eq-row-btn del" onclick="this.closest('div[style]').remove()">×</button></div>`;
+  container.appendChild(div);
+}
+
+function eqRemoveGeo(id,idx){
+  const container=document.getElementById('eqarr-'+id+'-geo');
+  if(container.children[idx])container.children[idx].remove();
+}
+
+function eqAddTF(id){
+  const container=document.getElementById('eqarr-'+id+'-tf');
+  const idx=container.children.length;
+  const div=document.createElement('div');
+  div.style.cssText='background:var(--surface-2);border-radius:8px;padding:10px;margin-bottom:8px';
+  div.innerHTML=`<div class="eq-row"><input class="input-field" data-qid="${id}" data-field="tf-text" data-idx="${idx}" value="" placeholder="Affirmation"></div>
+    <div class="eq-row" style="gap:12px">
+      <div class="tf-toggle" data-qid="${id}" data-field="tf-answer" data-idx="${idx}">
+        <span onclick="eqSetTF(this,true)" class="">Vrai</span>
+        <span onclick="eqSetTF(this,false)" class="active-false">Faux</span>
+      </div>
+      <input class="input-field" style="flex:1" data-qid="${id}" data-field="tf-explain" data-idx="${idx}" value="" placeholder="Explication (optionnel)">
+    </div>
+    <div class="eq-row-actions" style="justify-content:flex-end"><button class="eq-row-btn del" onclick="this.closest('div[style]').remove()">×</button></div>`;
+  container.appendChild(div);
+}
+
+function eqRemoveTF(id,idx){
+  const container=document.getElementById('eqarr-'+id+'-tf');
+  if(container.children[idx])container.children[idx].remove();
+}
+
+// ── Save / Reset ──
+function collectQ(id){
+  const base=QUIZ.questions.find(q=>q.id===id);
+  const patch={};
+  const body=document.getElementById('eqbody-'+id);
+  if(!body)return null;
+
+  // Simple text fields
+  body.querySelectorAll('input.input-field[data-field="q"],textarea[data-field="q"]').forEach(el=>{patch.q=el.value;});
+  body.querySelectorAll('input.input-field[data-field="ph"]').forEach(el=>{patch.ph=el.value;});
+  body.querySelectorAll('textarea[data-field="sub"]').forEach(el=>{patch.sub=el.value;});
+  body.querySelectorAll('textarea[data-field="model"]').forEach(el=>{patch.model=el.value;});
+  body.querySelectorAll('input[data-field="max"]').forEach(el=>{patch.max=parseInt(el.value)||3;});
+  body.querySelectorAll('input[data-field="hint"]').forEach(el=>{patch.hint=el.value;});
+  body.querySelectorAll('input[data-field="label0"]').forEach(el=>{
+    if(!patch.labels)patch.labels=[el.value,''];
+    else patch.labels[0]=el.value;
+  });
+  body.querySelectorAll('input[data-field="label1"]').forEach(el=>{
+    if(!patch.labels)patch.labels=['',el.value];
+    else patch.labels[1]=el.value;
+  });
+
+  // Array fields
+  const arrInputs=body.querySelectorAll('input[data-field="expected"]');
+  if(arrInputs.length)patch.expected=Array.from(arrInputs).map(el=>el.value).filter(v=>v);
+
+  const itemInputs=body.querySelectorAll('input[data-field="items"]');
+  if(itemInputs.length){
+    patch.items=Array.from(itemInputs).map(el=>el.value).filter(v=>v);
+    patch.answer=[...patch.items]; // correct order = display order in editor
+  }
+
+  // MCQ opts + answer
+  const optInputs=body.querySelectorAll('input[data-field="opts"]');
+  if(optInputs.length)patch.opts=Array.from(optInputs).map(el=>el.value);
+
+  if(base.type==='mcq'){
+    const checked=body.querySelector('input[data-field="a"]:checked');
+    if(checked)patch.a=parseInt(checked.value);
+  }
+  if(base.type==='multi'){
+    const checked=body.querySelectorAll('input[data-field="a"]:checked');
+    patch.a=Array.from(checked).map(el=>parseInt(el.value));
+  }
+
+  // Match pairs
+  const pLeft=body.querySelectorAll('input[data-field="pairs-left"]');
+  const pRight=body.querySelectorAll('input[data-field="pairs-right"]');
+  if(pLeft.length){
+    patch.pairs=[];
+    for(let i=0;i<pLeft.length;i++){
+      if(pLeft[i]&&pRight[i])patch.pairs.push([pLeft[i].value,pRight[i].value]);
+    }
+  }
+
+  // Match3 rows
+  const m3Item=body.querySelectorAll('input[data-field="m3-item"]');
+  const m3Date=body.querySelectorAll('input[data-field="m3-date"]');
+  const m3Place=body.querySelectorAll('input[data-field="m3-place"]');
+  if(m3Item.length){
+    patch.rows=[];
+    for(let i=0;i<m3Item.length;i++){
+      patch.rows.push({item:m3Item[i].value,date:m3Date[i]?.value||'',place:m3Place[i]?.value||''});
+    }
+  }
+
+  // Geo items
+  const geoText=body.querySelectorAll('input[data-field="geo-text"]');
+  const geoAnswer=body.querySelectorAll('input[data-field="geo-answer"]');
+  const geoOpts=body.querySelectorAll('input[data-field="geo-opts"]');
+  if(geoText.length){
+    patch.items=[];
+    for(let i=0;i<geoText.length;i++){
+      patch.items.push({
+        text:geoText[i].value,
+        answer:geoAnswer[i]?.value||'',
+        opts:(geoOpts[i]?.value||'').split(',').map(s=>s.trim()).filter(s=>s)
+      });
+    }
+  }
+
+  // TF statements
+  const tfText=body.querySelectorAll('input[data-field="tf-text"]');
+  const tfAnswer=body.querySelectorAll('.tf-toggle[data-field="tf-answer"]');
+  const tfExplain=body.querySelectorAll('input[data-field="tf-explain"]');
+  if(tfText.length){
+    patch.statements=[];
+    for(let i=0;i<tfText.length;i++){
+      const toggle=tfAnswer[i];
+      let ans=false;
+      if(toggle){
+        const trueSpan=toggle.querySelector('.active-true');
+        ans=!!trueSpan;
+      }
+      const obj={text:tfText[i].value,answer:ans};
+      if(tfExplain[i]&&tfExplain[i].value)obj.explain=tfExplain[i].value;
+      patch.statements.push(obj);
+    }
+  }
+
+  return patch;
+}
+
+function editorSaveQ(id){
+  const patch=collectQ(id);
+  if(!patch)return;
+  const overrides=JSON.parse(localStorage.getItem('quiz-overrides')||'{}');
+  overrides[id]=patch;
+  localStorage.setItem('quiz-overrides',JSON.stringify(overrides));
+  // Update card visual
+  const card=document.getElementById('eqcard-'+id);
+  if(card&&!card.classList.contains('modified'))card.classList.add('modified');
+  const header=card.querySelector('.eq-card-header');
+  if(header&&!header.querySelector('.eq-badge.mod')){
+    const badge=document.createElement('span');badge.className='eq-badge mod';badge.textContent='modifié';
+    header.insertBefore(badge,header.querySelector('.eq-preview'));
+  }
+  showToast('Sauvegardé ✓');
+}
+
+function editorResetQ(id){
+  const overrides=JSON.parse(localStorage.getItem('quiz-overrides')||'{}');
+  delete overrides[id];
+  localStorage.setItem('quiz-overrides',JSON.stringify(overrides));
+  const card=document.getElementById('eqcard-'+id);
+  if(card)card.classList.remove('modified');
+  const modBadge=card?.querySelector('.eq-badge.mod');
+  if(modBadge)modBadge.remove();
+  // Re-render the form
+  const body=document.getElementById('eqbody-'+id);
+  if(body){body.innerHTML='';renderEditForm(id);}
+  showToast('Réinitialisé ✓');
+}
+
+function editorSaveAll(){
+  const overrides=JSON.parse(localStorage.getItem('quiz-overrides')||'{}');
+  document.querySelectorAll('.eq-card-body.open').forEach(body=>{
+    const id=body.id.replace('eqbody-','');
+    const patch=collectQ(id);
+    if(patch)overrides[id]=patch;
+  });
+  localStorage.setItem('quiz-overrides',JSON.stringify(overrides));
+  showToast('Toutes les questions ouvertes sauvegardées ✓');
+}
+
+function editorResetAll(){
+  if(!confirm('Réinitialiser TOUTES les modifications ? Cette action est irréversible.'))return;
+  localStorage.removeItem('quiz-overrides');
+  initEditor();
+  showToast('Tout réinitialisé ✓');
+}
+
+function editorExport(){
+  const overrides=localStorage.getItem('quiz-overrides')||'{}';
+  const blob=new Blob([overrides],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='quiz-overrides.json';a.click();
+  URL.revokeObjectURL(url);
+}
+
+function editorImport(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      localStorage.setItem('quiz-overrides',JSON.stringify(data));
+      initEditor();
+      showToast('Import réussi ✓');
+    }catch(err){alert('Fichier JSON invalide');}
+  };
+  reader.readAsText(file);
+}
+
+function showToast(msg){
+  const existing=document.querySelector('.toast');
+  if(existing)existing.remove();
+  const div=document.createElement('div');div.className='toast';div.textContent=msg;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),2000);
 }
 </script>
 </body>
