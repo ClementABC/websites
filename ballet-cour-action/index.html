@@ -164,7 +164,7 @@ let QUIZ = { title: '', subtitle: '', questions: [] };
   app.innerHTML = '<div style="text-align:center;padding:80px 20px;"><div class="welcome-title">Chargement du quiz…</div></div>';
   
   try {
-    const resp = await fetch('https://raw.githubusercontent.com/ClementABC/websites/main/ballet-cour-action/questions.json?v=' + Date.now());
+    const resp = await fetch('https://api.github.com/repos/ClementABC/websites/contents/ballet-cour-action/questions.json?ref=main',{headers:{'Accept':'application/vnd.github.v3.raw'},cache:'no-store'});
     if (!resp.ok) throw new Error('Erreur réseau');
     const data = await resp.json();
     PHASES = data.phases;
