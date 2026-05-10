@@ -138,11 +138,15 @@ function render(){
     });
     html+='</div>';
   } else if(q.type==='words'){
-    html+=`<div id="words"></div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <input id="wordInput" type="text" placeholder="Un mot important..." style="flex:1;padding:12px;background:var(--surface-2);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px">
-        <button class="btn-primary" style="padding:12px 16px;flex:0" onclick="addWord()">+</button>
-      </div>`;
+    const words=q.sub.replace(/[«»]/g,'').split(/\s+/);
+    html+='<div id="wordsPhrase" style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;font-size:15px;line-height:1.9">';
+    words.forEach(w=>{
+      const clean=w.replace(/[.,;]/g,'');
+      if(clean.length>2){
+        html+=`<span class="word-chip" data-word="${clean.toLowerCase()}" onclick="toggleWord(this)" style="display:inline-block;padding:4px 8px;margin:2px;border-radius:6px;cursor:pointer;transition:all .2s;border:1px solid transparent">${w}</span> `;
+      }else{html+=w+' ';}
+    });
+    html+='</div><div style="color:var(--dim);font-size:12px">Cliquez sur 2-3 mots importants</div><div id="words" style="display:none"></div>';
   } else if(q.type==='rank'){
     // Shuffle items randomly each time
     const shuffled=[...q.items].sort(()=>Math.random()-0.5);
@@ -215,6 +219,22 @@ function toggleMulti(i){
   state.tempAnswer=[...selectedMulti];
 }
 
+
+function toggleWord(el){
+  el.classList.toggle('selected');
+  if(el.classList.contains('selected')){
+    el.style.background='var(--purple-glow)';
+    el.style.borderColor='var(--purple)';
+    el.style.color='var(--purple)';
+  }else{
+    el.style.background='transparent';
+    el.style.borderColor='transparent';
+    el.style.color='var(--text)';
+  }
+  const selected=document.querySelectorAll('.word-chip.selected');
+  state.tempAnswer=Array.from(selected).map(s=>s.dataset.word);
+  document.getElementById('validateBtn').disabled=selected.length===0;
+}
 
 function checkMatchComplete(){
   const selects=document.querySelectorAll('select[data-idx]');
@@ -357,7 +377,7 @@ function validate(){
     });
   }
   
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, ['mcq','rank','multi','words','match'].includes(q.type)?1500:300);
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, q.type==='words'?4000:['mcq','rank','multi','match'].includes(q.type)?1500:300);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
