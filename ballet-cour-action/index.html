@@ -61,7 +61,7 @@ const QUIZ = {
   subtitle: "XVIIᵉ–XVIIIᵉ siècle",
   questions: [
     {id:"Q0",type:"text",q:"Avant de commencer, quel est ton prénom ?",ph:"Ton prénom"},
-    {id:"Q1",type:"words",q:"Quels sont les 2 ou 3 mots les plus importants ?",sub:"« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",max:3},
+    {id:"Q1",type:"words",q:"Quels sont les 2 ou 3 mots les plus importants ?",sub:"« L'esthétique du ballet évolue entre héritage de la danse baroque et nouvelles exigences d'expressivité. »",max:3,a:["esthétique","ballet","héritage","danse","baroque","exigences","expressivité"]},
     {id:"Q2",type:"rank",q:"Classez ces styles du plus ancien au plus récent",items:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse","Opéra-ballet français","Ballet d'action","Ballet romantique"],answer:["Carole médiévale","Ballet de cour","Comédie-ballet","Tragédie lyrique","Belle danse","Opéra-ballet français","Ballet d'action","Ballet romantique"]},
     {id:"Q3",type:"mcq",q:"Quelle période correspond au « ballet de cour » en France ?",opts:["1350 – 1450","1581 – vers 1670","1700 – 1760","1789 – 1830"],a:1},
     {id:"Q4",type:"mcq",q:"Quel est le premier véritable ballet d'action ?",opts:["Les Indes galantes (Rameau, 1735)","Les Saisons (Hilverding, 1743)","L'Amour et Psyché (Hilverding, 1752)","Les Horaces (Noverre, 1774)"],a:2},
@@ -77,7 +77,7 @@ const QUIZ = {
 let state = {idx:0,answers:{},name:"",startTime:Date.now(),sessionId:'s_'+Math.random().toString(36).slice(2)};
 
 function saveSession(){localStorage.setItem('ballet_session',JSON.stringify({id:state.sessionId,name:state.name,start:state.startTime,answers:state.answers}));}
-function sendToSheets(payload){const url=window.__QUIZ_CONFIG.APPS_SCRIPT_URL;if(!url)return;fetch(url+'?payload='+encodeURIComponent(JSON.stringify(payload)),{method:'GET'}).catch(()=>{});}
+function sendToSheets(payload){const url=window.__QUIZ_CONFIG.APPS_SCRIPT_URL;if(!url)return;console.log('Sending to sheets:',payload);fetch(url+'?payload='+encodeURIComponent(JSON.stringify(payload)),{method:'GET'}).then(r=>r.text()).then(t=>console.log('Sheets response:',t)).catch(e=>console.error('Sheets error:',e));}
 
 function render(){
   const app=document.getElementById('app');
@@ -105,7 +105,7 @@ function render(){
     const timeMin=Math.round((Date.now()-state.startTime)/60000);
     
     // Save to sheets
-    sendToSheets({action:'save_student_session',args:{session_id:state.sessionId,student_name:state.name,score:`${correct}/${total}`,percentage:pct,time_minutes:timeMin,completed_at:new Date().toISOString()}});
+    sendToSheets({action:'save_session',args:{session_id:state.sessionId,student_name:state.name,score:`${correct}/${total}`,percentage:pct,time_minutes:timeMin,completed_at:new Date().toISOString()}});
     
     app.innerHTML=`<div class="results">
       <div class="results-score">${correct}/${total}</div>
@@ -144,8 +144,10 @@ function render(){
         <button class="btn-primary" style="padding:12px 16px;flex:0" onclick="addWord()">+</button>
       </div>`;
   } else if(q.type==='rank'){
+    // Shuffle items randomly each time
+    const shuffled=[...q.items].sort(()=>Math.random()-0.5);
     html+='<div class="options-grid" id="rankList">';
-    q.items.forEach((item,i)=>{
+    shuffled.forEach((item,i)=>{
       html+=`<div class="option-btn" style="cursor:grab" draggable="true" data-idx="${i}">
         <span class="option-letter">${i+1}</span>
         <span style="flex:1">${item}</span>
@@ -289,7 +291,7 @@ function validate(){
   
   // Send to sheets
   sendToSheets({
-    action:'save_student_answer',
+    action:'save_answer',
     args:{
       session_id:state.sessionId,
       student_name:state.name,
