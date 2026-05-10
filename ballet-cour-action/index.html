@@ -334,7 +334,7 @@ function validate(){
     });
   }
   
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];localStorage.removeItem('selWords');render();}, ['mcq','rank','multi'].includes(q.type)?1500:300);
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];localStorage.removeItem('selWords');render();}, ['mcq','rank','multi','words'].includes(q.type)?1500:300);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
