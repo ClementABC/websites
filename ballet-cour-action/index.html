@@ -164,7 +164,7 @@ let QUIZ = { title: '', subtitle: '', questions: [] };
   app.innerHTML = '<div style="text-align:center;padding:80px 20px;"><div class="welcome-title">Chargement du quiz…</div></div>';
   
   try {
-    const resp = await fetch('questions.json');
+    const resp = await fetch('questions.json?v=' + Date.now());
     if (!resp.ok) throw new Error('Erreur réseau');
     const data = await resp.json();
     PHASES = data.phases;
