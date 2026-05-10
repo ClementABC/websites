@@ -289,6 +289,20 @@ function validate(){
   state.answers[q.id]={answer,correct,ts:Date.now()};
   saveSession();
   
+  // Show visual feedback for match questions
+  if(q.type==='match'){
+    document.querySelectorAll('select').forEach((sel,i)=>{
+      sel.disabled=true;
+      if(sel.value===q.pairs[i][1]){
+        sel.style.borderColor='var(--success)';
+        sel.style.background='var(--success-glow)';
+      } else if(sel.value!==''){
+        sel.style.borderColor='var(--error)';
+        sel.style.background='var(--error-glow)';
+      }
+    });
+  }
+  
   // Send to sheets
   sendToSheets({
     action:'save_student_answer',
@@ -334,7 +348,7 @@ function validate(){
     });
   }
   
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];localStorage.removeItem('selWords');render();}, ['mcq','rank','multi','words'].includes(q.type)?1500:300);
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];localStorage.removeItem('selWords');render();}, ['mcq','rank','multi','words','match'].includes(q.type)?1500:300);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
