@@ -263,7 +263,28 @@ function validate(){
   
   if(q.type==='text'){answer=document.getElementById('answer').value;correct=answer.length>0;}
   else if(q.type==='mcq'){answer=state.tempAnswer;correct=answer===q.a;}
-  else if(q.type==='words'){answer=state.tempAnswer||[];correct=answer.length>0;}
+  else if(q.type==='words'){
+    answer=state.tempAnswer||[];
+    correct=answer.length>0;
+    // Show expected answers
+    const container=document.getElementById('words');
+    if(container && q.a){
+      const expectedDiv=document.createElement('div');
+      expectedDiv.style.cssText='margin-top:16px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)';
+      expectedDiv.innerHTML='<div style="color:var(--dim);font-size:12px;margin-bottom:8px">Mots attendus :</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+q.a.map(w=>`<span style="padding:4px 10px;background:var(--purple-glow);color:var(--purple);border-radius:12px;font-size:12px;font-weight:600">${w}</span>`).join('')+'</div>';
+      container.parentNode.appendChild(expectedDiv);
+      
+      // Highlight user words that match
+      Array.from(container.children).forEach(span=>{
+        const word=span.textContent.toLowerCase();
+        if(q.a.some(expected=>expected.toLowerCase()===word || expected.toLowerCase().includes(word) || word.includes(expected.toLowerCase()))){
+          span.style.background='var(--green-glow)';
+          span.style.color='var(--green)';
+          span.style.border='2px solid var(--green)';
+        }
+      });
+    }
+  }
   else if(q.type==='rank'){answer=state.tempAnswer;correct=JSON.stringify(answer)===JSON.stringify(q.answer);}
   else if(q.type==='match'){
     const selects=document.querySelectorAll('select');
