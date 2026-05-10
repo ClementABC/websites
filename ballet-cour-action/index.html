@@ -105,7 +105,7 @@ function render(){
     const timeMin=Math.round((Date.now()-state.startTime)/60000);
     
     // Save to sheets
-    sendToSheets({action:'save_session',args:{session_id:state.sessionId,student_name:state.name,score:`${correct}/${total}`,percentage:pct,time_minutes:timeMin,completed_at:new Date().toISOString()}});
+    sendToSheets({action:'save_session',session:{studentName:state.name,score:correct,totalQuestions:total,timestamp:Date.now(),timeTaken:`${timeMin} min`}});
     
     app.innerHTML=`<div class="results">
       <div class="results-score">${correct}/${total}</div>
@@ -292,14 +292,16 @@ function validate(){
   // Send to sheets
   sendToSheets({
     action:'save_answer',
-    args:{
-      session_id:state.sessionId,
-      student_name:state.name,
-      question_id:q.id,
-      question_text:q.q,
-      answer_json:JSON.stringify(answer),
-      is_correct:correct,
-      points_earned:correct?1:0
+    answer:{
+      studentName:state.name,
+      questionId:q.id,
+      questionText:q.q,
+      studentAnswer:answer,
+      correctAnswer:q.a || q.answer || '',
+      questionType:q.type,
+      isCorrect:correct,
+      points:correct?1:0,
+      maxPoints:1
     }
   });
   
