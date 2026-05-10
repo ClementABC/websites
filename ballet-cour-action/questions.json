@@ -59,7 +59,7 @@
       "phase": 0,
       "type": "text",
       "q": "Quel est ton prénom ?",
-      "ph": "Ton prénom",
+      "ph": "Prénom",
       "model": ""
     },
     {
