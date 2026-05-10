@@ -294,9 +294,24 @@ function validate(){
       if(i===q.a)btn.classList.add('correct');
       else if(i===state.tempAnswer&&!correct)btn.classList.add('incorrect');
     });
+  } else if(q.type==='rank'){
+    const items=document.querySelectorAll('#rankList .option-btn');
+    items.forEach((item,i)=>{
+      item.style.cursor='default';
+      item.draggable=false;
+      const itemText=item.querySelector('span:nth-child(2)').textContent;
+      const correctIdx=q.answer.indexOf(itemText);
+      if(correctIdx===i){
+        item.classList.add('correct');
+      } else {
+        item.classList.add('incorrect');
+        // Show correct position
+        const pos=(item.querySelector('.option-letter').textContent=i+1);
+      }
+    });
   }
   
-  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, q.type==='mcq'?1200:300);
+  setTimeout(()=>{state.idx++;state.tempAnswer=null;selectedMulti=[];render();}, q.type==='mcq'||q.type==='rank'?1500:300);
 }
 
 function prevQ(){if(state.idx>1){state.idx--;render();}}
