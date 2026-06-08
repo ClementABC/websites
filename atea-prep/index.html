@@ -1224,6 +1224,7 @@ function renderQuizSetup() {
 
       <button class="flip-btn" style="margin-top:24px" onclick="startQuiz(10)">Lancer le quiz — 10 questions</button>
       <button class="flip-btn secondary" onclick="startQuiz(50)">Marathon — 50 questions</button>
+      <button class="flip-btn secondary" onclick="startQuiz(CONTENT.questions.length)">Marathon total — toutes les questions</button>
     </div>
   `;
 }
@@ -1501,8 +1502,8 @@ function renderSupplementary() {
   document.getElementById('main').innerHTML = `
     <button class="sup-back" onclick="showTab('home')">← Retour</button>
     <h2 style="font-size:19px;font-weight:700;margin-bottom:4px" class="fade-in">📚 Contenu complémentaire</h2>
-    <div class="sup-badge">Bonus — en plus des 50 questions</div>
-    <p class="sup-intro fade-in">Fiches de référence sur des sujets que le jury peut aborder à l'oral. Ce contenu complète les 50 questions principales sans les remplacer.</p>
+    <div class="sup-badge">Bonus — en plus des questions principales</div>
+    <p class="sup-intro fade-in">Fiches de référence sur des sujets que le jury peut aborder à l'oral. Ce contenu complète les questions principales sans les remplacer.</p>
     <div class="fade-in">
       ${SUPPLEMENTARY.topics.map(t => `
         <div class="sup-topic-card" onclick="renderSupTopic('${t.id}')">
