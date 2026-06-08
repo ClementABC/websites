@@ -175,11 +175,13 @@ body{display:flex;flex-direction:column}
 /* Swipe hint */
 .swipe-hint{text-align:center;font-size:11px;color:var(--muted);padding:8px;margin-top:8px}
 
-/* Bottom bar */
-.bottom-bar{display:flex;padding:8px 16px;padding-bottom:max(8px,env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
-.bottom-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;font-weight:600;transition:color .2s;font-family:var(--font)}
-.bottom-btn.active{color:var(--accent)}
-.bottom-btn .ico{font-size:22px}
+/* Bottom bar — Instagram style */
+.bottom-bar{display:flex;align-items:center;justify-content:space-around;padding:6px 0;padding-bottom:max(6px,env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
+.bottom-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 0;border:none;background:transparent;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;position:relative}
+.bottom-btn:active{transform:scale(0.9)}
+.bottom-btn svg{width:26px;height:26px;stroke:var(--muted);stroke-width:1.8;fill:none;transition:all .15s}
+.bottom-btn.active svg{stroke:var(--text);stroke-width:2.2}
+.bottom-btn.active svg.fill-active{fill:var(--text);stroke:var(--text)}
 
 /* Filter pills */
 .filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
@@ -212,11 +214,19 @@ body{display:flex;flex-direction:column}
 <div class="nav" id="nav"></div>
 <div class="main" id="main"></div>
 
-<div class="bottom-bar">
-  <button class="bottom-btn active" onclick="showTab('home')"><span class="ico">🏠</span>Accueil</button>
-  <button class="bottom-btn" onclick="showTab('study')"><span class="ico">📖</span>Réviser</button>
-  <button class="bottom-btn" onclick="showTab('quiz')"><span class="ico">🎯</span>Quiz</button>
-  <button class="bottom-btn" onclick="showTab('stats')"><span class="ico">📊</span>Stats</button>
+<div class="bottom-bar" id="bottomBar">
+  <button class="bottom-btn active" onclick="showTab('home')" data-tab="home">
+    <svg viewBox="0 0 24 24" class="fill-active"><path d="M9.005 16.545a2.997 2.997 0 0 1 2.997-2.997A2.997 2.997 0 0 1 15 16.545V22H9.005V16.545Z"/><path d="M2.003 9.822 12 2l9.997 7.822V22H15v-5.455A2.997 2.997 0 0 0 12.002 13.548 2.997 2.997 0 0 0 9.005 16.545V22H2.003V9.822Z"/></svg>
+  </button>
+  <button class="bottom-btn" onclick="showTab('study')" data-tab="study">
+    <svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-4-2.5L12 19l-4-2.5L4 19Z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+  </button>
+  <button class="bottom-btn" onclick="showTab('quiz')" data-tab="quiz">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+  </button>
+  <button class="bottom-btn" onclick="showTab('stats')" data-tab="stats">
+    <svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+  </button>
 </div>
 
 <script src="content.js"></script>
@@ -536,7 +546,9 @@ function showTab(tab) {
   currentSubTab = null;
   stopTTS();
   document.querySelectorAll('.bottom-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['home','study','quiz','stats'][i] === tab);
+    b.classList.toggle('active', b.dataset.tab === tab);
+    const svg = b.querySelector('svg');
+    if (svg) svg.classList.toggle('fill-active', b.dataset.tab === tab && b.dataset.tab === 'home');
   });
   switch(tab) {
     case 'home': renderHome(); break;

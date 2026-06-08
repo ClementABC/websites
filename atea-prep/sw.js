@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atea-prep-v2';
+const CACHE_NAME = 'atea-prep-v3';
 const ASSETS = ['./index.html', './content.js', './manifest.json'];
 
 self.addEventListener('install', e => {
