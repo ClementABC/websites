@@ -62,6 +62,10 @@ body{display:flex;flex-direction:column}
 .flip-btn:active{transform:scale(0.98);opacity:0.9}
 .flip-btn.revealed{background:var(--surface2)}
 .flip-btn.secondary{background:var(--surface2);margin-top:10px}
+.my-answer{width:100%;min-height:100px;padding:16px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;font-family:var(--font);line-height:1.8;resize:vertical;margin-bottom:14px;outline:none;transition:border-color .2s;letter-spacing:0.02em}
+.my-answer:focus{border-color:var(--accent)}
+.my-answer::placeholder{color:var(--muted);opacity:0.6}
+.my-answer-label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:8px}
 
 /* Progress ring */
 .progress-container{display:flex;align-items:center;gap:14px;margin-bottom:20px}
@@ -818,6 +822,8 @@ function showMarathonCard() {
         "🔊 Lire à voix haute" +
       "</button>" +
     "</div>" +
+    "<div class=\"my-answer-label\">✍️ Ta réponse</div>" +
+    "<textarea class=\"my-answer\" id=\"myAnswer\" placeholder=\"Écris ta réponse ici avant de vérifier…\"></textarea>" +
     "<button class=\"flip-btn\" id=\"flipBtn\" onclick=\"revealMarathon()\">Voir la réponse</button>" +
     "<div class=\"leitner-btns\" id=\"leitnerBtns\" style=\"display:none\">" +
       "<button class=\"leitner-btn correct\" onclick=\"rateMarathon(true)\">✅ Je savais</button>" +
@@ -1035,6 +1041,8 @@ function showGuidedCard() {
         🔊 Lire à voix haute
       </button>
     </div>
+    <div class="my-answer-label">✍️ Ta réponse</div>
+    <textarea class="my-answer" id="myAnswer" placeholder="Écris ta réponse ici avant de vérifier…"></textarea>
     <button class="flip-btn" id="flipBtn" onclick="revealGuided()">Voir la réponse</button>
     <div class="leitner-btns" id="leitnerBtns" style="display:none">
       <button class="leitner-btn correct" onclick="guidedRate(true)">✅ Je savais</button>
@@ -1157,6 +1165,8 @@ function showFlashcard() {
         🔊 Lire à voix haute
       </button>
     </div>
+    <div class="my-answer-label">✍️ Ta réponse</div>
+    <textarea class="my-answer" id="myAnswer" placeholder="Écris ta réponse ici avant de vérifier…"></textarea>
     <button class="flip-btn" id="flipBtn" onclick="revealFlashcard()">Voir la réponse</button>
     <div class="leitner-btns" id="leitnerBtns" style="display:none">
       <button class="leitner-btn correct" onclick="rateFlashcard(true)">✅ Je savais</button>
@@ -1262,7 +1272,8 @@ function showQuizQuestion() {
       <div class="card-q">${q.question}</div>
     </div>
 
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center">Formule ta réponse à voix haute, puis vérifie 👇</p>
+    <div class="my-answer-label">✍️ Ta réponse</div>
+    <textarea class="my-answer" id="myAnswer" placeholder="Écris ta réponse ici avant de vérifier…"></textarea>
 
     <button class="flip-btn" id="quizRevealBtn" onclick="revealQuizAnswer()">Voir la réponse modèle</button>
 
