@@ -1,5 +1,5 @@
-const CACHE_NAME = 'atea-prep-v6';
-const ASSETS = ['./index.html', './content.js', './manifest.json'];
+const CACHE_NAME = 'atea-prep-v8';
+const ASSETS = ['./index.html', './content.js', './supplementary.js', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));

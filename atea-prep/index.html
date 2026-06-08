@@ -264,6 +264,28 @@ body{display:flex;flex-direction:column}
 /* Box 5 graduation animation */
 @keyframes boxGrad{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}70%{box-shadow:0 0 0 15px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .box-graduated{animation:boxGrad 1s ease}
+
+/* Supplementary content */
+.sup-back{display:flex;align-items:center;gap:8px;padding:10px 0;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;border:none;background:transparent;font-family:var(--font);margin-bottom:8px}
+.sup-back:active{opacity:.7}
+.sup-intro{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px;padding:0 4px}
+.sup-topic-card{background:var(--surface);border-radius:var(--card-radius);padding:18px;margin-bottom:10px;cursor:pointer;transition:all .15s;border:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.sup-topic-card:active{transform:scale(.98)}
+.sup-topic-icon{font-size:28px;width:48px;height:48px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sup-topic-meta{flex:1;min-width:0}
+.sup-topic-meta .title{font-size:15px;font-weight:600}
+.sup-topic-meta .desc{font-size:12px;color:var(--muted);margin-top:2px}
+.sup-section{background:var(--surface);border-radius:var(--card-radius);margin-bottom:12px;overflow:hidden;border:1px solid var(--border)}
+.sup-section-header{padding:16px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:600;transition:background .15s}
+.sup-section-header:active{background:var(--surface2)}
+.sup-section-arrow{color:var(--muted);font-size:14px;transition:transform .2s}
+.sup-section-arrow.open{transform:rotate(90deg)}
+.sup-section-body{padding:0 18px 16px;display:none}
+.sup-section-body.visible{display:block;animation:fadeIn .25s ease}
+.sup-point{padding:10px 0;border-bottom:1px solid rgba(71,85,105,.2);font-size:14px;line-height:1.7;color:var(--muted)}
+.sup-point:last-child{border-bottom:none}
+.sup-point strong{color:var(--text)}
+.sup-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(139,92,246,.12);color:var(--accent2);margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -296,6 +318,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <script src="content.js"></script>
+<script src="supplementary.js"></script>
 <script>
 
 // ===== MOTIVATION =====
@@ -903,6 +926,11 @@ function renderHome() {
           <span>🃏</span> ${CONTENT.flashcards.length} flashcards
         </button>
       </div>
+      <div class="extras-row">
+        <button class="extra-btn" onclick="renderSupplementary()" style="border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.06)">
+          <span>📚</span> Contenu complémentaire
+        </button>
+      </div>
       <div class="podcast-section">
           <div class="podcast-header" onclick="togglePodcasts()">🎧 Podcast révision <span id="podcastToggle">▸</span></div>
           <div class="podcast-list" id="podcastList" style="display:none">
@@ -1438,6 +1466,83 @@ function progressRing(pct, size=48) {
     </svg>
     <div class="progress-text">${pct}%</div>
   </div>`;
+}
+
+// ===== SUPPLEMENTARY CONTENT =====
+function renderSupplementary() {
+  document.getElementById('nav').innerHTML = '';
+  document.querySelectorAll('.bottom-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('main').innerHTML = `
+    <button class="sup-back" onclick="showTab('home')">← Retour</button>
+    <h2 style="font-size:19px;font-weight:700;margin-bottom:4px" class="fade-in">📚 Contenu complémentaire</h2>
+    <div class="sup-badge">Bonus — en plus des 50 questions</div>
+    <p class="sup-intro fade-in">Fiches de référence sur des sujets que le jury peut aborder à l'oral. Ce contenu complète les 50 questions principales sans les remplacer.</p>
+    <div class="fade-in">
+      ${SUPPLEMENTARY.topics.map(t => `
+        <div class="sup-topic-card" onclick="renderSupTopic('${t.id}')">
+          <div class="sup-topic-icon">${t.icon}</div>
+          <div class="sup-topic-meta">
+            <div class="title">${t.title}</div>
+            <div class="desc">${t.sections.length} fiche${t.sections.length > 1 ? 's' : ''} · ${t.sections.reduce((n,s) => n + s.points.length, 0)} points</div>
+          </div>
+          <div style="color:var(--muted);font-size:18px;flex-shrink:0">›</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderSupTopic(topicId) {
+  const topic = SUPPLEMENTARY.topics.find(t => t.id === topicId);
+  if (!topic) return;
+  document.getElementById('main').innerHTML = `
+    <button class="sup-back" onclick="renderSupplementary()">← Tous les sujets</button>
+    <h2 style="font-size:19px;font-weight:700;margin-bottom:4px" class="fade-in">${topic.icon} ${topic.title}</h2>
+    <div class="sup-badge">Contenu complémentaire</div>
+    <p class="sup-intro fade-in">${topic.intro}</p>
+    <div class="fade-in">
+      ${topic.sections.map((s, i) => `
+        <div class="sup-section">
+          <div class="sup-section-header" onclick="toggleSupSection(this)">
+            ${s.title}
+            <span class="sup-section-arrow">›</span>
+          </div>
+          <div class="sup-section-body">
+            ${s.points.map(p => `<div class="sup-point">${formatSupPoint(p)}</div>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <button class="tts-btn" style="margin-top:12px;margin-bottom:80px" onclick="readTopicAloud('${topicId}', this)">
+      🔊 Lire tout à voix haute
+    </button>
+  `;
+  // Auto-open first section
+  const firstHeader = document.querySelector('.sup-section-header');
+  if (firstHeader) toggleSupSection(firstHeader);
+}
+
+function toggleSupSection(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.sup-section-arrow');
+  const isOpen = body.classList.contains('visible');
+  body.classList.toggle('visible', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+}
+
+function formatSupPoint(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\b([A-ZÉÈÀÙÇ]{2,})\b/g, '<strong style="color:var(--accent)">$1</strong>');
+}
+
+function readTopicAloud(topicId, btn) {
+  const topic = SUPPLEMENTARY.topics.find(t => t.id === topicId);
+  if (!topic) return;
+  const allText = topic.sections.map(s =>
+    s.title + '. ' + s.points.map(p => p.replace(/\*\*/g, '')).join('. ')
+  ).join('. ');
+  toggleTTS(allText, btn);
 }
 
 // ===== SERVICE WORKER =====
