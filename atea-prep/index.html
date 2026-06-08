@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <title>ATEA 2026 — Prépa Concours Danse</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -17,14 +17,14 @@
   --accent2:#8b5cf6;--green:#22c55e;--red:#ef4444;
   --orange:#f59e0b;--border:#475569;
   --radius:16px;--card-radius:20px;
-  --font:'OpenDyslexic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font:'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent;font-size:17px;letter-spacing:0.08em;line-height:1.8}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent;font-size:16px;letter-spacing:0.02em;line-height:1.7}
 body{display:flex;flex-direction:column}
 
 /* Header */
 .header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
-.header h1{font-size:17px;font-weight:700;letter-spacing:0.05em}
+.header h1{font-size:16px;font-weight:700;letter-spacing:0.05em}
 .header-right{display:flex;align-items:center;gap:10px}
 .countdown{font-size:13px;color:var(--orange);font-weight:600}
 .countdown span{font-size:18px}
@@ -44,11 +44,11 @@ body{display:flex;flex-direction:column}
 /* Card styles */
 .card{background:var(--surface);border-radius:var(--card-radius);padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
 .card-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);font-weight:700;margin-bottom:10px}
-.card-q{font-size:17px;font-weight:600;line-height:1.8;margin-bottom:16px}
-.card-a{font-size:16px;line-height:1.8;color:var(--muted);display:none;padding-top:16px;border-top:1px solid var(--border)}
+.card-q{font-size:16px;font-weight:600;line-height:1.7;margin-bottom:16px}
+.card-a{font-size:16px;line-height:1.7;color:var(--muted);display:none;padding-top:16px;border-top:1px solid var(--border)}
 .card-a.visible{display:block;animation:fadeIn .3s ease}
 .card-a ul{list-style:none;padding:0;margin:0}
-.card-a li{padding:6px 0;padding-left:20px;position:relative;line-height:1.8}
+.card-a li{padding:6px 0;padding-left:20px;position:relative;line-height:1.7}
 .card-a li::before{content:'•';position:absolute;left:0;color:var(--accent);font-weight:700}
 .card-category{position:absolute;top:0;right:0;padding:6px 12px;border-radius:0 var(--card-radius) 0 12px;font-size:10px;font-weight:600;background:var(--accent2);color:#fff;letter-spacing:0.05em}
 
@@ -109,13 +109,13 @@ body{display:flex;flex-direction:column}
 .acr-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
 .acr-card:active{transform:scale(0.98)}
 .acr-card .acr{font-size:19px;font-weight:700;color:var(--accent)}
-.acr-card .def{font-size:15px;color:var(--muted);margin-top:8px;display:none;line-height:1.8}
+.acr-card .def{font-size:15px;color:var(--muted);margin-top:8px;display:none;line-height:1.7}
 .acr-card.open .def{display:block;animation:fadeIn .2s ease}
 
 /* Timeline */
 .tl-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(71,85,105,0.3)}
-.tl-date{min-width:100px;font-size:13px;font-weight:700;color:var(--orange);line-height:1.8}
-.tl-event{font-size:14px;line-height:1.8;color:var(--text)}
+.tl-date{min-width:100px;font-size:13px;font-weight:700;color:var(--orange);line-height:1.7}
+.tl-event{font-size:14px;line-height:1.7;color:var(--text)}
 
 /* Stats dashboard */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
@@ -125,7 +125,7 @@ body{display:flex;flex-direction:column}
 
 /* Search */
 .search{display:flex;margin-bottom:16px}
-.search input{flex:1;padding:12px 16px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;outline:none;font-family:var(--font);letter-spacing:0.08em}
+.search input{flex:1;padding:12px 16px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;outline:none;font-family:var(--font);letter-spacing:0.02em}
 .search input:focus{border-color:var(--accent)}
 .search input::placeholder{color:var(--muted)}
 
@@ -148,6 +148,42 @@ body{display:flex;flex-direction:column}
 .home-action .meta .title{font-weight:600;font-size:15px}
 .home-action .meta .desc{font-size:12px;color:var(--muted);margin-top:2px}
 .home-action .arrow{color:var(--muted);font-size:18px;flex-shrink:0}
+
+
+
+/* Countdown strip */
+.countdown-strip{display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(249,115,22,0.08));border:1.5px solid rgba(239,68,68,0.25);border-radius:var(--card-radius);margin-bottom:12px}
+.countdown-num{font-size:36px;font-weight:800;color:var(--red);line-height:1;min-width:48px;text-align:center}
+.countdown-right{flex:1}
+.countdown-label{font-size:14px;font-weight:600;color:var(--text)}
+.countdown-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Primary action (marathon) */
+.home-action.primary-action{border:2px solid var(--red);background:rgba(239,68,68,0.06)}
+
+/* Extras row */
+.home-extras{margin-top:4px;margin-bottom:16px}
+.extras-row{display:flex;gap:8px;margin-bottom:8px}
+.extra-btn{flex:1;padding:10px 8px;border-radius:var(--card-radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-weight:600;text-align:center;cursor:pointer;font-family:var(--font);transition:all .15s;text-decoration:none;display:block}
+.extra-btn:active{transform:scale(0.97)}
+.extra-btn span{display:block;font-size:18px;margin-bottom:4px}
+.podcast-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.2)}
+.podcast-btn span{display:inline;font-size:16px;margin:0}
+
+/* Today stats row */
+.today-stats{display:flex;gap:4px;margin-top:12px;margin-bottom:80px}
+.today-stat{flex:1;text-align:center;padding:10px 4px;background:var(--surface);border-radius:var(--card-radius);border:1px solid var(--border)}
+.today-stat .ts-num{font-size:18px;font-weight:700;color:var(--text)}
+.today-stat .ts-label{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Red color var */
+
+/* Greeting */
+.greeting{padding:16px 20px 0;font-size:16px;font-weight:600;color:var(--text);text-align:left;line-height:1.6}
+
+/* Motivation toast */
+.motivation-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--surface2);color:var(--text);padding:10px 20px;border-radius:30px;font-size:14px;font-weight:600;opacity:0;transition:all .3s ease;z-index:100;pointer-events:none;white-space:nowrap}
+.motivation-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* Daily goal banner */
 .daily-goal{background:var(--surface);border-radius:var(--card-radius);padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
@@ -211,6 +247,7 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
+<div class="motivation-toast" id="motivationToast"></div>
 <div class="nav" id="nav"></div>
 <div class="main" id="main"></div>
 
@@ -231,6 +268,84 @@ body{display:flex;flex-direction:column}
 
 <script src="content.js"></script>
 <script>
+
+// ===== MOTIVATION =====
+const GREETINGS = [
+  "Bonjour Mathieu ! C'est parti pour une séance de révision 💪",
+  "Salut Mathieu ! Encore un pas vers le concours 🩰",
+  "Hello Mathieu ! Chaque minute compte, tu gères 🔥",
+  "Bonjour Mathieu ! Le jury va être impressionné 🌟",
+  "Mathieu ! J-{days} — on révise et on brille ✨",
+  "Coucou Mathieu ! Ton futur poste t'attend 🎯",
+];
+
+const CARD_ENCOURAGEMENTS = [
+  "Bien joué ! 👏",
+  "Tu gères ! 💪",
+  "Excellent ! 🌟",
+  "C'est noté ! ✅",
+  "Bravo ! 🎉",
+  "Continue comme ça ! 🔥",
+  "Top ! 👌",
+  "Parfait ! ⭐",
+];
+
+const WRONG_ENCOURAGEMENTS = [
+  "Pas grave, ça rentrera ! 💡",
+  "C'est en se trompant qu'on apprend 📖",
+  "Tu la retiendras la prochaine fois 💪",
+  "Note-la bien, elle reviendra ! 🔄",
+];
+
+const STREAK_MESSAGES = [
+  "", // 0
+  "", // 1
+  "Belle série ! 🔥",
+  "3 d'affilée, continue ! 🔥🔥",
+  "En feu ! 🔥🔥🔥",
+  "Inarrêtable ! 🔥🔥🔥🔥",
+];
+
+const SESSION_END_MESSAGES = [
+  "Belle session ! Le jury ne sait pas ce qui l'attend 😏",
+  "Bravo Mathieu ! Une session de plus vers la victoire 🏆",
+  "Encore un pas de franchi. Tu es sur la bonne voie ! 🩰",
+  "Session terminée. Tu es de plus en plus prêt ! 💪",
+];
+
+function getGreeting() {
+  const days = Math.max(0, Math.ceil((new Date('2026-06-22') - new Date()) / 86400000));
+  const g = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+  return g.replace('{days}', days);
+}
+
+function getCardEncouragement() {
+  return CARD_ENCOURAGEMENTS[Math.floor(Math.random() * CARD_ENCOURAGEMENTS.length)];
+}
+
+function getWrongEncouragement() {
+  return WRONG_ENCOURAGEMENTS[Math.floor(Math.random() * WRONG_ENCOURAGEMENTS.length)];
+}
+
+function getStreakMessage(count) {
+  if (count >= STREAK_MESSAGES.length) return STREAK_MESSAGES[STREAK_MESSAGES.length - 1];
+  return STREAK_MESSAGES[count] || '';
+}
+
+function getSessionEndMessage() {
+  return SESSION_END_MESSAGES[Math.floor(Math.random() * SESSION_END_MESSAGES.length)];
+}
+
+let correctStreak = 0;
+function showMotivation(msg) {
+  if (!msg) return;
+  const t = document.getElementById('motivationToast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 1800);
+}
+
+
 // ===== STATE =====
 const STATE_KEY = 'atea-prep-v2';
 let state = loadState();
@@ -460,8 +575,13 @@ function leitnerCorrect(qId) {
   if (b.box < 5) b.box++;
   b.lastSeen = new Date().toISOString();
   b.sessionSeen = state.sessionCount;
+  correctStreak++;
   if (b.box === 5) {
     showCelebration('⭐ Maîtrisée !');
+  } else if (correctStreak >= 2) {
+    showMotivation(getStreakMessage(Math.min(correctStreak, 5)));
+  } else if (Math.random() < 0.3) {
+    showMotivation(getCardEncouragement());
   }
   recordStudy();
   saveState();
@@ -472,6 +592,8 @@ function leitnerWrong(qId) {
   state.boxes[qId].box = 1;
   state.boxes[qId].lastSeen = new Date().toISOString();
   state.boxes[qId].sessionSeen = state.sessionCount;
+  correctStreak = 0;
+  if (Math.random() < 0.4) showMotivation(getWrongEncouragement());
   recordStudy();
   saveState();
 }
@@ -537,6 +659,79 @@ function buildGuidedSession() {
   return shuffle(pool);
 }
 
+
+// ===== MARATHON MODE =====
+function startMarathon() {
+  const deck = [...CONTENT.questions].sort(() => Math.random() - 0.5);
+  marathonDeck = deck;
+  marathonIndex = 0;
+  correctStreak = 0;
+  currentTab = "study";
+  document.querySelectorAll(".bottom-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === "study"));
+  document.getElementById("nav").innerHTML = "<button class=\"nav-btn active\">🔥 Marathon — " + deck.length + " cartes</button>";
+  showMarathonCard();
+}
+
+let marathonDeck = [];
+let marathonIndex = 0;
+
+function showMarathonCard() {
+  if (marathonIndex >= marathonDeck.length) {
+    showCelebration("🏆 Marathon terminé !");
+    document.getElementById("main").innerHTML = 
+      "<div class=\"empty fade-in\">" +
+      "<div class=\"emoji\">🏆</div>" +
+      "<p style=\"font-size:18px;font-weight:600\">Marathon terminé !</p>" +
+      "<p style=\"margin-top:8px;color:var(--muted)\">" + marathonDeck.length + " questions révisées</p>" +
+      "<p style=\"margin-top:4px;color:var(--muted);font-style:italic\">" + getSessionEndMessage() + "</p>" +
+      "<button class=\"flip-btn\" style=\"margin-top:20px;max-width:240px;margin-left:auto;margin-right:auto\" onclick=\"showTab(\x27home\x27)\">Retour</button>" +
+      "<button class=\"flip-btn secondary\" style=\"max-width:240px;margin-left:auto;margin-right:auto\" onclick=\"startMarathon()\">Recommencer</button>" +
+      "</div>";
+    return;
+  }
+
+  const q = marathonDeck[marathonIndex];
+  const box = getBox(q.id);
+  const boxLabels = {0:"📥 Nouvelle",1:"📦1 À revoir",2:"📦2 En cours",3:"📦3 Bien",4:"📦4 Acquise",5:"⭐ Maîtrisée"};
+  const pct = Math.round(marathonIndex / marathonDeck.length * 100);
+
+  document.getElementById("main").innerHTML = 
+    "<div class=\"progress-container fade-in\">" +
+      progressRing(pct, 48) +
+      "<div class=\"progress-label\"><strong>" + (marathonIndex + 1) + "</strong> / " + marathonDeck.length + " · " + boxLabels[box] + "</div>" +
+    "</div>" +
+    "<div class=\"card fade-in\">" +
+      "<div class=\"card-category\">" + q.category.split("&")[0].trim() + "</div>" +
+      "<div class=\"card-label\">Question " + q.id + "</div>" +
+      "<div class=\"card-q\">" + q.question + "</div>" +
+      "<div class=\"card-a\" id=\"answer\">" + formatAnswer(q.answer) + "</div>" +
+      "<button class=\"tts-btn\" id=\"ttsBtn\" onclick=\"toggleTTS(CONTENT.questions.find(x=>x.id===" + q.id + ").answer, this)\" style=\"display:none\">" +
+        "🔊 Lire à voix haute" +
+      "</button>" +
+    "</div>" +
+    "<button class=\"flip-btn\" id=\"flipBtn\" onclick=\"revealMarathon()\">Voir la réponse</button>" +
+    "<div class=\"leitner-btns\" id=\"leitnerBtns\" style=\"display:none\">" +
+      "<button class=\"leitner-btn correct\" onclick=\"rateMarathon(true)\">✅ Je savais</button>" +
+      "<button class=\"leitner-btn wrong\" onclick=\"rateMarathon(false)\">❌ À revoir</button>" +
+    "</div>" +
+    "<div class=\"swipe-hint\">Question " + (marathonIndex + 1) + " sur " + marathonDeck.length + "</div>";
+}
+
+function revealMarathon() {
+  document.getElementById("answer").classList.add("visible");
+  document.getElementById("ttsBtn").style.display = "inline-flex";
+  document.getElementById("flipBtn").style.display = "none";
+  document.getElementById("leitnerBtns").style.display = "flex";
+}
+
+function rateMarathon(correct) {
+  const q = marathonDeck[marathonIndex];
+  if (correct) leitnerCorrect(q.id);
+  else leitnerWrong(q.id);
+  marathonIndex++;
+  showMarathonCard();
+}
+
 // ===== TABS =====
 let currentTab = 'home';
 let currentSubTab = null;
@@ -568,41 +763,42 @@ function renderHome() {
   const avgScore = quizzes > 0 ? Math.round(state.quizHistory.reduce((a,h) => a + h.score/h.total*100, 0) / quizzes) : 0;
   const today = todayStr();
   const todayStudied = state.dailyGoal.date === today ? state.dailyGoal.studied : 0;
-  const goalMet = todayStudied >= 5;
-  const goalPct = Math.min(100, Math.round(todayStudied / 5 * 100));
+  const daysLeft = Math.max(0, Math.ceil((new Date('2026-06-22') - new Date()) / 86400000));
+  const readyPct = Math.round((studied / totalQ) * 100);
+
+  // Count due cards for the guided session
+  const dueBox1 = CONTENT.questions.filter(q => getBox(q.id) === 1 && isDueForReview(q.id)).length;
+  const dueBox2 = CONTENT.questions.filter(q => getBox(q.id) === 2 && isDueForReview(q.id)).length;
+  const unseen = counts[0];
+  const dueReview = CONTENT.questions.filter(q => getBox(q.id) >= 3 && isDueForReview(q.id)).length;
+  const totalDue = dueBox1 + dueBox2 + unseen + dueReview;
 
   document.getElementById('nav').innerHTML = '';
   document.getElementById('main').innerHTML = `
-    <div class="home-hero fade-in">
-      <div class="emoji">🩰</div>
-      <h2>Concours ATEA Danse</h2>
-      <div class="sub">${CONTENT.exam.places} places · ${CONTENT.exam.candidates} candidats</div>
-    </div>
+    <div class="greeting fade-in">${getGreeting()}</div>
 
-    <div class="daily-goal ${goalMet ? 'complete' : ''} fade-in">
-      <div class="ring-wrap">${progressRing(goalPct, 52)}</div>
-      <div class="goal-info">
-        <div class="goal-title">${goalMet ? '✅ Objectif atteint !' : 'Objectif du jour'}</div>
-        <div class="goal-sub">${todayStudied}/5 cartes étudiées${state.streak.count > 1 ? ' · 🔥 '+state.streak.count+' jours' : ''}</div>
+    <div class="countdown-strip fade-in">
+      <div class="countdown-num">${daysLeft}</div>
+      <div class="countdown-right">
+        <div class="countdown-label">jours avant le concours</div>
+        <div class="countdown-sub">${studied}/${totalQ} vues · ${mastered} maîtrisées · ${readyPct}% couvert</div>
       </div>
     </div>
 
-    ${renderLeitnerBoxes()}
-
     <div class="home-actions fade-in">
-      <button class="home-action" onclick="startGuidedSession()" style="border:2px solid var(--accent)">
-        <div class="icon blue">🎯</div>
+      <button class="home-action primary-action" onclick="startMarathon()">
+        <div class="icon red">🔥</div>
         <div class="meta">
-          <div class="title">Session du jour</div>
-          <div class="desc">10 cartes ciblées — points faibles en priorité</div>
+          <div class="title">Révision marathon</div>
+          <div class="desc">Les ${totalQ} questions — tout revoir d'affilée</div>
         </div>
         <div class="arrow">›</div>
       </button>
-      <button class="home-action" onclick="startQuickStudy()">
-        <div class="icon purple">📖</div>
+      <button class="home-action" onclick="startGuidedSession()" style="border:2px solid var(--accent)">
+        <div class="icon blue">🎯</div>
         <div class="meta">
-          <div class="title">Révision libre</div>
-          <div class="desc">Parcourir par thème</div>
+          <div class="title">Session ciblée</div>
+          <div class="desc">${totalDue > 0 ? totalDue + ' cartes à revoir — points faibles d\'abord' : 'Tout est à jour ! Révision générale'}</div>
         </div>
         <div class="arrow">›</div>
       </button>
@@ -610,26 +806,44 @@ function renderHome() {
         <div class="icon pink">🗣️</div>
         <div class="meta">
           <div class="title">Quiz — Simulation jury</div>
-          <div class="desc">10 questions, seuil 6/10</div>
+          <div class="desc">10 questions oral, seuil 6/10</div>
         </div>
         <div class="arrow">›</div>
       </button>
-      <button class="home-action" onclick="showTab('study'); showSubTab('acronyms')">
-        <div class="icon orange">🔤</div>
+      <button class="home-action" onclick="startQuickStudy()">
+        <div class="icon purple">📖</div>
         <div class="meta">
-          <div class="title">Acronymes</div>
-          <div class="desc">${CONTENT.acronyms.length} sigles à maîtriser</div>
+          <div class="title">Par thème</div>
+          <div class="desc">Choisir une catégorie</div>
         </div>
         <div class="arrow">›</div>
       </button>
-      <button class="home-action" onclick="showTab('study'); showSubTab('timeline')">
-        <div class="icon green">📅</div>
-        <div class="meta">
-          <div class="title">Frise chronologique</div>
-          <div class="desc">${CONTENT.timeline.length} dates clés</div>
-        </div>
-        <div class="arrow">›</div>
-      </button>
+    </div>
+
+    <div class="home-extras fade-in">
+      <div class="extras-row">
+        <button class="extra-btn" onclick="showTab('study'); showSubTab('acronyms')">
+          <span>🔤</span> ${CONTENT.acronyms.length} acronymes
+        </button>
+        <button class="extra-btn" onclick="showTab('study'); showSubTab('timeline')">
+          <span>📅</span> ${CONTENT.timeline.length} dates clés
+        </button>
+        <button class="extra-btn" onclick="showTab('study'); showSubTab('flashcards')">
+          <span>🃏</span> ${CONTENT.flashcards.length} flashcards
+        </button>
+      </div>
+      <a class="extra-btn podcast-btn" href="https://hatch.ecto1.ai/podcasts/feed/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99" target="_blank" rel="noopener">
+        <span>🎧</span> Podcast révision (5 épisodes)
+      </a>
+    </div>
+
+    ${renderLeitnerBoxes()}
+
+    <div class="today-stats fade-in">
+      <div class="today-stat"><div class="ts-num">${todayStudied}</div><div class="ts-label">cartes aujourd'hui</div></div>
+      <div class="today-stat"><div class="ts-num">${quizzes}</div><div class="ts-label">quiz passés</div></div>
+      <div class="today-stat"><div class="ts-num">${avgScore > 0 ? avgScore + '%' : '—'}</div><div class="ts-label">score moyen</div></div>
+      <div class="today-stat"><div class="ts-num">${state.streak.count > 0 ? '🔥' + state.streak.count : '—'}</div><div class="ts-label">série</div></div>
     </div>
   `;
 }
@@ -845,11 +1059,11 @@ function renderQuizSetup() {
   document.getElementById('main').innerHTML = `
     <div class="fade-in" style="padding:16px 0">
       <h2 style="font-size:19px;font-weight:700;margin-bottom:4px">🎯 Mode Quiz</h2>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.8">Simulation d'oral — réponds comme devant le jury</p>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.7">Simulation d'oral — réponds comme devant le jury</p>
 
       <div class="card">
         <div class="card-label">Format du concours</div>
-        <p style="font-size:15px;line-height:1.8;color:var(--muted)">
+        <p style="font-size:15px;line-height:1.7;color:var(--muted)">
           Le jury pose <strong style="color:var(--text)">10 questions</strong> à l'oral.<br>
           Il faut <strong style="color:var(--green)">au moins 6 bonnes réponses</strong> pour réussir.
         </p>
@@ -918,7 +1132,7 @@ function showQuizQuestion() {
     <div id="quizAnswer" style="display:none">
       <div class="card fade-in" style="margin-top:16px;border-left:3px solid var(--accent)">
         <div class="card-label">Réponse modèle</div>
-        <div style="font-size:15px;line-height:1.8;color:var(--muted)">${formatAnswer(q.answer)}</div>
+        <div style="font-size:15px;line-height:1.7;color:var(--muted)">${formatAnswer(q.answer)}</div>
         <button class="tts-btn" onclick="toggleTTS(CONTENT.questions.find(x=>x.id===${q.id}).answer, this)">
           🔊 Lire à voix haute
         </button>
@@ -971,6 +1185,7 @@ function showQuizResults() {
       <div class="big-emoji">${passed ? '🎉' : '💪'}</div>
       <div class="result-text">${quizScore} / ${total}</div>
       <div class="result-sub">${passed ? 'Admissible ! Continue comme ça.' : total === 10 ? 'Il faut 6/10 — on retravaille !' : 'Continue de réviser !'}</div>
+      <div style="font-size:13px;margin-top:8px;color:var(--muted);font-style:italic">${getSessionEndMessage()}</div>
     </div>
 
     ${quizWrong.length > 0 ? `
@@ -978,7 +1193,7 @@ function showQuizResults() {
       ${quizWrong.map(q => `
         <div class="card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector('.card-a').classList.toggle('visible')">
           <div class="card-label">Q${q.id} · 📦1</div>
-          <div style="font-size:15px;font-weight:600;line-height:1.8">${q.question}</div>
+          <div style="font-size:15px;font-weight:600;line-height:1.7">${q.question}</div>
           <div class="card-a" style="font-size:14px">${formatAnswer(q.answer)}</div>
         </div>
       `).join('')}
