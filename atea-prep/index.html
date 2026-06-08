@@ -151,6 +151,35 @@ body{display:flex;flex-direction:column}
 
 
 
+
+/* Progress overview */
+.progress-overview{padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--card-radius);margin-bottom:12px}
+.progress-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
+.progress-bar-wrap{margin-bottom:8px}
+.progress-bar-bg{height:10px;border-radius:5px;background:var(--surface2);overflow:hidden;display:flex}
+.progress-bar-fill.mastered{background:var(--green);transition:width .5s ease}
+.progress-bar-fill.learning{background:var(--accent);transition:width .5s ease}
+.progress-legend{display:flex;gap:12px;flex-wrap:wrap}
+.legend-item{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.legend-dot.mastered{background:var(--green)}
+.legend-dot.learning{background:var(--accent)}
+.legend-dot.unseen{background:var(--surface2)}
+
+/* Podcast */
+.podcast-section{margin-bottom:8px}
+.podcast-header{padding:10px 14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:var(--card-radius);font-size:14px;font-weight:600;cursor:pointer;color:var(--text)}
+.podcast-header span{float:right;color:var(--muted)}
+.podcast-list{padding:4px 0}
+.podcast-episode{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.podcast-episode:active,.podcast-episode.playing{background:rgba(139,92,246,0.08)}
+.podcast-episode:last-child{border-bottom:none}
+.ep-play{width:28px;height:28px;border-radius:50%;background:var(--accent2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.podcast-episode.playing .ep-play{background:var(--green)}
+.ep-info{flex:1;min-width:0}
+.ep-title{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep-dur{font-size:11px;color:var(--muted)}
+
 /* Countdown strip */
 .countdown-strip{display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(249,115,22,0.08));border:1.5px solid rgba(239,68,68,0.25);border-radius:var(--card-radius);margin-bottom:12px}
 .countdown-num{font-size:36px;font-weight:800;color:var(--red);line-height:1;min-width:48px;text-align:center}
@@ -608,17 +637,29 @@ function isDueForReview(qId) {
 
 function renderLeitnerBoxes() {
   const counts = getBoxCounts();
-  const labels = ['Neuf','Boîte 1','Boîte 2','Boîte 3','Boîte 4','Boîte 5'];
-  const classes = ['','b1','b2','b3','b4','b5'];
-  return `<div class="leitner-visual">
-    ${[0,1,2,3,4,5].map(i => `
-      <div class="leitner-box ${classes[i]}">
-        <div class="box-num">${i === 0 ? '📥' : '📦'+i}</div>
-        <div class="box-count">${counts[i]}</div>
-        <div class="box-label">${labels[i]}</div>
-      </div>
-    `).join('')}
-  </div>`;
+  const totalQ = CONTENT.questions.length;
+  const mastered = counts[4] + counts[5];
+  const learning = counts[1] + counts[2] + counts[3];
+  const unseen = counts[0];
+  const masteredPct = Math.round(mastered / totalQ * 100);
+  const learningPct = Math.round(learning / totalQ * 100);
+  
+  if (mastered === 0 && learning === 0) return "";
+  
+  return "<div class=\"progress-overview fade-in\">" +
+    "<div class=\"progress-title\">Progression</div>" +
+    "<div class=\"progress-bar-wrap\">" +
+      "<div class=\"progress-bar-bg\">" +
+        "<div class=\"progress-bar-fill mastered\" style=\"width:" + masteredPct + "%\"></div>" +
+        "<div class=\"progress-bar-fill learning\" style=\"width:" + learningPct + "%\"></div>" +
+      "</div>" +
+    "</div>" +
+    "<div class=\"progress-legend\">" +
+      "<span class=\"legend-item\"><span class=\"legend-dot mastered\"></span> " + mastered + " acquises</span>" +
+      "<span class=\"legend-item\"><span class=\"legend-dot learning\"></span> " + learning + " en cours</span>" +
+      "<span class=\"legend-item\"><span class=\"legend-dot unseen\"></span> " + unseen + " restantes</span>" +
+    "</div>" +
+  "</div>";
 }
 
 // ===== GUIDED SESSION =====
@@ -659,6 +700,36 @@ function buildGuidedSession() {
   return shuffle(pool);
 }
 
+
+
+// ===== PODCAST PLAYER =====
+let currentPodcastEl = null;
+function togglePodcasts() {
+  const list = document.getElementById("podcastList");
+  const toggle = document.getElementById("podcastToggle");
+  if (list.style.display === "none") {
+    list.style.display = "block";
+    toggle.textContent = "\u25be";
+  } else {
+    list.style.display = "none";
+    toggle.textContent = "\u25b8";
+  }
+}
+function playPodcast(num, url, el) {
+  const audio = document.getElementById("podcastAudio");
+  if (currentPodcastEl) currentPodcastEl.classList.remove("playing");
+  if (audio.src.includes(url.split("/").pop()) && !audio.paused) {
+    audio.pause();
+    el.classList.remove("playing");
+    currentPodcastEl = null;
+    return;
+  }
+  audio.src = url;
+  audio.style.display = "block";
+  audio.play();
+  el.classList.add("playing");
+  currentPodcastEl = el;
+}
 
 // ===== MARATHON MODE =====
 function startMarathon() {
@@ -832,14 +903,37 @@ function renderHome() {
           <span>🃏</span> ${CONTENT.flashcards.length} flashcards
         </button>
       </div>
-      <a class="extra-btn podcast-btn" href="https://hatch.ecto1.ai/podcasts/feed/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99" target="_blank" rel="noopener">
-        <span>🎧</span> Podcast révision (5 épisodes)
-      </a>
+      <div class="podcast-section">
+          <div class="podcast-header" onclick="togglePodcasts()">🎧 Podcast révision <span id="podcastToggle">▸</span></div>
+          <div class="podcast-list" id="podcastList" style="display:none">
+            <audio id="podcastAudio" style="width:100%;margin-bottom:8px;display:none;border-radius:8px;height:36px" controls></audio>
+            <div class="podcast-episode" onclick="playPodcast(1, 'https://hatch.ecto1.ai/podcasts/media/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99/ep-e71de5c9-9ea0-4ec1-933f-da1ebee7d358.mp3', this)">
+              <div class="ep-play">▶</div>
+              <div class="ep-info"><div class="ep-title">Ép. 1 — Le cadre juridique</div><div class="ep-dur">6:21</div></div>
+            </div>
+            <div class="podcast-episode" onclick="playPodcast(2, 'https://hatch.ecto1.ai/podcasts/media/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99/ep-9b0b156d-7027-49ce-9038-3ac2295dde30.mp3', this)">
+              <div class="ep-play">▶</div>
+              <div class="ep-info"><div class="ep-title">Ép. 2 — Pédagogie de la danse</div><div class="ep-dur">6:53</div></div>
+            </div>
+            <div class="podcast-episode" onclick="playPodcast(3, 'https://hatch.ecto1.ai/podcasts/media/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99/ep-146811f4-fb73-4cd3-8409-3c54b5c75873.mp3', this)">
+              <div class="ep-play">▶</div>
+              <div class="ep-info"><div class="ep-title">Ép. 3 — Statut & carrière ATEA</div><div class="ep-dur">6:17</div></div>
+            </div>
+            <div class="podcast-episode" onclick="playPodcast(4, 'https://hatch.ecto1.ai/podcasts/media/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99/ep-8b77f671-7256-4d5d-90c6-ee81fee76d78.mp3', this)">
+              <div class="ep-play">▶</div>
+              <div class="ep-info"><div class="ep-title">Ép. 4 — EAC, réseau & partenariats</div><div class="ep-dur">6:07</div></div>
+            </div>
+            <div class="podcast-episode" onclick="playPodcast(5, 'https://hatch.ecto1.ai/podcasts/media/449141008275653/76566894-2fe6-511a-b912-7e2ef489ec99/ep-6cb0b30a-3d4b-460f-92c3-5c8462e7614e.mp3', this)">
+              <div class="ep-play">▶</div>
+              <div class="ep-info"><div class="ep-title">Ép. 5 — Réussir l'oral</div><div class="ep-dur">6:27</div></div>
+            </div>
+          </div>
+        </div>
     </div>
 
     ${renderLeitnerBoxes()}
 
-    <div class="today-stats fade-in">
+    <div class="today-stats fade-in" style="display:${(todayStudied > 0 || quizzes > 0) ? 'flex' : 'none'}">
       <div class="today-stat"><div class="ts-num">${todayStudied}</div><div class="ts-label">cartes aujourd'hui</div></div>
       <div class="today-stat"><div class="ts-num">${quizzes}</div><div class="ts-label">quiz passés</div></div>
       <div class="today-stat"><div class="ts-num">${avgScore > 0 ? avgScore + '%' : '—'}</div><div class="ts-label">score moyen</div></div>
