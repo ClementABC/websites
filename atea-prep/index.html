@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f172a">
 <link rel="manifest" href="manifest.json">
+<link href="https://fonts.cdnfonts.com/css/opendyslexic" rel="stylesheet">
 <title>ATEA 2026 — Prépa Concours Danse</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -16,20 +17,24 @@
   --accent2:#8b5cf6;--green:#22c55e;--red:#ef4444;
   --orange:#f59e0b;--border:#475569;
   --radius:16px;--card-radius:20px;
+  --font:'OpenDyslexic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent;font-size:17px;letter-spacing:0.08em;line-height:1.8}
 body{display:flex;flex-direction:column}
 
 /* Header */
-.header{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
-.header h1{font-size:18px;font-weight:700;letter-spacing:-0.3px}
-.header .countdown{font-size:13px;color:var(--orange);font-weight:600}
-.header .countdown span{font-size:20px}
+.header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+.header h1{font-size:17px;font-weight:700;letter-spacing:0.05em}
+.header-right{display:flex;align-items:center;gap:10px}
+.countdown{font-size:13px;color:var(--orange);font-weight:600}
+.countdown span{font-size:18px}
+.streak-badge{display:flex;align-items:center;gap:4px;background:rgba(245,158,11,0.15);padding:4px 10px;border-radius:20px;font-size:13px;font-weight:700;color:var(--orange)}
+.streak-badge .fire{font-size:18px}
 
 /* Navigation */
 .nav{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
-.nav-btn{padding:8px 16px;border-radius:30px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:all .2s}
+.nav-btn{padding:8px 14px;border-radius:30px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:all .2s;font-family:var(--font);letter-spacing:0.05em}
 .nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .nav-btn:active{transform:scale(0.96)}
 
@@ -38,82 +43,99 @@ body{display:flex;flex-direction:column}
 
 /* Card styles */
 .card{background:var(--surface);border-radius:var(--card-radius);padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
-.card-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);font-weight:700;margin-bottom:8px}
-.card-q{font-size:18px;font-weight:600;line-height:1.4;margin-bottom:16px}
-.card-a{font-size:15px;line-height:1.6;color:var(--muted);display:none;padding-top:16px;border-top:1px solid var(--border)}
+.card-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);font-weight:700;margin-bottom:10px}
+.card-q{font-size:17px;font-weight:600;line-height:1.8;margin-bottom:16px}
+.card-a{font-size:16px;line-height:1.8;color:var(--muted);display:none;padding-top:16px;border-top:1px solid var(--border)}
 .card-a.visible{display:block;animation:fadeIn .3s ease}
-.card-category{position:absolute;top:0;right:0;padding:6px 14px;border-radius:0 var(--card-radius) 0 12px;font-size:11px;font-weight:600;background:var(--accent2);color:#fff}
+.card-a ul{list-style:none;padding:0;margin:0}
+.card-a li{padding:6px 0;padding-left:20px;position:relative;line-height:1.8}
+.card-a li::before{content:'•';position:absolute;left:0;color:var(--accent);font-weight:700}
+.card-category{position:absolute;top:0;right:0;padding:6px 12px;border-radius:0 var(--card-radius) 0 12px;font-size:10px;font-weight:600;background:var(--accent2);color:#fff;letter-spacing:0.05em}
+
+/* TTS button */
+.tts-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s;margin-top:12px;font-family:var(--font)}
+.tts-btn:active{transform:scale(0.96)}
+.tts-btn.speaking{border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,0.1)}
 
 /* Flip button */
-.flip-btn{width:100%;padding:14px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s}
+.flip-btn{width:100%;padding:14px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);letter-spacing:0.05em}
 .flip-btn:active{transform:scale(0.98);opacity:0.9}
 .flip-btn.revealed{background:var(--surface2)}
+.flip-btn.secondary{background:var(--surface2);margin-top:10px}
 
 /* Progress ring */
 .progress-container{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.progress-ring{width:48px;height:48px;position:relative}
+.progress-ring{width:48px;height:48px;position:relative;flex-shrink:0}
 .progress-ring svg{transform:rotate(-90deg)}
 .progress-ring circle{fill:none;stroke-width:4}
 .progress-ring .bg{stroke:var(--surface2)}
 .progress-ring .fg{stroke:var(--green);stroke-linecap:round;transition:stroke-dashoffset .5s ease}
-.progress-text{font-size:12px;font-weight:700;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.progress-text{font-size:11px;font-weight:700;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
 .progress-label{font-size:14px;color:var(--muted)}
 .progress-label strong{color:var(--text)}
 
+/* Leitner boxes visual */
+.leitner-visual{display:flex;gap:6px;margin-bottom:16px;padding:12px;background:var(--surface);border-radius:var(--radius)}
+.leitner-box{flex:1;text-align:center;padding:8px 4px;border-radius:10px;background:var(--surface2);position:relative}
+.leitner-box .box-num{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.leitner-box .box-count{font-size:20px;font-weight:800}
+.leitner-box.b1 .box-count{color:var(--red)}
+.leitner-box.b2 .box-count{color:var(--orange)}
+.leitner-box.b3 .box-count{color:#eab308}
+.leitner-box.b4 .box-count{color:#84cc16}
+.leitner-box.b5 .box-count{color:var(--green)}
+.leitner-box .box-label{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:0.05em}
+
+/* Leitner rating buttons */
+.leitner-btns{display:flex;gap:8px;margin-top:16px}
+.leitner-btn{flex:1;padding:14px 8px;border-radius:var(--radius);border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.leitner-btn:active{transform:scale(0.96)}
+.leitner-btn.correct{background:rgba(34,197,94,0.15);color:var(--green)}
+.leitner-btn.wrong{background:rgba(239,68,68,0.15);color:var(--red)}
+
 /* Quiz mode */
-.quiz-option{display:block;width:100%;padding:14px 16px;margin-bottom:10px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;text-align:left;cursor:pointer;transition:all .2s;line-height:1.4}
+.quiz-option{display:block;width:100%;padding:14px 16px;margin-bottom:10px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;text-align:left;cursor:pointer;transition:all .2s;line-height:1.6;font-family:var(--font)}
 .quiz-option:active{transform:scale(0.98)}
-.quiz-option.correct{border-color:var(--green);background:rgba(34,197,94,0.15);color:var(--green)}
-.quiz-option.wrong{border-color:var(--red);background:rgba(239,68,68,0.15);color:var(--red)}
-.quiz-option.disabled{pointer-events:none;opacity:0.6}
 
 /* Score bar */
 .score-bar{display:flex;gap:12px;padding:12px 16px;background:var(--surface);border-radius:var(--radius);margin-bottom:16px;justify-content:center}
 .score-item{text-align:center}
-.score-item .num{font-size:24px;font-weight:700}
-.score-item .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.score-item .num{font-size:22px;font-weight:700}
+.score-item .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 .score-item.good .num{color:var(--green)}
 .score-item.bad .num{color:var(--red)}
 
 /* Acronym grid */
 .acr-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
 .acr-card:active{transform:scale(0.98)}
-.acr-card .acr{font-size:20px;font-weight:700;color:var(--accent)}
-.acr-card .def{font-size:14px;color:var(--muted);margin-top:6px;display:none;line-height:1.4}
+.acr-card .acr{font-size:19px;font-weight:700;color:var(--accent)}
+.acr-card .def{font-size:15px;color:var(--muted);margin-top:8px;display:none;line-height:1.8}
 .acr-card.open .def{display:block;animation:fadeIn .2s ease}
 
 /* Timeline */
-.tl-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(71,85,105,0.3)}
-.tl-date{min-width:100px;font-size:13px;font-weight:700;color:var(--orange);line-height:1.5}
-.tl-event{font-size:14px;line-height:1.5;color:var(--text)}
+.tl-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(71,85,105,0.3)}
+.tl-date{min-width:100px;font-size:13px;font-weight:700;color:var(--orange);line-height:1.8}
+.tl-event{font-size:14px;line-height:1.8;color:var(--text)}
 
 /* Stats dashboard */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .stat-card{background:var(--surface);border-radius:var(--radius);padding:16px;text-align:center}
-.stat-card .big{font-size:28px;font-weight:800}
-.stat-card .label{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-card .big{font-size:26px;font-weight:800}
+.stat-card .label{font-size:11px;color:var(--muted);margin-top:4px}
 
 /* Search */
 .search{display:flex;margin-bottom:16px}
-.search input{flex:1;padding:12px 16px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;outline:none}
+.search input{flex:1;padding:12px 16px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;outline:none;font-family:var(--font);letter-spacing:0.08em}
 .search input:focus{border-color:var(--accent)}
 .search input::placeholder{color:var(--muted)}
 
-/* Confidence buttons */
-.confidence{display:flex;gap:8px;margin-top:16px}
-.conf-btn{flex:1;padding:12px;border-radius:var(--radius);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-.conf-btn:active{transform:scale(0.96)}
-.conf-btn.easy{background:rgba(34,197,94,0.15);color:var(--green)}
-.conf-btn.medium{background:rgba(245,158,11,0.15);color:var(--orange)}
-.conf-btn.hard{background:rgba(239,68,68,0.15);color:var(--red)}
-
-/* Home stats */
-.home-hero{text-align:center;padding:32px 16px}
-.home-hero .emoji{font-size:48px;margin-bottom:12px}
-.home-hero h2{font-size:22px;font-weight:700;margin-bottom:4px}
-.home-hero .sub{color:var(--muted);font-size:14px}
-.home-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px}
-.home-action{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;border:none;color:var(--text);width:100%;text-align:left;font-size:15px}
+/* Home */
+.home-hero{text-align:center;padding:24px 16px}
+.home-hero .emoji{font-size:44px;margin-bottom:10px}
+.home-hero h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.home-hero .sub{color:var(--muted);font-size:13px}
+.home-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.home-action{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;border:none;color:var(--text);width:100%;text-align:left;font-size:15px;font-family:var(--font);letter-spacing:0.05em}
 .home-action:active{transform:scale(0.98)}
 .home-action .icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .home-action .icon.blue{background:rgba(59,130,246,0.15)}
@@ -121,10 +143,19 @@ body{display:flex;flex-direction:column}
 .home-action .icon.orange{background:rgba(245,158,11,0.15)}
 .home-action .icon.green{background:rgba(34,197,94,0.15)}
 .home-action .icon.red{background:rgba(239,68,68,0.15)}
-.home-action .meta{flex:1}
-.home-action .meta .title{font-weight:600}
-.home-action .meta .desc{font-size:13px;color:var(--muted);margin-top:2px}
-.home-action .arrow{color:var(--muted);font-size:18px}
+.home-action .icon.pink{background:rgba(236,72,153,0.15)}
+.home-action .meta{flex:1;min-width:0}
+.home-action .meta .title{font-weight:600;font-size:15px}
+.home-action .meta .desc{font-size:12px;color:var(--muted);margin-top:2px}
+.home-action .arrow{color:var(--muted);font-size:18px;flex-shrink:0}
+
+/* Daily goal banner */
+.daily-goal{background:var(--surface);border-radius:var(--card-radius);padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.daily-goal .ring-wrap{flex-shrink:0}
+.daily-goal .goal-info{flex:1;min-width:0}
+.daily-goal .goal-title{font-size:14px;font-weight:600}
+.daily-goal .goal-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.daily-goal.complete{border:2px solid var(--green);background:rgba(34,197,94,0.05)}
 
 /* Empty state */
 .empty{text-align:center;padding:48px 24px;color:var(--muted)}
@@ -133,19 +164,26 @@ body{display:flex;flex-direction:column}
 /* Animations */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease}
+@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes celebPop{0%{transform:scale(0);opacity:0}50%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+
+/* Confetti overlay */
+.confetti-overlay{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1000;overflow:hidden}
+.confetti-piece{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettiFall 3s ease-out forwards}
+.celeb-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:800;text-align:center;z-index:1001;animation:celebPop .5s ease;pointer-events:none;text-shadow:0 2px 20px rgba(0,0,0,0.5)}
 
 /* Swipe hint */
-.swipe-hint{text-align:center;font-size:12px;color:var(--muted);padding:8px;margin-top:8px}
+.swipe-hint{text-align:center;font-size:11px;color:var(--muted);padding:8px;margin-top:8px}
 
 /* Bottom bar */
 .bottom-bar{display:flex;padding:8px 16px;padding-bottom:max(8px,env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
-.bottom-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;font-weight:600;transition:color .2s}
+.bottom-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;font-weight:600;transition:color .2s;font-family:var(--font)}
 .bottom-btn.active{color:var(--accent)}
 .bottom-btn .ico{font-size:22px}
 
 /* Filter pills */
 .filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.filter-pill{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s}
+.filter-pill{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;font-family:var(--font)}
 .filter-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* Result banner */
@@ -155,17 +193,23 @@ body{display:flex;flex-direction:column}
 .result-banner .big-emoji{font-size:48px;margin-bottom:8px}
 .result-banner .result-text{font-size:20px;font-weight:700}
 .result-banner .result-sub{font-size:14px;color:var(--muted);margin-top:4px}
+
+/* Box 5 graduation animation */
+@keyframes boxGrad{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}70%{box-shadow:0 0 0 15px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.box-graduated{animation:boxGrad 1s ease}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>🩰 ATEA 2026</h1>
-  <div class="countdown" id="countdown"></div>
+  <div class="header-right">
+    <div class="streak-badge" id="streakBadge" style="display:none"><span class="fire">🔥</span><span id="streakNum">0</span></div>
+    <div class="countdown" id="countdown"></div>
+  </div>
 </div>
 
 <div class="nav" id="nav"></div>
-
 <div class="main" id="main"></div>
 
 <div class="bottom-bar">
@@ -178,26 +222,103 @@ body{display:flex;flex-direction:column}
 <script src="content.js"></script>
 <script>
 // ===== STATE =====
-const STATE_KEY = 'atea-prep-state';
+const STATE_KEY = 'atea-prep-v2';
 let state = loadState();
 
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem(STATE_KEY));
-    if (s && s.version === 2) return s;
+    if (s && s.version >= 3) return s;
   } catch(e) {}
-  return {
-    version: 2,
-    seen: {},        // questionId -> {count, lastSeen, confidence}
-    quizHistory: [], // [{date, score, total, wrong:[]}]
-    acrSeen: {},     // acronym -> count
-    streak: 0,
-    lastStudy: null,
+  // Migrate from v1 if exists
+  let oldState = null;
+  try { oldState = JSON.parse(localStorage.getItem('atea-prep-state')); } catch(e){}
+  const fresh = {
+    version: 3,
+    boxes: {},         // questionId -> {box: 1-5, lastSeen, sessionSeen}
+    quizHistory: [],
+    acrSeen: {},
+    streak: {count: 0, lastDate: null},
+    dailyGoal: {date: null, studied: 0},
+    sessionCount: 0,
     totalStudied: 0
   };
+  // Migrate old confidence data
+  if (oldState && oldState.seen) {
+    Object.entries(oldState.seen).forEach(([id, data]) => {
+      let box = 1;
+      if (data.confidence === 'easy') box = 4;
+      else if (data.confidence === 'medium') box = 2;
+      else if (data.confidence === 'hard') box = 1;
+      fresh.boxes[id] = {box, lastSeen: data.lastSeen, sessionSeen: 0};
+    });
+    fresh.quizHistory = oldState.quizHistory || [];
+    fresh.totalStudied = oldState.totalStudied || 0;
+  }
+  return fresh;
 }
 
 function saveState() { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+
+// ===== DAILY TRACKING =====
+function todayStr() {
+  return new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+}
+
+function checkStreak() {
+  const today = todayStr();
+  const s = state.streak;
+  if (s.lastDate === today) return; // already counted today
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yStr = yesterday.toLocaleDateString('en-CA');
+  if (s.lastDate === yStr) {
+    // streak continues — don't increment yet, wait for study
+  } else if (s.lastDate && s.lastDate !== yStr) {
+    // streak broken
+    s.count = 0;
+  }
+}
+
+function recordStudy() {
+  const today = todayStr();
+  // Daily goal
+  if (state.dailyGoal.date !== today) {
+    state.dailyGoal = {date: today, studied: 0};
+  }
+  state.dailyGoal.studied++;
+  state.totalStudied++;
+  // Streak
+  if (state.streak.lastDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toLocaleDateString('en-CA');
+    if (state.streak.lastDate === yStr || state.streak.count === 0) {
+      state.streak.count++;
+    } else if (state.streak.lastDate !== today) {
+      state.streak.count = 1;
+    }
+    state.streak.lastDate = today;
+  }
+  saveState();
+  updateStreakBadge();
+  // Check if daily goal just completed
+  if (state.dailyGoal.studied === 5) {
+    showCelebration('🎉 Objectif du jour atteint !');
+  }
+}
+
+function updateStreakBadge() {
+  const badge = document.getElementById('streakBadge');
+  const num = document.getElementById('streakNum');
+  checkStreak();
+  if (state.streak.count > 0) {
+    badge.style.display = 'flex';
+    num.textContent = state.streak.count;
+  } else {
+    badge.style.display = 'none';
+  }
+}
 
 // ===== COUNTDOWN =====
 function updateCountdown() {
@@ -214,6 +335,198 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 60000);
 
+// ===== TTS =====
+let ttsActive = false;
+function toggleTTS(text, btn) {
+  if (ttsActive) {
+    speechSynthesis.cancel();
+    ttsActive = false;
+    if (btn) btn.classList.remove('speaking');
+    return;
+  }
+  // Clean text for speech
+  const clean = text.replace(/<[^>]+>/g, ' ').replace(/[•·]/g, '').replace(/\s+/g, ' ').trim();
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = 'fr-FR';
+  utter.rate = 0.9;
+  utter.onend = () => { ttsActive = false; if (btn) btn.classList.remove('speaking'); };
+  utter.onerror = () => { ttsActive = false; if (btn) btn.classList.remove('speaking'); };
+  speechSynthesis.speak(utter);
+  ttsActive = true;
+  if (btn) btn.classList.add('speaking');
+}
+
+function stopTTS() {
+  speechSynthesis.cancel();
+  ttsActive = false;
+}
+
+// ===== CELEBRATIONS =====
+const BRAVO_MSGS = ['Bravo !','Excellent !','Tu gères !','Encore un pas !','Bien joué !','Continue !','Super !','Magnifique !'];
+function randomBravo() { return BRAVO_MSGS[Math.floor(Math.random()*BRAVO_MSGS.length)]; }
+
+function showCelebration(msg) {
+  // Confetti
+  const overlay = document.createElement('div');
+  overlay.className = 'confetti-overlay';
+  const colors = ['#3b82f6','#8b5cf6','#22c55e','#f59e0b','#ef4444','#ec4899','#06b6d4'];
+  for (let i = 0; i < 50; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random()*100 + '%';
+    piece.style.top = '-10px';
+    piece.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDelay = Math.random()*1 + 's';
+    piece.style.animationDuration = (2 + Math.random()*2) + 's';
+    piece.style.width = (6 + Math.random()*8) + 'px';
+    piece.style.height = (6 + Math.random()*8) + 'px';
+    overlay.appendChild(piece);
+  }
+  document.body.appendChild(overlay);
+  // Text
+  const txt = document.createElement('div');
+  txt.className = 'celeb-text';
+  txt.textContent = msg || randomBravo();
+  document.body.appendChild(txt);
+  setTimeout(() => { overlay.remove(); txt.remove(); }, 3000);
+}
+
+// ===== FORMAT ANSWER (Dyslexia-friendly) =====
+function formatAnswer(text) {
+  // Split on sentence boundaries to create bullet points
+  let sentences = text
+    .replace(/\s+/g, ' ')
+    .split(/(?<=[.;!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+
+  if (sentences.length <= 1) {
+    return highlightTerms(text);
+  }
+
+  // If there are numbered items like (1), (2), split on those too
+  let items = [];
+  sentences.forEach(s => {
+    const parts = s.split(/(?=\(\d+\)\s)/).map(p => p.trim()).filter(p => p.length > 0);
+    items.push(...parts);
+  });
+
+  if (items.length <= 2) {
+    return highlightTerms(text);
+  }
+
+  return '<ul>' + items.map(item => `<li>${highlightTerms(item)}</li>`).join('') + '</ul>';
+}
+
+function highlightTerms(text) {
+  return text
+    // Bold dates (e.g., 7 juillet 2016, 1er janvier 2023)
+    .replace(/(\d{1,2}(?:er|ᵉ|ᵉʳ)?\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/gi, '<strong style="color:var(--orange)">$1</strong>')
+    // Bold law references
+    .replace(/((?:loi|décret|arrêté|circulaire|article)\s+[A-Za-zÀ-ÿ\.\s\-]+(?:\d[\d\-\.]*)?)/gi, '<strong>$1</strong>')
+    // Bold acronyms (2+ uppercase letters)
+    .replace(/\b([A-ZÉÈÀÙÇ]{2,}[a-z]?(?:\d+)?)\b/g, '<strong style="color:var(--accent)">$1</strong>')
+    // Bold percentages and key numbers
+    .replace(/(\d+\s*[%€h])/g, '<strong>$1</strong>');
+}
+
+// ===== LEITNER SYSTEM =====
+function getBox(qId) {
+  return state.boxes[qId]?.box || 0; // 0 = unseen
+}
+
+function getBoxCounts() {
+  const counts = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0};
+  CONTENT.questions.forEach(q => {
+    const b = getBox(q.id);
+    counts[b]++;
+  });
+  return counts;
+}
+
+function leitnerCorrect(qId) {
+  if (!state.boxes[qId]) state.boxes[qId] = {box:1, lastSeen: null, sessionSeen: 0};
+  const b = state.boxes[qId];
+  if (b.box < 5) b.box++;
+  b.lastSeen = new Date().toISOString();
+  b.sessionSeen = state.sessionCount;
+  if (b.box === 5) {
+    showCelebration('⭐ Maîtrisée !');
+  }
+  recordStudy();
+  saveState();
+}
+
+function leitnerWrong(qId) {
+  if (!state.boxes[qId]) state.boxes[qId] = {box:1, lastSeen: null, sessionSeen: 0};
+  state.boxes[qId].box = 1;
+  state.boxes[qId].lastSeen = new Date().toISOString();
+  state.boxes[qId].sessionSeen = state.sessionCount;
+  recordStudy();
+  saveState();
+}
+
+function isDueForReview(qId) {
+  const b = state.boxes[qId];
+  if (!b) return true; // unseen
+  const intervals = {1:1, 2:2, 3:4, 4:8, 5:16};
+  const sessionsSince = state.sessionCount - (b.sessionSeen || 0);
+  return sessionsSince >= (intervals[b.box] || 1);
+}
+
+function renderLeitnerBoxes() {
+  const counts = getBoxCounts();
+  const labels = ['Neuf','Boîte 1','Boîte 2','Boîte 3','Boîte 4','Boîte 5'];
+  const classes = ['','b1','b2','b3','b4','b5'];
+  return `<div class="leitner-visual">
+    ${[0,1,2,3,4,5].map(i => `
+      <div class="leitner-box ${classes[i]}">
+        <div class="box-num">${i === 0 ? '📥' : '📦'+i}</div>
+        <div class="box-count">${counts[i]}</div>
+        <div class="box-label">${labels[i]}</div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+// ===== GUIDED SESSION =====
+function buildGuidedSession() {
+  state.sessionCount++;
+  saveState();
+  const questions = CONTENT.questions;
+  let pool = [];
+
+  // Priority 1: Box 1 (failed/new to boxes, due)
+  const box1 = questions.filter(q => getBox(q.id) === 1 && isDueForReview(q.id));
+  // Priority 2: Box 2 (due)
+  const box2 = questions.filter(q => getBox(q.id) === 2 && isDueForReview(q.id));
+  // Priority 3: Unseen
+  const unseen = questions.filter(q => getBox(q.id) === 0);
+  // Priority 4: Box 3-5 (due for review)
+  const review = questions.filter(q => getBox(q.id) >= 3 && isDueForReview(q.id));
+
+  // Shuffle each group
+  const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+
+  pool = [
+    ...shuffle(box1).slice(0, 4),
+    ...shuffle(box2).slice(0, 3),
+    ...shuffle(unseen).slice(0, 2),
+    ...shuffle(review).slice(0, 3)
+  ];
+
+  // If not enough, fill up
+  if (pool.length < 10) {
+    const remaining = questions.filter(q => !pool.find(p => p.id === q.id));
+    pool = [...pool, ...shuffle(remaining).slice(0, 10 - pool.length)];
+  }
+
+  // Interleave categories
+  pool = pool.slice(0, 10);
+  // Shuffle final deck to interleave
+  return shuffle(pool);
+}
+
 // ===== TABS =====
 let currentTab = 'home';
 let currentSubTab = null;
@@ -221,10 +534,10 @@ let currentSubTab = null;
 function showTab(tab) {
   currentTab = tab;
   currentSubTab = null;
+  stopTTS();
   document.querySelectorAll('.bottom-btn').forEach((b, i) => {
     b.classList.toggle('active', ['home','study','quiz','stats'][i] === tab);
   });
-  
   switch(tab) {
     case 'home': renderHome(); break;
     case 'study': renderStudyNav(); break;
@@ -236,11 +549,16 @@ function showTab(tab) {
 // ===== HOME =====
 function renderHome() {
   const totalQ = CONTENT.questions.length;
-  const studied = Object.keys(state.seen).length;
-  const pct = Math.round(studied / totalQ * 100);
+  const counts = getBoxCounts();
+  const studied = totalQ - counts[0];
+  const mastered = counts[5];
   const quizzes = state.quizHistory.length;
   const avgScore = quizzes > 0 ? Math.round(state.quizHistory.reduce((a,h) => a + h.score/h.total*100, 0) / quizzes) : 0;
-  
+  const today = todayStr();
+  const todayStudied = state.dailyGoal.date === today ? state.dailyGoal.studied : 0;
+  const goalMet = todayStudied >= 5;
+  const goalPct = Math.min(100, Math.round(todayStudied / 5 * 100));
+
   document.getElementById('nav').innerHTML = '';
   document.getElementById('main').innerHTML = `
     <div class="home-hero fade-in">
@@ -248,40 +566,39 @@ function renderHome() {
       <h2>Concours ATEA Danse</h2>
       <div class="sub">${CONTENT.exam.places} places · ${CONTENT.exam.candidates} candidats</div>
     </div>
-    
-    <div class="stat-grid fade-in">
-      <div class="stat-card">
-        <div class="big" style="color:var(--accent)">${studied}/${totalQ}</div>
-        <div class="label">Questions vues</div>
-      </div>
-      <div class="stat-card">
-        <div class="big" style="color:${avgScore >= 60 ? 'var(--green)' : 'var(--orange)'}">${quizzes > 0 ? avgScore+'%' : '—'}</div>
-        <div class="label">Score moyen</div>
+
+    <div class="daily-goal ${goalMet ? 'complete' : ''} fade-in">
+      <div class="ring-wrap">${progressRing(goalPct, 52)}</div>
+      <div class="goal-info">
+        <div class="goal-title">${goalMet ? '✅ Objectif atteint !' : 'Objectif du jour'}</div>
+        <div class="goal-sub">${todayStudied}/5 cartes étudiées${state.streak.count > 1 ? ' · 🔥 '+state.streak.count+' jours' : ''}</div>
       </div>
     </div>
-    
+
+    ${renderLeitnerBoxes()}
+
     <div class="home-actions fade-in">
-      <button class="home-action" onclick="startQuickStudy()">
-        <div class="icon blue">📖</div>
+      <button class="home-action" onclick="startGuidedSession()" style="border:2px solid var(--accent)">
+        <div class="icon blue">🎯</div>
         <div class="meta">
-          <div class="title">Révision rapide</div>
-          <div class="desc">10 flashcards aléatoires</div>
+          <div class="title">Session du jour</div>
+          <div class="desc">10 cartes ciblées — points faibles en priorité</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="home-action" onclick="startQuickStudy()">
+        <div class="icon purple">📖</div>
+        <div class="meta">
+          <div class="title">Révision libre</div>
+          <div class="desc">Parcourir par thème</div>
         </div>
         <div class="arrow">›</div>
       </button>
       <button class="home-action" onclick="startQuiz(10)">
-        <div class="icon purple">🎯</div>
+        <div class="icon pink">🗣️</div>
         <div class="meta">
           <div class="title">Quiz — Simulation jury</div>
-          <div class="desc">10 questions, besoin de 6/10</div>
-        </div>
-        <div class="arrow">›</div>
-      </button>
-      <button class="home-action" onclick="showTab('study'); showSubTab('weak')">
-        <div class="icon red">🔥</div>
-        <div class="meta">
-          <div class="title">Points faibles</div>
-          <div class="desc">${getWeakCount()} questions à retravailler</div>
+          <div class="desc">10 questions, seuil 6/10</div>
         </div>
         <div class="arrow">›</div>
       </button>
@@ -305,11 +622,81 @@ function renderHome() {
   `;
 }
 
-function getWeakCount() {
-  return CONTENT.questions.filter(q => {
-    const s = state.seen[q.id];
-    return s && s.confidence === 'hard';
-  }).length;
+// ===== GUIDED SESSION =====
+let guidedDeck = [];
+let guidedIndex = 0;
+let guidedRevealed = false;
+
+function startGuidedSession() {
+  guidedDeck = buildGuidedSession();
+  guidedIndex = 0;
+  guidedRevealed = false;
+  currentTab = 'study';
+  document.querySelectorAll('.bottom-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
+  document.getElementById('nav').innerHTML = `<button class="nav-btn active">🎯 Session du jour — ${guidedDeck.length} cartes</button>`;
+  showGuidedCard();
+}
+
+function showGuidedCard() {
+  if (guidedIndex >= guidedDeck.length) {
+    showCelebration('🎉 Session terminée !');
+    document.getElementById('main').innerHTML = `
+      <div class="empty fade-in">
+        <div class="emoji">🎉</div>
+        <p style="font-size:18px;font-weight:600">Session terminée !</p>
+        <p style="margin-top:8px;color:var(--muted)">${guidedDeck.length} cartes travaillées</p>
+        <p style="margin-top:4px;color:var(--muted)">${randomBravo()}</p>
+        <button class="flip-btn" style="margin-top:20px;max-width:240px;margin-left:auto;margin-right:auto" onclick="showTab('home')">Retour</button>
+        <button class="flip-btn secondary" style="max-width:240px;margin-left:auto;margin-right:auto" onclick="startGuidedSession()">Nouvelle session</button>
+      </div>`;
+    return;
+  }
+
+  const q = guidedDeck[guidedIndex];
+  const box = getBox(q.id);
+  const boxLabels = {0:'📥 Nouvelle',1:'📦1 À revoir',2:'📦2 En cours',3:'📦3 Bien',4:'📦4 Acquise',5:'⭐ Maîtrisée'};
+  const pct = Math.round(guidedIndex / guidedDeck.length * 100);
+  guidedRevealed = false;
+
+  document.getElementById('main').innerHTML = `
+    <div class="progress-container fade-in">
+      ${progressRing(pct, 48)}
+      <div class="progress-label"><strong>${guidedIndex + 1}</strong> / ${guidedDeck.length} · ${boxLabels[box]}</div>
+    </div>
+    <div class="card fade-in">
+      <div class="card-category">${q.category.split('&')[0].trim()}</div>
+      <div class="card-label">Question ${q.id}</div>
+      <div class="card-q">${q.question}</div>
+      <div class="card-a" id="answer">${formatAnswer(q.answer)}</div>
+      <button class="tts-btn" id="ttsBtn" onclick="toggleTTS(CONTENT.questions.find(x=>x.id===${q.id}).answer, this)" style="display:none">
+        🔊 Lire à voix haute
+      </button>
+    </div>
+    <button class="flip-btn" id="flipBtn" onclick="revealGuided()">Voir la réponse</button>
+    <div class="leitner-btns" id="leitnerBtns" style="display:none">
+      <button class="leitner-btn correct" onclick="guidedRate(true)">✅ Je savais</button>
+      <button class="leitner-btn wrong" onclick="guidedRate(false)">❌ À revoir</button>
+    </div>
+    <div class="swipe-hint">${box === 0 ? 'Première fois pour cette question' : `Dernière vue : Boîte ${box}`}</div>
+  `;
+}
+
+function revealGuided() {
+  if (guidedRevealed) return;
+  guidedRevealed = true;
+  document.getElementById('answer').classList.add('visible');
+  document.getElementById('ttsBtn').style.display = 'inline-flex';
+  document.getElementById('flipBtn').style.display = 'none';
+  document.getElementById('leitnerBtns').style.display = 'flex';
+}
+
+function guidedRate(correct) {
+  stopTTS();
+  const q = guidedDeck[guidedIndex];
+  if (correct) leitnerCorrect(q.id);
+  else leitnerWrong(q.id);
+  guidedIndex++;
+  showGuidedCard();
 }
 
 // ===== STUDY NAV =====
@@ -318,7 +705,7 @@ function renderStudyNav() {
   document.getElementById('nav').innerHTML = `
     <button class="nav-btn active" onclick="showSubTab('all')">Toutes</button>
     ${categories.map(c => `<button class="nav-btn" onclick="showSubTab('cat:${c}')">${c.split(' ').slice(0,2).join(' ')}</button>`).join('')}
-    <button class="nav-btn" onclick="showSubTab('weak')">🔥 Faibles</button>
+    <button class="nav-btn" onclick="showSubTab('weak')">🔥 Boîte 1</button>
     <button class="nav-btn" onclick="showSubTab('acronyms')">🔤 Sigles</button>
     <button class="nav-btn" onclick="showSubTab('timeline')">📅 Frise</button>
     <button class="nav-btn" onclick="showSubTab('numbers')">🔢 Chiffres</button>
@@ -328,33 +715,32 @@ function renderStudyNav() {
 
 function showSubTab(sub) {
   currentSubTab = sub;
+  stopTTS();
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  // Highlight the right nav button
-  const navBtns = document.querySelectorAll('.nav-btn');
-  navBtns.forEach(b => {
+  document.querySelectorAll('.nav-btn').forEach(b => {
     const onclick = b.getAttribute('onclick') || '';
     if (onclick.includes(`'${sub}'`)) b.classList.add('active');
   });
-  
+
   if (sub === 'acronyms') return renderAcronyms();
   if (sub === 'timeline') return renderTimeline();
   if (sub === 'numbers') return renderNumbers();
-  
+
   let questions = CONTENT.questions;
   if (sub === 'weak') {
-    questions = questions.filter(q => state.seen[q.id]?.confidence === 'hard');
+    questions = questions.filter(q => getBox(q.id) === 1);
     if (questions.length === 0) {
       document.getElementById('main').innerHTML = `
         <div class="empty fade-in"><div class="emoji">🎉</div>
-        <p>Aucune question marquée comme difficile !</p>
-        <p style="margin-top:8px">Étudie des flashcards et marque les questions difficiles pour les retrouver ici.</p></div>`;
+        <p>Aucune question en Boîte 1 !</p>
+        <p style="margin-top:8px">Toutes les cartes ont progressé. Continue !</p></div>`;
       return;
     }
   } else if (sub.startsWith('cat:')) {
     const cat = sub.substring(4);
     questions = questions.filter(q => q.category === cat);
   }
-  
+
   renderFlashcards(questions);
 }
 
@@ -371,83 +757,66 @@ function renderFlashcards(questions) {
 }
 
 function startQuickStudy() {
-  const shuffled = [...CONTENT.questions].sort(() => Math.random() - 0.5).slice(0, 10);
   currentTab = 'study';
   document.querySelectorAll('.bottom-btn').forEach((b, i) => b.classList.toggle('active', i === 1));
-  document.getElementById('nav').innerHTML = `<button class="nav-btn active">Révision rapide — 10 cartes</button>`;
-  renderFlashcards(shuffled);
+  renderStudyNav();
 }
 
 function showFlashcard() {
   if (flashcardIndex >= flashcardDeck.length) {
     document.getElementById('main').innerHTML = `
       <div class="empty fade-in"><div class="emoji">✅</div>
-      <p style="font-size:18px;font-weight:600">Session terminée !</p>
-      <p style="margin-top:8px;color:var(--muted)">${flashcardDeck.length} cartes révisées</p>
+      <p style="font-size:18px;font-weight:600">Terminé !</p>
+      <p style="margin-top:8px;color:var(--muted)">${flashcardDeck.length} cartes parcourues</p>
       <button class="flip-btn" style="margin-top:20px;max-width:200px;margin-left:auto;margin-right:auto" onclick="showTab(currentTab)">Continuer</button>
       </div>`;
     return;
   }
-  
+
   const q = flashcardDeck[flashcardIndex];
   const total = flashcardDeck.length;
   const pct = Math.round(flashcardIndex / total * 100);
-  const seen = state.seen[q.id];
-  const confLabel = seen ? {easy:'✅ Maîtrisé', medium:'🟡 En cours', hard:'🔴 Difficile'}[seen.confidence] || '' : '';
+  const box = getBox(q.id);
+  const boxLabels = {0:'📥 Nouvelle',1:'📦1',2:'📦2',3:'📦3',4:'📦4',5:'⭐5'};
   flashcardRevealed = false;
-  
+
   document.getElementById('main').innerHTML = `
     <div class="progress-container fade-in">
-      ${progressRing(pct, 44)}
-      <div class="progress-label"><strong>${flashcardIndex + 1}</strong> / ${total}${confLabel ? ' · ' + confLabel : ''}</div>
+      ${progressRing(pct, 48)}
+      <div class="progress-label"><strong>${flashcardIndex + 1}</strong> / ${total} · ${boxLabels[box]}</div>
     </div>
     <div class="card fade-in">
       <div class="card-category">${q.category.split('&')[0].trim()}</div>
       <div class="card-label">Question ${q.id}</div>
       <div class="card-q">${q.question}</div>
       <div class="card-a" id="answer">${formatAnswer(q.answer)}</div>
+      <button class="tts-btn" id="ttsBtn" onclick="toggleTTS(CONTENT.questions.find(x=>x.id===${q.id}).answer, this)" style="display:none">
+        🔊 Lire à voix haute
+      </button>
     </div>
-    <button class="flip-btn" id="flipBtn" onclick="revealAnswer()">Voir la réponse</button>
-    <div class="confidence" id="confBtns" style="display:none">
-      <button class="conf-btn easy" onclick="rateCard('easy')">✅ Facile</button>
-      <button class="conf-btn medium" onclick="rateCard('medium')">🟡 Moyen</button>
-      <button class="conf-btn hard" onclick="rateCard('hard')">🔴 Difficile</button>
+    <button class="flip-btn" id="flipBtn" onclick="revealFlashcard()">Voir la réponse</button>
+    <div class="leitner-btns" id="leitnerBtns" style="display:none">
+      <button class="leitner-btn correct" onclick="rateFlashcard(true)">✅ Je savais</button>
+      <button class="leitner-btn wrong" onclick="rateFlashcard(false)">❌ À revoir</button>
     </div>
-    <div class="swipe-hint">Évalue ta confiance pour passer à la suivante</div>
+    <div class="swipe-hint">Évalue ta réponse pour avancer la carte</div>
   `;
 }
 
-function formatAnswer(text) {
-  // Basic formatting — highlight key terms
-  return text
-    .replace(/(\d{1,2}\s+\w+\s+\d{4})/g, '<strong style="color:var(--orange)">$1</strong>')
-    .replace(/(article?\s+L?\.\s*[\d\-]+)/gi, '<strong>$1</strong>');
-}
-
-function revealAnswer() {
+function revealFlashcard() {
   if (flashcardRevealed) return;
   flashcardRevealed = true;
   document.getElementById('answer').classList.add('visible');
-  document.getElementById('flipBtn').textContent = 'Réponse affichée';
-  document.getElementById('flipBtn').classList.add('revealed');
-  document.getElementById('confBtns').style.display = 'flex';
-  
-  // Mark as seen
-  const q = flashcardDeck[flashcardIndex];
-  if (!state.seen[q.id]) {
-    state.seen[q.id] = {count: 0, confidence: null};
-  }
-  state.seen[q.id].count++;
-  state.seen[q.id].lastSeen = new Date().toISOString();
-  state.totalStudied++;
-  state.lastStudy = new Date().toISOString();
-  saveState();
+  document.getElementById('ttsBtn').style.display = 'inline-flex';
+  document.getElementById('flipBtn').style.display = 'none';
+  document.getElementById('leitnerBtns').style.display = 'flex';
 }
 
-function rateCard(confidence) {
+function rateFlashcard(correct) {
+  stopTTS();
   const q = flashcardDeck[flashcardIndex];
-  state.seen[q.id].confidence = confidence;
-  saveState();
+  if (correct) leitnerCorrect(q.id);
+  else leitnerWrong(q.id);
   flashcardIndex++;
   showFlashcard();
 }
@@ -463,25 +832,25 @@ function renderQuizSetup() {
   const categories = [...new Set(CONTENT.questions.map(q => q.category))];
   document.getElementById('main').innerHTML = `
     <div class="fade-in" style="padding:16px 0">
-      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">🎯 Mode Quiz</h2>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Simulation d'oral — réponds comme devant le jury</p>
-      
+      <h2 style="font-size:19px;font-weight:700;margin-bottom:4px">🎯 Mode Quiz</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.8">Simulation d'oral — réponds comme devant le jury</p>
+
       <div class="card">
         <div class="card-label">Format du concours</div>
-        <p style="font-size:15px;line-height:1.6;color:var(--muted)">
+        <p style="font-size:15px;line-height:1.8;color:var(--muted)">
           Le jury pose <strong style="color:var(--text)">10 questions</strong> à l'oral.<br>
           Il faut <strong style="color:var(--green)">au moins 6 bonnes réponses</strong> pour réussir.
         </p>
       </div>
-      
+
       <p style="font-size:14px;font-weight:600;margin:16px 0 8px">Catégorie</p>
       <div class="filter-row" id="quizFilters">
         <button class="filter-pill active" onclick="setQuizFilter(this, 'all')">Toutes</button>
         ${categories.map(c => `<button class="filter-pill" onclick="setQuizFilter(this, '${c}')">${c.split('&')[0].trim()}</button>`).join('')}
       </div>
-      
+
       <button class="flip-btn" style="margin-top:24px" onclick="startQuiz(10)">Lancer le quiz — 10 questions</button>
-      <button class="flip-btn" style="margin-top:10px;background:var(--surface2)" onclick="startQuiz(50)">Marathon — 50 questions</button>
+      <button class="flip-btn secondary" onclick="startQuiz(50)">Marathon — 50 questions</button>
     </div>
   `;
 }
@@ -502,7 +871,7 @@ function startQuiz(count) {
   quizIndex = 0;
   quizScore = 0;
   quizWrong = [];
-  
+
   currentTab = 'quiz';
   document.querySelectorAll('.bottom-btn').forEach((b, i) => b.classList.toggle('active', i === 2));
   document.getElementById('nav').innerHTML = '';
@@ -514,36 +883,38 @@ function showQuizQuestion() {
     showQuizResults();
     return;
   }
-  
+
   const q = quizQuestions[quizIndex];
-  const pct = Math.round(quizIndex / quizQuestions.length * 100);
-  
+
   document.getElementById('main').innerHTML = `
     <div class="score-bar fade-in">
       <div class="score-item good"><div class="num">${quizScore}</div><div class="label">Correct</div></div>
       <div class="score-item"><div class="num">${quizIndex + 1}/${quizQuestions.length}</div><div class="label">Question</div></div>
       <div class="score-item bad"><div class="num">${quizIndex - quizScore}</div><div class="label">Raté</div></div>
     </div>
-    
+
     <div class="card fade-in">
       <div class="card-category">${q.category.split('&')[0].trim()}</div>
       <div class="card-label">Question ${q.id}</div>
       <div class="card-q">${q.question}</div>
     </div>
-    
+
     <p style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center">Formule ta réponse à voix haute, puis vérifie 👇</p>
-    
+
     <button class="flip-btn" id="quizRevealBtn" onclick="revealQuizAnswer()">Voir la réponse modèle</button>
-    
+
     <div id="quizAnswer" style="display:none">
       <div class="card fade-in" style="margin-top:16px;border-left:3px solid var(--accent)">
         <div class="card-label">Réponse modèle</div>
-        <p style="font-size:15px;line-height:1.6;color:var(--muted)">${formatAnswer(q.answer)}</p>
+        <div style="font-size:15px;line-height:1.8;color:var(--muted)">${formatAnswer(q.answer)}</div>
+        <button class="tts-btn" onclick="toggleTTS(CONTENT.questions.find(x=>x.id===${q.id}).answer, this)">
+          🔊 Lire à voix haute
+        </button>
       </div>
       <p style="font-size:14px;font-weight:600;text-align:center;margin:16px 0 8px">Ta réponse était…</p>
-      <div class="confidence">
-        <button class="conf-btn easy" onclick="quizRate(true)">✅ Bonne</button>
-        <button class="conf-btn hard" onclick="quizRate(false)">❌ Insuffisante</button>
+      <div class="leitner-btns">
+        <button class="leitner-btn correct" onclick="quizRate(true)">✅ Bonne</button>
+        <button class="leitner-btn wrong" onclick="quizRate(false)">❌ Insuffisante</button>
       </div>
     </div>
   `;
@@ -555,19 +926,15 @@ function revealQuizAnswer() {
 }
 
 function quizRate(correct) {
+  stopTTS();
   const q = quizQuestions[quizIndex];
   if (correct) {
     quizScore++;
-    if (!state.seen[q.id]) state.seen[q.id] = {count:0};
-    state.seen[q.id].confidence = state.seen[q.id].confidence === 'hard' ? 'medium' : 'easy';
+    leitnerCorrect(q.id);
   } else {
     quizWrong.push(q);
-    if (!state.seen[q.id]) state.seen[q.id] = {count:0};
-    state.seen[q.id].confidence = 'hard';
+    leitnerWrong(q.id);
   }
-  state.seen[q.id].count = (state.seen[q.id].count || 0) + 1;
-  state.seen[q.id].lastSeen = new Date().toISOString();
-  saveState();
   quizIndex++;
   showQuizQuestion();
 }
@@ -576,7 +943,7 @@ function showQuizResults() {
   const total = quizQuestions.length;
   const pct = Math.round(quizScore / total * 100);
   const passed = total === 10 ? quizScore >= 6 : pct >= 60;
-  
+
   state.quizHistory.push({
     date: new Date().toISOString(),
     score: quizScore,
@@ -584,36 +951,37 @@ function showQuizResults() {
     wrong: quizWrong.map(q => q.id)
   });
   saveState();
-  
+
+  if (passed) showCelebration('🎉 Admissible !');
+
   document.getElementById('main').innerHTML = `
     <div class="result-banner ${passed ? 'pass' : 'fail'} fade-in">
       <div class="big-emoji">${passed ? '🎉' : '💪'}</div>
       <div class="result-text">${quizScore} / ${total}</div>
       <div class="result-sub">${passed ? 'Admissible ! Continue comme ça.' : total === 10 ? 'Il faut 6/10 — on retravaille !' : 'Continue de réviser !'}</div>
     </div>
-    
+
     ${quizWrong.length > 0 ? `
       <p style="font-size:16px;font-weight:600;margin-bottom:12px">🔴 Questions à retravailler</p>
       ${quizWrong.map(q => `
         <div class="card" style="margin-bottom:10px;cursor:pointer" onclick="this.querySelector('.card-a').classList.toggle('visible')">
-          <div class="card-label">Q${q.id}</div>
-          <div style="font-size:15px;font-weight:600">${q.question}</div>
+          <div class="card-label">Q${q.id} · 📦1</div>
+          <div style="font-size:15px;font-weight:600;line-height:1.8">${q.question}</div>
           <div class="card-a" style="font-size:14px">${formatAnswer(q.answer)}</div>
         </div>
       `).join('')}
     ` : ''}
-    
+
     <button class="flip-btn" style="margin-top:16px" onclick="startQuiz(10)">Nouveau quiz</button>
-    <button class="flip-btn" style="margin-top:10px;background:var(--surface2)" onclick="showTab('home')">Retour</button>
+    <button class="flip-btn secondary" onclick="showTab('home')">Retour</button>
   `;
 }
 
 // ===== ACRONYMS =====
 function renderAcronyms() {
-  let filtered = CONTENT.acronyms;
   document.getElementById('main').innerHTML = `
     <div class="search fade-in"><input type="text" placeholder="Chercher un sigle…" oninput="filterAcronyms(this.value)"></div>
-    <div id="acrList">${renderAcrList(filtered)}</div>
+    <div id="acrList">${renderAcrList(CONTENT.acronyms)}</div>
   `;
 }
 
@@ -628,7 +996,7 @@ function renderAcrList(list) {
 
 function filterAcronyms(query) {
   const q = query.toLowerCase();
-  const filtered = CONTENT.acronyms.filter(a => 
+  const filtered = CONTENT.acronyms.filter(a =>
     a.acronym.toLowerCase().includes(q) || a.definition.toLowerCase().includes(q)
   );
   document.getElementById('acrList').innerHTML = renderAcrList(filtered);
@@ -649,7 +1017,7 @@ function renderTimeline() {
   `;
 }
 
-// ===== NUMBERS / CHIFFRES =====
+// ===== NUMBERS =====
 function renderNumbers() {
   document.getElementById('main').innerHTML = `
     <h2 style="font-size:18px;font-weight:700;margin-bottom:16px" class="fade-in">🔢 Chiffres-clés</h2>
@@ -668,45 +1036,46 @@ function renderNumbers() {
 function renderStats() {
   document.getElementById('nav').innerHTML = '';
   const totalQ = CONTENT.questions.length;
-  const studied = Object.keys(state.seen).length;
-  const easy = CONTENT.questions.filter(q => state.seen[q.id]?.confidence === 'easy').length;
-  const medium = CONTENT.questions.filter(q => state.seen[q.id]?.confidence === 'medium').length;
-  const hard = CONTENT.questions.filter(q => state.seen[q.id]?.confidence === 'hard').length;
-  const unseen = totalQ - studied;
+  const counts = getBoxCounts();
+  const studied = totalQ - counts[0];
   const quizzes = state.quizHistory;
-  
+  const avgScore = quizzes.length > 0 ? Math.round(quizzes.reduce((a,h) => a + h.score/h.total*100, 0) / quizzes.length) : 0;
+
   document.getElementById('main').innerHTML = `
-    <h2 style="font-size:20px;font-weight:700;margin-bottom:16px" class="fade-in">📊 Progression</h2>
-    
+    <h2 style="font-size:19px;font-weight:700;margin-bottom:16px" class="fade-in">📊 Progression</h2>
+
+    ${renderLeitnerBoxes()}
+
     <div class="stat-grid fade-in">
       <div class="stat-card">
         <div class="big" style="color:var(--accent)">${studied}</div>
         <div class="label">Questions vues / ${totalQ}</div>
       </div>
       <div class="stat-card">
-        <div class="big" style="color:var(--green)">${easy}</div>
-        <div class="label">Maîtrisées</div>
+        <div class="big" style="color:var(--green)">${counts[5]}</div>
+        <div class="label">Maîtrisées (⭐)</div>
       </div>
       <div class="stat-card">
-        <div class="big" style="color:var(--orange)">${medium}</div>
-        <div class="label">En cours</div>
+        <div class="big" style="color:${avgScore >= 60 ? 'var(--green)' : 'var(--orange)'}">${quizzes.length > 0 ? avgScore+'%' : '—'}</div>
+        <div class="label">Score moyen quiz</div>
       </div>
       <div class="stat-card">
-        <div class="big" style="color:var(--red)">${hard}</div>
-        <div class="label">Difficiles</div>
+        <div class="big" style="color:var(--orange)">${state.streak.count}</div>
+        <div class="label">🔥 Jours de suite</div>
       </div>
     </div>
-    
+
     <div class="card fade-in">
       <div class="card-label">Couverture par catégorie</div>
       ${[...new Set(CONTENT.questions.map(q => q.category))].map(cat => {
         const catQs = CONTENT.questions.filter(q => q.category === cat);
-        const catSeen = catQs.filter(q => state.seen[q.id]).length;
+        const catMastered = catQs.filter(q => getBox(q.id) >= 4).length;
+        const catSeen = catQs.filter(q => getBox(q.id) > 0).length;
         const pct = Math.round(catSeen / catQs.length * 100);
         return `
-          <div style="margin-top:12px">
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-              <span>${cat}</span><span style="color:var(--muted)">${catSeen}/${catQs.length}</span>
+          <div style="margin-top:14px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+              <span>${cat}</span><span style="color:var(--muted)">${catMastered}⭐ / ${catSeen} vues / ${catQs.length}</span>
             </div>
             <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
               <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:3px;transition:width .5s"></div>
@@ -714,7 +1083,7 @@ function renderStats() {
           </div>`;
       }).join('')}
     </div>
-    
+
     ${quizzes.length > 0 ? `
       <div class="card fade-in">
         <div class="card-label">Historique des quiz</div>
@@ -724,13 +1093,13 @@ function renderStats() {
           const pct = Math.round(h.score / h.total * 100);
           return `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(71,85,105,0.3)">
-              <span style="font-size:13px;color:var(--muted)">${dateStr}</span>
+              <span style="font-size:12px;color:var(--muted)">${dateStr}</span>
               <span style="font-size:15px;font-weight:600;color:${pct >= 60 ? 'var(--green)' : 'var(--red)'}">${h.score}/${h.total}</span>
             </div>`;
         }).join('')}
       </div>
     ` : ''}
-    
+
     <button class="flip-btn" style="background:var(--red);margin-top:16px" onclick="if(confirm('Réinitialiser toute la progression ?')){localStorage.removeItem('${STATE_KEY}');state=loadState();showTab('home')}">Réinitialiser</button>
   `;
 }
@@ -743,7 +1112,7 @@ function progressRing(pct, size=48) {
   return `<div class="progress-ring" style="width:${size}px;height:${size}px">
     <svg width="${size}" height="${size}">
       <circle class="bg" cx="${size/2}" cy="${size/2}" r="${r}"/>
-      <circle class="fg" cx="${size/2}" cy="${size/2}" r="${r}" 
+      <circle class="fg" cx="${size/2}" cy="${size/2}" r="${r}"
         stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/>
     </svg>
     <div class="progress-text">${pct}%</div>
@@ -756,6 +1125,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== INIT =====
+updateStreakBadge();
 showTab('home');
 </script>
 </body>
