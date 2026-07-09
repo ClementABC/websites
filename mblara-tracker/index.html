@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dansez Maintenant — Tracker élèves</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0E0E12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--grad:linear-gradient(135deg,#00D1FF 0%,#5B6CFF 35%,#B24CFF 70%,#FF2E93 100%);--bg:#FFFBFE;--card:#FFFFFF;--ink:#0E0E12;--muted:#6B6B7A}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,sans-serif;line-height:1.85}
+.hero{position:relative;background:#0E0E12;overflow:hidden;padding:24px 20px 28px;border-radius:0 0 28px 28px}
+.hero .grad{position:absolute;inset:0;background:var(--grad);opacity:.9}
+.hero .content{position:relative;max-width:720px;margin:0 auto}
+.hero h1{margin:0;color:white;font-size:28px;font-weight:800;letter-spacing:-0.5px;line-height:1.1}
+.hero h1 span.outline{color:transparent;-webkit-text-stroke:1.2px #00D1FF;padding-right:6px}
+.hero .sub{color:#D6D3FF;margin:6px 0 0;font-size:14px;letter-spacing:.3px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:white;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700}
+.pill.blue{background:#3B82FF}.pill.green{background:#10B981}.pill.yellow{background:#F59E0B;color:#111}.pill.red{background:#FF2E93}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 120px}
+.auto-bar{background:#F8F5FF;border:1px solid #E9E2FF;border-radius:16px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px}
+.auto-bar b{font-size:14px}
+.dot{width:8px;height:8px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
+.date-row{display:flex;align-items:center;justify-content:space-between;margin:22px 0 14px}
+.date-row button{width:56px;height:56px;border-radius:50%;border:2px solid #111;background:white;font-size:22px;font-weight:800}
+.date-display{background:white;border:2px solid #111;border-radius:16px;padding:10px 18px;font-size:18px;font-weight:800;flex:1;margin:0 12px;text-align:center}
+.card{background:var(--card);border:2px solid #111;border-radius:24px;padding:18px 16px 16px;margin:14px 0;box-shadow:6px 6px 0 #111;min-height:180px}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.time{font-weight:800;font-size:15px;letter-spacing:.5px}
+.level{font-size:12px}
+.label-big{font-size:22px;font-weight:800;line-height:1.1;margin:4px 0 12px}
+.stepper{display:flex;align-items:center;gap:14px;margin:12px 0}
+.stepper .minus,.stepper .plus{width:64px;height:64px;border-radius:50%;border:0;background:#111;color:white;font-size:32px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.stepper .minus{background:#222}
+.stepper .num{font-size:56px;font-weight:900;line-height:1;min-width:80px;text-align:center}
+.quick{display:flex;gap:8px;margin:8px 0}
+.quick button{border-radius:999px;border:1px solid #ccc;background:white;padding:6px 12px;font-size:13px;font-weight:700}
+.men-toggle{margin-top:14px;border-top:1px dashed #ddd;padding-top:12px}
+.men-toggle summary{font-weight:800;font-size:15px;cursor:pointer;list-style:none}
+.men-toggle summary::-webkit-details-marker{display:none}
+.men-step{display:flex;align-items:center;gap:10px;margin-top:10px}
+.men-step button{width:48px;height:48px;border-radius:50%;border:0;background:#333;color:white;font-size:24px;font-weight:800}
+.men-step .mnum{font-size:28px;font-weight:800;min-width:50px;text-align:center}
+.save{width:100%;height:64px;border-radius:999px;border:0;background:#111;color:white;font-size:18px;font-weight:800;margin-top:16px;transition:all .2s}
+.save.saved{background:#10B981}
+.history{margin-top:28px}
+.hist-item{background:white;border:1px solid #ddd;border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin:8px 0;font-size:14px}
+.foot{position:fixed;bottom:0;left:0;right:0;background:rgba(255,251,254,.96);backdrop-filter:blur(12px);border-top:1px solid #eee;padding:12px 16px;display:flex;gap:10px}
+.foot button{flex:1;height:48px;border-radius:999px;border:0;font-weight:800;font-size:14px}
+.btn-ghost{background:white;border:2px solid #111 !important}
+.btn-black{background:#111;color:white}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="grad"></div>
+<div class="content">
+<h1><span class="outline">SUMMER 2026</span> DANSEZ MAINTENANT</h1>
+<div class="sub">LYRICAL / MODERN JAZZ • 75018 Barbès • Men welcome</div>
+<div class="pills">
+<span class="pill blue">Inter 🔵</span><span class="pill green">Inter-Av 🟢</span><span class="pill yellow">Av 🟡</span><span class="pill red">Open 🔴</span>
+</div>
+</div>
+</div>
+
+<div class="wrap">
+<div class="auto-bar" id="autoBar">
+<span class="dot"></span><b>Crédit ads:</b> <span id="spent">$--</span> / $500 • Reste <span id="remain">$--</span> • ThruPlays <span id="thru">--</span>
+<br><small id="syncInfo">Sync auto depuis Hatch • dernière maj auto via GitHub Action</small>
+</div>
+
+<div class="date-row">
+<button id="prevD">‹</button>
+<div class="date-display" id="dateDisp">—</div>
+<button id="nextD">›</button>
+</div>
+
+<div id="cards"></div>
+
+<div class="history">
+<h3 style="font-size:18px;font-weight:800;margin:8px 0;">Historique</h3>
+<div id="hist"></div>
+</div>
+</div>
+
+<div class="foot">
+<button class="btn-ghost" id="exportBtn">Exporter CSV</button>
+<button class="btn-black" id="waBtn">Partager WhatsApp</button>
+</div>
+
+<script>
+const SLOTS=[
+{id:'slot1',label:'14:00-16:00 • MODERN JAZZ / CONTEMPORARY',emoji:'🟣',time:'14h-16h',levels:'Inter/Av 🔵🟢🟡'},
+{id:'slot2',label:'16:00-18:00 • LYRICAL / JAZZ',emoji:'🩰',time:'16h-18h',levels:'Inter 🟢🟡'}
+];
+let curDate=new Date();
+function fmt(d){return d.toISOString().slice(0,10)}
+function fmtFR(d){return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}
+function loadLogs(){try{return JSON.parse(localStorage.getItem('mblara_logs')||'[]')}catch{return []}}
+function saveLogs(l){localStorage.setItem('mblara_logs',JSON.stringify(l))}
+function getLog(date,slotId){return loadLogs().find(x=>x.date===date&&x.slotId===slotId)}
+function render(){
+const iso=fmt(curDate);
+document.getElementById('dateDisp').textContent=fmtFR(curDate)+' • '+iso;
+const logs=loadLogs();
+const container=document.getElementById('cards');
+container.innerHTML='';
+SLOTS.forEach(slot=>{
+const existing=logs.find(x=>x.date===iso&&x.slotId===slot.id)||{students:0,male:0};
+let malePct=existing.students?Math.round(existing.male/existing.students*100):0;
+container.innerHTML+=`
+<div class="card" data-slot="${slot.id}">
+<div class="card-top"><span class="time">${slot.emoji} ${slot.time}</span><span class="level">${slot.levels}</span></div>
+<div class="label-big">${slot.label}</div>
+<div>Combien d'élèves ? / How many?</div>
+<div class="stepper">
+<div class="minus" data-act="m5">-5</div>
+<div class="minus" data-act="dec">−</div>
+<div class="num">${existing.students}</div>
+<div class="plus" data-act="inc">+</div>
+<div class="plus" data-act="p5">+5</div>
+</div>
+<details class="men-toggle" ${existing.male>0?'open':''}>
+<summary>Hommes ? Men? <span style="font-weight:400">• ${existing.male}H / ${existing.students?existing.students-existing.male:0}F • ${malePct}%H</span></summary>
+<div class="men-step">
+<button data-m="dec">−</button><div class="mnum">${existing.male}</div><button data-m="inc">+</button>
+<span style="font-size:13px;color:#666">${existing.students-existing.male} femmes • auto</span>
+</div>
+</details>
+<button class="save">Enregistrer • Save</button>
+</div>`;
+});
+attach();
+renderHist();
+}
+function attach(){
+document.querySelectorAll('.card').forEach(card=>{
+const slotId=card.dataset.slot;
+const slot=SLOTS.find(s=>s.id===slotId);
+const iso=fmt(curDate);
+let logs=loadLogs();
+let entry=logs.find(x=>x.date===iso&&x.slotId===slotId);
+if(!entry){entry={date:iso,slotId,slotLabel:slot.label,students:0,male:0};logs.push(entry);saveLogs(logs)}
+const numEl=card.querySelector('.num');
+const mnumEl=card.querySelector('.mnum');
+const saveBtn=card.querySelector('.save');
+function updateNum(delta){
+let l=loadLogs();let e=l.find(x=>x.date===iso&&x.slotId===slotId);
+e.students=Math.max(0,Math.min(80,e.students+delta));
+if(e.male>e.students)e.male=e.students;
+saveLogs(l);numEl.textContent=e.students;if(mnumEl){const pct=e.students?Math.round(e.male/e.students*100):0;card.querySelector('summary span').textContent=`• ${e.male}H / ${e.students-e.male}F • ${pct}%H`;}
+renderHist();
+}
+function updateMale(delta){
+let l=loadLogs();let e=l.find(x=>x.date===iso&&x.slotId===slotId);
+e.male=Math.max(0,Math.min(e.students,e.male+delta));
+saveLogs(l);mnumEl.textContent=e.male;const pct=e.students?Math.round(e.male/e.students*100):0;card.querySelector('summary span').textContent=`• ${e.male}H / ${e.students-e.male}F • ${pct}%H`;
+renderHist();
+}
+card.querySelectorAll('[data-act]').forEach(b=>{
+b.onclick=()=>{const act=b.dataset.act;if(act==='dec')updateNum(-1);if(act==='inc')updateNum(1);if(act==='m5')updateNum(-5);if(act==='p5')updateNum(5);}
+});
+card.querySelectorAll('[data-m]').forEach(b=>{
+b.onclick=()=>{if(b.dataset.m==='dec')updateMale(-1);else updateMale(1);}
+});
+saveBtn.onclick=()=>{
+saveBtn.textContent='Enregistré ✓ Saved ✓';saveBtn.classList.add('saved');
+setTimeout(()=>{saveBtn.textContent='Enregistrer • Save';saveBtn.classList.remove('saved');},2200);
+};
+});
+}
+function renderHist(){
+const logs=loadLogs().sort((a,b)=>b.date.localeCompare(a.date));
+const histEl=document.getElementById('hist');
+if(!logs.length){histEl.innerHTML='<div style="color:#888;font-size:14px">Pas encore de cours enregistrés</div>';return}
+histEl.innerHTML=logs.slice(0,20).map(l=>{
+const pct=l.students?Math.round(l.male/l.students*100):0;
+return `<div class="hist-item"><div><b>${l.date}</b> • ${l.slotId==='slot1'?'14h-16h':'16h-18h'} • ${l.students} élèves</div><div>${l.male}H • ${pct}%</div></div>`;
+}).join('');
+}
+document.getElementById('prevD').onclick=()=>{curDate.setDate(curDate.getDate()-1);render()}
+document.getElementById('nextD').onclick=()=>{curDate.setDate(curDate.getDate()+1);render()}
+document.getElementById('exportBtn').onclick=()=>{
+const logs=loadLogs();
+let csv='date,slot,students,male,female,revenue_eur\n';
+logs.forEach(l=>{csv+=`${l.date},"${l.slotLabel}",${l.students},${l.male},${l.students-l.male},${l.students*25}\n`});
+const blob=new Blob([csv],{type:'text/csv'});
+const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='mblara-eleves.csv';a.click();
+};
+document.getElementById('waBtn').onclick=()=>{
+const logs=loadLogs().filter(l=>l.date===fmt(curDate));
+if(!logs.length){alert('Pas de cours ce jour');return}
+let txt=`Dansez Maintenant — ${fmtFR(curDate)}:\n`;
+logs.forEach(l=>{const f=l.students-l.male;txt+=`• ${l.slotId==='slot1'?'14h-16h':'16h-18h'} ${l.slotLabel.split('•')[1]||''}: ${l.students} élèves (${l.male}H/${f}F)\n`});
+txt+=`\nROAS: ${logs.reduce((s,x)=>s+x.students,0)} élèves × €25`;
+const wa='https://wa.me/?text='+encodeURIComponent(txt);
+window.open(wa,'_blank');
+};
+async function loadAds(){
+try{
+const res=await fetch('./ad-stats.json?'+Date.now());
+if(!res.ok)throw 0;
+const data=await res.json();
+document.getElementById('spent').textContent='$'+(data.totalSpend||0).toFixed(0);
+document.getElementById('remain').textContent='$'+(500-(data.totalSpend||0)).toFixed(0);
+document.getElementById('thru').textContent=data.totalThruPlays||'--';
+document.getElementById('syncInfo').textContent='Sync • '+new Date(data.lastSync).toLocaleString('fr-FR');
+}catch(e){
+document.getElementById('spent').textContent='$--';
+document.getElementById('remain').textContent='$--';
+}
+}
+loadAds();render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
