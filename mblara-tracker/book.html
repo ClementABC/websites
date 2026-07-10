@@ -4,172 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Réserver — Cours avec Mathieu — Dansez Maintenant</title>
+<meta name="description" content="Réserve ton cours de Modern Jazz ou Lyrical avec Mathieu à Dansez Maintenant — 4 Rue Pierre Picard, 75018 Paris. Réservation en 2 clics via Bsport.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#FFFBFE;--ink:#0E0E12;--muted:#6B6B7A;--border:#EDE6FF;--lilac:#F8F5FF;--grad:linear-gradient(135deg,#00D1FF 0%,#5B6CFF 35%,#B24CFF 70%,#FF2E93 100%)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,sans-serif;line-height:1.85}
-.hero{position:relative;background:#0E0E12;overflow:hidden;padding:32px 20px 28px}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,sans-serif;line-height:1.85;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.hero{position:relative;background:#0E0E12;overflow:hidden;padding:28px 20px 26px}
 .hero .grad{position:absolute;inset:0;background:var(--grad);opacity:.92}
-.hero .content{position:relative;max-width:720px;margin:0 auto}
-.hero h1{margin:0;color:white;font-size:34px;font-weight:800;line-height:0.95;letter-spacing:-0.8px}
+.hero .content{position:relative;max-width:760px;margin:0 auto}
+.kicker{color:rgba(255,255,255,.9);font-size:11px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;margin-bottom:10px}
+.hero h1{margin:0;color:white;font-size:38px;font-weight:800;line-height:.95;letter-spacing:-.8px}
 .hero h1 .outline{-webkit-text-stroke:1.5px white;color:transparent}
-.kicker{color:rgba(255,255,255,.85);font-size:11px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;margin-bottom:10px}
-.addr{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);backdrop-filter:blur(8px);border-radius:999px;display:inline-flex;align-items:center;gap:8px;padding:7px 14px;color:white;font-size:13px;font-weight:700;margin-top:14px}
-.addr a{color:white;text-decoration:underline;text-underline-offset:2px}
-.sub{color:#E6E0FF;margin:12px 0 0;font-size:15px;line-height:1.5;max-width:520px}
-.wrap{max-width:720px;margin:0 auto;padding:20px 16px 120px}
-.notice{background:white;border:1.5px solid var(--border);border-radius:16px;padding:12px 14px;font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
-.card{background:white;border:2px solid var(--ink);border-radius:24px;padding:18px 16px 16px;margin:16px 0;box-shadow:6px 6px 0 var(--ink)}
-.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.badge{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:white;border-radius:999px;padding:5px 10px}
-.time{font-weight:800;font-size:16px}
-.label{font-size:24px;font-weight:800;line-height:1.05;margin:8px 0 6px}
-.meta{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:12px}
-.slots{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.slot{border:1.5px solid var(--border);background:var(--lilac);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
-.slot.active{background:var(--ink);color:white;border-color:var(--ink)}
-.btn{width:100%;height:60px;border-radius:999px;border:0;background:var(--ink);color:white;font-size:17px;font-weight:800;cursor:pointer;transition:.15s}
-.btn:active{transform:scale(.98)}
-.loading{padding:18px;border:2px dashed #ddd;border-radius:16px;text-align:center;color:#6B6B7A;font-size:14px}
-.small{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
-.foot{position:fixed;left:0;right:0;bottom:0;background:rgba(255,251,254,.96);backdrop-filter:blur(12px);border-top:1px solid #eee;padding:12px 16px;display:flex;gap:10px}
-.foot a{flex:1;text-decoration:none}
-.foot button{width:100%;height:52px;border-radius:999px;border:0;font-weight:800;font-size:15px;cursor:pointer}
+.sub{color:#E6E0FF;margin:12px 0 0;font-size:15px;line-height:1.5;max-width:560px}
+.addr{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);backdrop-filter:blur(8px);border-radius:999px;padding:7px 14px;color:white;font-size:13px;font-weight:700}
+.addr a{text-decoration:underline;text-underline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:18px 16px 100px}
+.notice{background:white;border:1.5px solid var(--border);border-radius:16px;padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:18px}
+.day{margin:26px 0 14px}
+.day-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.day-title{font-size:18px;font-weight:800;letter-spacing:-.2px;text-transform:capitalize}
+.day-date{font-size:12px;color:var(--muted)}
+.class-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 14px;border:2px solid var(--ink);border-radius:18px;margin:10px 0;background:white;box-shadow:4px 4px 0 var(--ink)}
+.class-left{flex:1}
+.class-time{font-weight:800;font-size:14px;letter-spacing:.04em}
+.class-name{font-weight:800;font-size:18px;line-height:1.1;margin:2px 0}
+.class-meta{font-size:12px;color:var(--muted)}
+.btn{border:0;border-radius:999px;padding:12px 20px;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap;transition:.15s}
+.btn-black{background:var(--ink);color:white}
+.btn-black:active{transform:scale(.97)}
+.btn-lilac{background:#B24CFF;color:white}
+.foot-note{text-align:center;font-size:11px;color:var(--muted);margin-top:28px;line-height:1.5}
+.empty{padding:22px;border:2px dashed #DDD;border-radius:16px;text-align:center;color:#6B6B7A;font-size:14px;margin:16px 0}
 </style>
 <script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-function fireLead(course){try{if(window.fbq){fbq('track','Lead',{content_name:course});}const k='mblara-book-clicks';const cur=JSON.parse(localStorage.getItem(k)||'[]');cur.push({t:new Date().toISOString(),course});localStorage.setItem(k,JSON.stringify(cur));}catch(e){}}
+// TODO PIXEL: replace YOUR_PIXEL_ID and uncomment
+// fbq('init','YOUR_PIXEL_ID');
+// fbq('track','PageView');
+function fireLead(content){
+  try{ if(window.fbq) fbq('track','Lead',{content_name:content}); }catch(e){}
+  try{ const k='mblara-book-leads'; const cur=JSON.parse(localStorage.getItem(k)||'[]'); cur.push({t:new Date().toISOString(),content}); localStorage.setItem(k,JSON.stringify(cur)); }catch(e){}
+}
 </script>
 </head>
 <body>
 <div class="hero">
 <div class="grad"></div>
 <div class="content">
-<div class="kicker">Dansez Maintenant • Montmartre</div>
-<h1><span class="outline">COURS AVEC</span><br>MATHIEU</h1>
-<p class="sub">Modern Jazz & Lyrical — tous niveaux bienvenus.<br>Choisis ton créneau et réserve en 2 clics.</p>
-<div class="addr">📍 4 Rue Pierre Picard, 75018 Paris • <a href="https://maps.google.com/?q=4+Rue+Pierre+Picard+75018+Paris" target="_blank">voir sur Maps</a> &nbsp;•&nbsp; Anvers / Abbesses</div>
+<div class="kicker">MBLARA • Dansez Maintenant — Montmartre</div>
+<h1><span class="outline">RÉSERVER</span><br>AVEC MATHIEU</h1>
+<p class="sub">Modern Jazz & Lyrical — tous niveaux bienvenus.<br>Du 10 au 26 juillet uniquement — dernières dates avant fin d'été.</p>
+<div class="addr">📍 4 Rue Pierre Picard, 75018 Paris — <a href="https://maps.google.com/?q=4+Rue+Pierre+Picard+75018+Paris" target="_blank">Ouvrir Maps</a> • Métro Anvers / Abbesses</div>
 </div>
 </div>
 
 <div class="wrap">
-<div class="notice" id="liveNotice">Chargement des cours disponibles depuis Bsport…</div>
-
-<div id="cardsContainer"></div>
-
-<div style="margin:32px 0 10px;text-align:center">
-<p class="small">Paiement sécurisé sur Bsport. Si tu n'as pas de compte, création en 30 secondes (email + mot de passe).</p>
-</div>
-</div>
-
-<div class="foot">
-<a href="https://clementabc.github.io/websites/mblara-tracker/"><button style="background:white;border:2px solid #111;color:#111">Infos</button></a>
-<a id="footPrimary" href="#" target="_blank"><button style="background:#111;color:white">Réserver →</button></a>
+<div class="notice" id="rangeNotice">Cours de Mathieu uniquement — du 10 au 26 juillet 2026 • Studio Dansez Maintenant. Paiement 100% sur Bsport.</div>
+<div id="list"></div>
+<div class="foot-note">Paiement sécurisé via Bsport. Si tu n'as pas de compte, création en 30s (email + mot de passe) puis réservation.<br><br>MBLARA VMS © 2010-2026 • <a href="https://mblara.com" target="_blank">mblara.com</a> • <a href="https://www.instagram.com/mblaravms/" target="_blank">@mblaravms</a></div>
 </div>
 
 <script>
-const STUDIO_ID="2385";
-const COACH_ID="125042";
+const STUDIO_ID=2385;
+const COACH_ID=125042;
 const BASE="https://backoffice.bsport.io/m/Dansez%20Maintenant/2385/calendar/";
-function bsportLink(dateStr){return `${BASE}?tabSelected=0&index=0&date=${dateStr}&coaches=${COACH_ID}`;}
-function fmtFr(d){return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}
-function fmtShort(d){return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});}
-function iso(d){return d.toISOString().slice(0,10);}
+function bsportLink(dateStr){ return `${BASE}?tabSelected=0&index=0&date=${dateStr}&coaches=${COACH_ID}`; }
+function fmtDayTitle(dateStr){
+  const d=new Date(dateStr+'T12:00:00');
+  return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+}
 
-// Attempt 1: try to scrape via our own proxy? We'll fallback to hardcoded if Bsport blocks CORS.
-// Since backoffice blocks CORS, we keep page functional with last known fetch via browser subagent.
-// For now render from localStorage cache or show manual link selector.
-
-let cached = null;
-try{ cached = JSON.parse(localStorage.getItem('bsport_coach_125042')||'null'); }catch(e){}
-
-function renderFallback(){
-  // If we don't have real Bsport data yet, show generic day picker that still deep-links correctly
-  const notice = document.getElementById('liveNotice');
-  if(cached && cached.classes && cached.classes.length){
-    notice.innerHTML = `Dernière synchro Bsport: ${new Date(cached.fetchedAt).toLocaleString('fr-FR')} • ${cached.classes.length} cours trouvés pour Mathieu`;
-    renderClasses(cached.classes);
-  } else {
-    notice.innerHTML = `Synchronisation Bsport en cours... En attendant, choisis un jour — on t'envoie directement sur le planning filtré de Mathieu (coaches=${COACH_ID}).`;
-    // create pseudo classes from next 10 days
-    const pseudo=[];
-    const now=new Date();
-    for(let i=0;i<10;i++){
-      const d=new Date(now); d.setDate(now.getDate()+i);
-      // only keep Tue/Thu/Sat/Sun as plausible? but user said not all slots, so show only 2 per available day placeholder
-      pseudo.push({date:iso(d), time:'14:00', label:'MODERN JAZZ', level:'Inter / Avancé'});
-      pseudo.push({date:iso(d), time:'16:00', label:'LYRICAL', level:'Inter'});
-    }
-    // group by date for rendering
-    const byDate = {};
-    pseudo.forEach(p=>{ byDate[p.date]=byDate[p.date]||[]; byDate[p.date].push(p); });
-    const classes = Object.keys(byDate).sort().slice(0,6).map(date=>({date, slots:byDate[date]}));
-    renderGrouped(classes);
+async function loadSchedule(){
+  const listEl=document.getElementById('list');
+  try{
+    const res=await fetch('./schedule.json?ts='+Date.now(),{cache:'no-store'});
+    if(!res.ok) throw new Error('no schedule.json');
+    const data=await res.json();
+    if(!data.length) throw new Error('empty');
+    renderGroups(groupByDate(data));
+    return;
+  }catch(e){
+    // fallback: show message + ask for real data — no fake slots
+    listEl.innerHTML=`<div class="empty">
+      Planning en cours de synchronisation depuis Bsport…<br><br>
+      En attendant, tu peux ouvrir directement le planning filtré de Mathieu :
+      <br><br>
+      <a href="${bsportLink('2026-07-10')}" target="_blank" class="btn btn-black" style="display:inline-block;text-decoration:none" onclick="fireLead('fallback_full')">Ouvrir le planning Bsport de Mathieu</a>
+      <br><br>
+      <small>Dernières disponibilités du 10 au 26 juillet. Actualisation en cours.</small>
+    </div>`;
   }
 }
 
-function renderClasses(apiClasses){
-  // apiClasses expected: [{date,time,name,level,id...}]
-  const grouped = {};
-  apiClasses.forEach(c=>{ grouped[c.date]=grouped[c.date]||[]; grouped[c.date].push(c); });
-  const sortedDates = Object.keys(grouped).sort();
-  const groups = sortedDates.map(d=>({date:d, slots:grouped[d]}));
-  renderGrouped(groups);
+function groupByDate(arr){
+  const map={};
+  arr.forEach(c=>{
+    // filter only Mathieu + date range 2026-07-10 to 2026-07-26
+    if(c.date < '2026-07-10' || c.date > '2026-07-26') return;
+    map[c.date]=map[c.date]||[];
+    map[c.date].push(c);
+  });
+  return Object.keys(map).sort().map(date=>({date, slots:map[date]}));
 }
 
-function renderGrouped(groups){
-  const container = document.getElementById('cardsContainer');
-  container.innerHTML='';
+function renderGroups(groups){
+  const listEl=document.getElementById('list');
+  listEl.innerHTML='';
+  if(!groups.length){
+    listEl.innerHTML='<div class="empty">Aucun cours de Mathieu trouvé entre le 10 et le 26 juillet. Vérifie Bsport directement.</div>';
+    return;
+  }
   groups.forEach(g=>{
-    const d = new Date(g.date);
-    const card = document.createElement('div');
-    card.className='card';
-    card.innerHTML = `<div class="card-top"><span class="badge">${fmtFr(d)}</span><span class="time">📅 ${g.date}</span></div>
-      <div id="slots-${g.date}" style="margin-top:10px"></div>`;
-    container.appendChild(card);
-    const slotsDiv = card.querySelector(`#slots-${g.date}`);
-    g.slots.forEach(s=>{
-      const row = document.createElement('div');
-      row.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1.5px solid #EDE6FF;border-radius:16px;margin:8px 0;background:#F8F5FF';
+    const wrap=document.createElement('div');
+    wrap.className='day';
+    wrap.innerHTML=`<div class="day-head"><div class="day-title">${fmtDayTitle(g.date)}</div><div class="day-date">${g.date}</div></div>`;
+    g.slots.sort((a,b)=> (a.time||'').localeCompare(b.time||'')).forEach(s=>{
+      const row=document.createElement('div');
+      row.className='class-row';
+      const name = s.name || s.label || 'Modern Jazz / Lyrical';
       const time = s.time || s.start || '';
-      const name = s.label || s.name || 'Cours';
-      const level = s.level || '';
-      row.innerHTML = `<div><div style="font-weight:800;font-size:16px">${time} • ${name}</div><div style="font-size:12px;color:#6B6B7A">${level} • 4 Rue Pierre Picard, 75018</div></div><button class="btn" style="width:auto;padding:0 20px;height:48px;white-space:nowrap">Réserver</button>`;
-      row.querySelector('button').onclick = ()=>{
+      const level = s.level || 'Tous niveaux';
+      row.innerHTML=`<div class="class-left"><div class="class-time">${time}</div><div class="class-name">${name}</div><div class="class-meta">${level} • 4 Rue Pierre Picard, 75018</div></div><button class="btn ${name.toLowerCase().includes('lyrical')?'btn-lilac':'btn-black'}">Réserver</button>`;
+      row.querySelector('button').onclick=()=>{
         fireLead(`${name}_${g.date}_${time}`);
         window.open(bsportLink(g.date),'_blank');
       };
-      slotsDiv.appendChild(row);
+      wrap.appendChild(row);
     });
+    listEl.appendChild(wrap);
   });
-  const firstDate = groups[0]?.date || iso(new Date());
-  document.getElementById('footPrimary').href = bsportLink(firstDate);
 }
 
-renderFallback();
-
-// Try live fetch via CORS proxy? If fails, keep fallback
-(async()=>{
-  try{
-    // public bsport widget endpoint often CORS-open: https://widget.bsport.io/api/company/2385/ ...
-    // We will try one known pattern without auth
-    const testUrls = [
-      `https://widget.bsport.io/api/company/${STUDIO_ID}/calendar?coach=${COACH_ID}&from=${iso(new Date())}`,
-      `https://backoffice.bsport.io/api/company/${STUDIO_ID}/offer?coach=${COACH_ID}`
-    ];
-    for(const u of testUrls){
-      try{
-        const r = await fetch(u, {mode:'cors'});
-        if(r.ok){
-          const data = await r.json();
-          console.log('Bsport API hit', u, data);
-          localStorage.setItem('bsport_raw_'+u, JSON.stringify({fetchedAt:new Date().toISOString(),data}).slice(0,5000));
-        }
-      }catch(e){ /* CORS blocked expected */ }
-    }
-  }catch(e){}
-})();
+loadSchedule();
 </script>
 </body>
 </html>
