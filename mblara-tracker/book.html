@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Réserver — Dansez Maintenant</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFFBFE;--ink:#0E0E12;--muted:#6B6B7A;--border:#EDE6FF;--lilac:#F8F5FF;--grad:linear-gradient(135deg,#00D1FF 0%,#5B6CFF 35%,#B24CFF 70%,#FF2E93 100%)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,sans-serif;line-height:1.85}
+.hero{position:relative;background:#0E0E12;overflow:hidden;padding:28px 20px 32px}
+.hero .grad{position:absolute;inset:0;background:var(--grad);opacity:.92}
+.hero .content{position:relative;max-width:720px;margin:0 auto}
+.hero h1{margin:0;color:white;font-size:32px;font-weight:800;line-height:0.95;letter-spacing:-0.5px}
+.hero h1 span{color:transparent;-webkit-text-stroke:1.5px white}
+.hero p{color:#E6E0FF;margin:10px 0 0;font-size:15px;line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 120px}
+.alert{background:#FFF8E1;border:1.5px solid #FFE082;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.6;margin-bottom:20px}
+.alert b{color:#5D4037}
+.card{background:white;border:2px solid var(--ink);border-radius:24px;padding:18px 16px 16px;margin:16px 0;box-shadow:6px 6px 0 var(--ink)}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:white;border-radius:999px;padding:5px 10px}
+.time{font-weight:800;font-size:16px}
+.label{font-size:24px;font-weight:800;line-height:1.05;margin:8px 0 6px}
+.meta{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:12px}
+.slots{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.slot{border:1.5px solid var(--border);background:var(--lilac);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.slot.active{background:var(--ink);color:white;border-color:var(--ink)}
+.btn{width:100%;height:60px;border-radius:999px;border:0;background:var(--ink);color:white;font-size:17px;font-weight:800;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.secondary{background:white;color:var(--ink);border:2px solid var(--ink);height:54px;margin-top:10px}
+.how{background:var(--lilac);border:1.5px solid var(--border);border-radius:20px;padding:16px;margin:24px 0}
+.how h3{margin:0 0 8px;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.how ol{margin:8px 0 0 18px;padding:0;font-size:14px}
+.how li{margin:6px 0}
+.small{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+.foot{position:fixed;left:0;right:0;bottom:0;background:rgba(255,251,254,.96);backdrop-filter:blur(12px);border-top:1px solid #eee;padding:12px 16px;display:flex;gap:10px}
+.foot a{flex:1;text-decoration:none}
+.foot button{width:100%;height:52px;border-radius:999px;border:0;font-weight:800;font-size:15px;cursor:pointer}
+</style>
+<!-- Meta Pixel - replace PIXEL_ID with your pixel from Events Manager -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+// fbq('init', 'YOUR_PIXEL_ID');
+// fbq('track', 'PageView');
+function fireLead(course){
+  try{
+    if(window.fbq){ fbq('track','Lead',{content_name:course}); fbq('trackCustom','BsportClick',{course:course}); }
+    // local tracking for ROAS correlation with your PWA
+    const k='mblara-book-clicks'; const cur=JSON.parse(localStorage.getItem(k)||'[]'); cur.push({t:new Date().toISOString(),course}); localStorage.setItem(k,JSON.stringify(cur));
+  }catch(e){}
+}
+</script>
+</head>
+<body>
+<div class="hero">
+<div class="grad"></div>
+<div class="content">
+<h1><span>RÉSERVER</span><br>DANSEZ MAINTENANT</h1>
+<p>1 page ultra simple pour réserver avec Mathieu — fini le calendrier Bsport illisible. Choisis ton cours, clique, réserve en 30s.</p>
+</div>
+</div>
+
+<div class="wrap">
+<div class="alert">
+<b>Pourquoi cette page ?</b> Le lien Bsport dans l'annonce t'envoie sur un calendrier complet (<code>backoffice.bsport.io</code>) fait pour les membres, pas pour réserver vite. Ici tu vois <b>seulement les cours de Mathieu</b> et tu es renvoyé directement sur le bon jour.<br><br>
+<span style="background:#111;color:white;border-radius:999px;padding:3px 8px;font-size:11px">ASTUCE</span> Pas de compte Bsport ? Le site te demandera de créer un compte en 30s (email + mot de passe) — normal.
+</div>
+
+<div class="card" id="jazzCard">
+<div class="card-top"><span class="badge">Inter / Avancé</span><span class="time">🟣 14:00 — 16:00</span></div>
+<div class="label">MODERN JAZZ / CONTEMPORAIN</div>
+<div class="meta">Dansez Maintenant • Studio 75018 Barbès • Hommes bienvenus • Niveau inter / avancé 🔵🟢🟡🔴</div>
+<div class="slots" data-course="jazz"></div>
+<button class="btn" id="btnJazz">Réserver ce cours → bsport 🔗</button>
+<button class="btn secondary" onclick="openWhatsapp('jazz')">Préfère WhatsApp ? → Écris à Mathieu</button>
+<div class="small">Te renvoie sur Bsport au bon jour • évènement Lead compté pour les pubs</div>
+</div>
+
+<div class="card" id="lyricalCard" style="border-color:#B24CFF;box-shadow:6px 6px 0 #B24CFF">
+<div class="card-top"><span class="badge" style="background:#B24CFF">Inter • Lyrical</span><span class="time">🩰 16:00 — 18:00</span></div>
+<div class="label">LYRICAL / JAZZ</div>
+<div class="meta">Dansez Maintenant • Lyrical fluide • Intermédiaire 🟢🟡 • Parfait si tu viens du contemporain</div>
+<div class="slots" data-course="lyrical"></div>
+<button class="btn" style="background:#B24CFF" id="btnLyrical">Réserver ce cours → bsport 🔗</button>
+<button class="btn secondary" onclick="openWhatsapp('lyrical')">Préfère WhatsApp ? → Écris à Mathieu</button>
+<div class="small">Même système — redirection directe sur le bon créneau</div>
+</div>
+
+<div class="how">
+<h3>Comment ça marche (20s)</h3>
+<ol>
+<li><b>Choisis</b> un jour ci-dessus (on génère automatiquement les prochains cours de Mathieu)</li>
+<li><b>Clique</b> Réserver → on t'envoie sur Bsport au bon jour (coaches=125042 filtré)</li>
+<li>Si tu n'as pas de compte Bsport : crée-le (30s) → ajoute au panier → paie → c'est réservé</li>
+</ol>
+<p style="margin:10px 0 0;font-size:13px">Problème ? Le calendrier complet reste dispo : <a id="fullLink" href="#" target="_blank">ouvrir Bsport complet</a></p>
+</div>
+
+<div class="small">V1 sans token studio — V2 (si token Dansez Maintenant) permettra la réservation directe ici sans passer par Bsport. Page accessible via QR sur l'annonce Meta.</div>
+
+</div>
+
+<div class="foot">
+<a href="https://clementabc.github.io/websites/mblara-tracker/"><button style="background:white;border:2px solid #111;color:#111">⬅ Retour tracker</button></a>
+<a href="#" id="footBook"><button style="background:#111;color:white">Réserver maintenant →</button></a>
+</div>
+
+<script>
+// --- Config ---
+const STUDIO_NAME = "Dansez Maintenant";
+const STUDIO_ID = "2385";
+const COACH_ID = "125042";
+const BASE = "https://backoffice.bsport.io/m/Dansez%20Maintenant/2385/calendar/";
+// Known schedule: Mathieu — Jazz 14-16, Lyrical 16-18 — likely Tue/Thu? We'll generate next 6 days including today, user can pick
+function isoDate(d){ return d.toISOString().slice(0,10); }
+function fmtFr(d){ return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
+
+function nextDates(n=6){
+  const out=[]; const today=new Date();
+  for(let i=0;i<n;i++){
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    out.push(d);
+  }
+  return out;
+}
+
+function bsportLink(dateStr){
+  // keep same params as ad but date dynamic
+  return `${BASE}?tabSelected=0&index=0&date=${dateStr}&coaches=${COACH_ID}`;
+}
+
+let selected = {jazz: isoDate(new Date()), lyrical: isoDate(new Date())};
+
+function renderSlots(){
+  const dates = nextDates(8);
+  document.querySelectorAll('.slots').forEach(container=>{
+    const course = container.dataset.course;
+    container.innerHTML='';
+    dates.forEach(d=>{
+      const ds = isoDate(d);
+      const el = document.createElement('div');
+      el.className='slot'+(selected[course]===ds?' active':'');
+      el.textContent = fmtFr(d);
+      el.onclick = ()=>{
+        selected[course]=ds;
+        renderSlots();
+      };
+      container.appendChild(el);
+    });
+  });
+  document.getElementById('fullLink').href = bsportLink(isoDate(new Date()));
+  document.getElementById('footBook').href = bsportLink(selected.jazz);
+}
+
+document.getElementById('btnJazz').onclick = ()=>{
+  fireLead('modern_jazz_14_16_'+selected.jazz);
+  window.open(bsportLink(selected.jazz),'_blank');
+};
+document.getElementById('btnLyrical').onclick = ()=>{
+  fireLead('lyrical_16_18_'+selected.lyrical);
+  window.open(bsportLink(selected.lyrical),'_blank');
+};
+
+function openWhatsapp(course){
+  const msg = encodeURIComponent(`Hello Mathieu ! Je souhaite réserver ton cours ${course} à Dansez Maintenant (vu via pub Insta). Jour souhaité: ${selected[course] || 'cette semaine'}. Tu peux me guider pour Bsport ?`);
+  // Replace with real number if you have it
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+  fireLead('whatsapp_'+course);
+}
+
+renderSlots();
+</script>
+</body>
+</html>
