@@ -203,7 +203,7 @@
             '<button class="chapter-btn" data-chapter="' + c.numero + '" aria-label="Faire le quiz : ' + esc(c.title) + '">' +
             '<span class="chapter-num" aria-hidden="true">' + c.numero + "</span>" +
             '<span><span class="chapter-title">' + esc(c.title) + "</span>" +
-            '<span class="chapter-sub">Ouvert — touche pour faire le quiz</span></span>' +
+            '<span class="chapter-sub">Ouvert</span></span>' +
             "</button>";
         } else {
           html +=
