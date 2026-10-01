@@ -57,48 +57,46 @@
   var CONFIGURED = BACKEND_URL.length > 0 && BACKEND_URL.indexOf("COLLE_TON_URL_ICI") < 0;
 
   /* ---------------- client backend ----------------
-     POST JSON {action, args} en text/plain (pas de preflight).
-     Apps Script répond 302 vers script.googleusercontent.com :
-     on re-POSTe le même corps à chaque redirection (boucle manuelle). */
+     JSONP via balise <script> : Apps Script ne renvoie pas d'en-têtes
+     CORS, donc fetch() cross-origin ne peut pas lire la réponse (les
+     redirections 302 deviennent opaques). Les balises <script> suivent
+     les 302 vers script.googleusercontent.com sans CORS. */
   function callBackend(action, args, timeoutMs) {
     return new Promise(function (resolve, reject) {
       if (!CONFIGURED) { reject(new Error("not_configured")); return; }
-      var body = JSON.stringify({ action: action, args: args || {} });
-      var url = BACKEND_URL;
-      var hops = 0;
       var done = false;
+      var cbName = "quizCb" + Date.now().toString(36) +
+        Math.floor(Math.random() * 1296).toString(36);
+      var script = document.createElement("script");
       var timer = setTimeout(function () {
-        if (!done) { done = true; reject(new Error("timeout")); }
+        if (!done) { done = true; cleanup(); reject(new Error("timeout")); }
       }, timeoutMs || 45000);
 
-      function attempt(target) {
-        if (done) return;
-        fetch(target, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: body,
-          redirect: "manual"
-        }).then(function (res) {
-          if (done) return;
-          if ((res.status === 301 || res.status === 302 || res.status === 303 || res.status === 307 || res.status === 308) && hops < 8) {
-            var loc = res.headers.get("location");
-            if (!loc) { done = true; clearTimeout(timer); reject(new Error("redirect")); return; }
-            hops++;
-            attempt(new URL(loc, target).toString());
-            return;
-          }
-          res.text().then(function (txt) {
-            if (done) return;
-            done = true; clearTimeout(timer);
-            try {
-              var data = JSON.parse(txt);
-              if (data && data.error && !data.ok) { reject(new Error(data.error)); return; }
-              resolve(data);
-            } catch (e) { reject(new Error("bad_response")); }
-          }).catch(function () { if (!done) { done = true; clearTimeout(timer); reject(new Error("network")); } });
-        }).catch(function () { if (!done) { done = true; clearTimeout(timer); reject(new Error("network")); } });
+      function cleanup() {
+        clearTimeout(timer);
+        try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
       }
-      attempt(url);
+
+      window[cbName] = function (data) {
+        if (done) return;
+        done = true; cleanup();
+        if (data && data.error && !data.ok) { reject(new Error(data.error)); return; }
+        resolve(data);
+      };
+
+      script.onerror = function () {
+        if (!done) { done = true; cleanup(); reject(new Error("network")); }
+      };
+
+      var url = BACKEND_URL +
+        (BACKEND_URL.indexOf("?") >= 0 ? "&" : "?") +
+        "action=" + encodeURIComponent(action) +
+        "&args=" + encodeURIComponent(JSON.stringify(args || {})) +
+        "&callback=" + encodeURIComponent(cbName);
+      script.src = url;
+      script.async = true;
+      document.head.appendChild(script);
     });
   }
 
@@ -995,12 +993,9 @@
       document.getElementById("test-backend").addEventListener("click", function () {
         var msg = document.getElementById("test-msg");
         msg.innerHTML = "<span class='muted'>Test en cours…</span>";
-        fetch(BACKEND_URL, { method: "GET", redirect: "follow" }).then(function (r) {
-          return r.text();
-        }).then(function (txt) {
-          var data = JSON.parse(txt);
-          msg.innerHTML = data && data.ok
-            ? "<span class='fieldok'>Connecté. " + (data.nb_questions || 0) + " " + plural(data.nb_questions || 0, "question", "questions") + " dans la Sheet.</span>"
+        callBackend("get_config", {}, 15000).then(function (data) {
+          msg.innerHTML = data && (data.chapters_open || data.ok)
+            ? "<span class='fieldok'>Connecté. Le quiz peut charger les chapitres.</span>"
             : "<span class='fielderr'>Le test a échoué.</span>";
         }).catch(function () {
           msg.innerHTML = "<span class='fielderr'>Le test a échoué.</span>";
