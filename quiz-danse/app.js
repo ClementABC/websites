@@ -171,7 +171,7 @@
   }
 
   /* ---------------- QUIZ : sélecteur de chapitres ---------------- */
-  var quiz = { chapter: null, questions: [], name: "", index: 0, answers: {}, rankOrder: [], rankItems: [], shuffles: {} };
+  var quiz = { chapter: null, questions: [], name: "", index: 0, answers: {}, comments: {}, rankOrder: [], rankItems: [], shuffles: {} };
 
   function viewQuizHome() {
     setNav("quiz");
@@ -433,6 +433,12 @@
           "</button>";
       }
       html += "</div>";
+      if ((quiz.answers[q.id] || "").toUpperCase() === "F") {
+        html +=
+          '<div class="field"><label for="vf-comment">Ta phrase (optionnel)</label>' +
+          '<textarea class="textinput" id="vf-comment" rows="3" maxlength="500" placeholder="Explique en une phrase…">' +
+          esc(quiz.comments[q.id] || "") + "</textarea></div>";
+      }
     }
 
     /* ----- curseur ----- */
@@ -547,6 +553,12 @@
         }
       });
     }
+    var vfc = document.getElementById("vf-comment");
+    if (vfc) {
+      vfc.addEventListener("input", function () {
+        quiz.comments[q.id] = this.value;
+      });
+    }
     document.getElementById("q-back").addEventListener("click", function () {
       if (quiz.index > 0) { quiz.index--; viewQuestion(); }
     });
@@ -568,7 +580,7 @@
   function submitQuiz() {
     spinner("Envoi en cours…");
     var payload = quiz.questions.map(function (q) {
-      return { question_id: q.id, reponse: reponseFor(q) };
+      return { question_id: q.id, reponse: reponseFor(q), commentaire: (quiz.comments[q.id] || "").trim() };
     });
     callBackend("submit_quiz", {
       student_name: quiz.name,
@@ -865,12 +877,14 @@
                 var a = s.answers[ai];
                 var qq = qref[a.question_id];
                 var raw = "";
-                try { raw = String(JSON.parse(a.answer_json || "{}").reponse || ""); } catch (e) { raw = ""; }
+                var cmt = "";
+                try { var aj = JSON.parse(a.answer_json || "{}"); raw = String(aj.reponse || ""); cmt = String(aj.commentaire || ""); } catch (e) { raw = ""; }
                 var tlabel = qq ? ((TYPE_INFO[qq.type] || {}).label || "") : "";
                 html += '<div class="qblock">' +
                   "<p style='font-weight:700;font-size:1.15rem'>" + esc(qq ? qq.question : ("Question n° " + a.question_id)) +
                   (tlabel ? ' <span class="badge">' + esc(tlabel) + "</span>" : "") + "</p>" +
                   "<p><b>Réponse :</b> " + reponseDisplay(qq, raw) + "</p>" +
+                  (cmt ? "<p><b>Phrase de l'élève :</b> " + esc(cmt) + "</p>" : "") +
                   "<p>" + markBadge(qq, a.is_correct) + "</p>" +
                   "</div>";
               }
