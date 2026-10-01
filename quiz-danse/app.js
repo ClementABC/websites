@@ -19,6 +19,10 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
+  // Échappe puis convertit les sauts de ligne en <br> (consignes "🎯 Attendu" dans le Sheet).
+  function escBr(s) {
+    return esc(s).replace(/\r?\n/g, "<br>");
+  }
 
   function plural(n, one, many) {
     return n > 1 ? many : one;
@@ -39,15 +43,21 @@
     return Math.round((100 * score) / max);
   }
 
-  var LETTERS = ["A", "B", "C", "D"];
-  var GRADED = ["qcm", "vrai_faux", "classement"];
+  var LETTERS = ["A", "B", "C", "D", "E"];
+  var GRADED = ["qcm", "vrai_faux", "classement", "appariement", "trous", "texte"];
 
   var TYPE_INFO = {
     qcm: { label: "QCM", hint: "Choisis la bonne réponse." },
+    qcm_multi: { label: "QCM", hint: "Coche toutes les affirmations exactes." },
     vrai_faux: { label: "Vrai / Faux", hint: "Vrai ou faux ?" },
+    vrai_faux_phrase: { label: "Vrai / Faux", hint: "Vrai ou faux ? Si tu réponds « Faux », écris ta phrase." },
+    oui_non: { label: "Oui / Non", hint: "Oui ou non ?" },
     curseur: { label: "Échelle", hint: "Déplace le curseur selon ton ressenti." },
     classement: { label: "Classement", hint: "Touche les cartes dans le bon ordre." },
-    texte: { label: "Réponse libre", hint: "Écris ta réponse en quelques mots." }
+    appariement: { label: "Appariement", hint: "Touche un élément à gauche, puis sa description à droite." },
+    trous: { label: "Texte à trou", hint: "Touche un trou, puis le mot de la banque." },
+    texte: { label: "Réponse libre", hint: "Écris ta réponse ci-dessous." },
+    station: { label: "Station", hint: "" }
   };
 
   /* ---------------- configuration ---------------- */
@@ -255,6 +265,9 @@
     quiz.rankOrder = [];
     quiz.rankItems = [];
     quiz.shuffles = {};
+    quiz.trouFills = {};
+    quiz.trouSel = null;
+    quiz.matchSel = null;
     spinner("Le quiz se prépare…");
     callBackend("get_questions", { chapitre: numero }).then(function (res) {
       if (res.chapter_closed) {
@@ -299,7 +312,7 @@
   /* ---------------- QUIZ : écran de démarrage (prénom) ---------------- */
   function viewStart() {
     var c = quiz.chapter;
-    var n = quiz.questions.length;
+    var n = realQuestions().length;
     app.innerHTML =
       '<div class="section">' +
       "<h1>" + esc(c.title) + "</h1>" +
@@ -349,20 +362,126 @@
     return a !== undefined ? String(a) : "";
   }
 
+  function pickedLetters(q) {
+    return String(quiz.answers[q.id] || "").split(",").map(function (x) { return x.trim().toUpperCase(); }).filter(Boolean);
+  }
+
   function canProceed(q) {
     var r = reponseFor(q).trim().toUpperCase();
-    if (q.type === "qcm") return LETTERS.indexOf(r) >= 0;
-    if (q.type === "vrai_faux") return r === "V" || r === "F";
+    if (q.type === "qcm") {
+      if (q.multi) return pickedLetters(q).length > 0;
+      return LETTERS.indexOf(r) >= 0;
+    }
+    if (isVF(q.type)) return r === "V" || r === "F";
     if (q.type === "curseur") return reponseFor(q).trim().length > 0;
     if (q.type === "texte") return reponseFor(q).trim().length > 0;
     if (q.type === "classement") return quiz.rankOrder.length === q.choices.length;
+    if (q.type === "appariement") {
+      var nb = pickedLetters(q).length;
+      return nb === pairsFromChoices(q).length && nb > 0;
+    }
+    if (q.type === "trous") {
+      var tp = parseTrous(q), fl = trouFills(q);
+      return tp.blanks.length > 0 && tp.blanks.every(function (n) { return !!fl[n]; });
+    }
     return false;
   }
 
   function hintFor(q) {
+    if (q.type === "qcm" && q.multi) return "Coche au moins une réponse pour continuer.";
     if (q.type === "classement") return "Classe toutes les cartes pour continuer.";
+    if (q.type === "appariement") return "Relie chaque élément à sa description pour continuer.";
+    if (q.type === "trous") return "Remplis tous les trous pour continuer.";
     if (q.type === "texte") return "Écris ta réponse pour continuer.";
     return "Choisis une réponse pour continuer.";
+  }
+
+  /* ----- stations, appariement, trous : aides ----- */
+  function realQuestions() {
+    return quiz.questions.filter(function (x) { return x.type !== "station"; });
+  }
+  function posBefore(idx) {
+    var n = 0;
+    for (var k = 0; k < idx; k++) if (quiz.questions[k].type !== "station") n++;
+    return n;
+  }
+  function isLastReal(idx) {
+    for (var k = idx + 1; k < quiz.questions.length; k++) {
+      if (quiz.questions[k].type !== "station") return false;
+    }
+    return true;
+  }
+  function fmtPts(p) {
+    var n = Number(p) || 0;
+    return (Math.round(n * 100) / 100).toString().replace(".", ",");
+  }
+  function isVF(t) {
+    return t === "vrai_faux" || t === "vrai_faux_phrase" || t === "oui_non";
+  }
+  // Paires d'un appariement : depuis q.pairs (élève) ou q.choices "gauche | droite" (prof).
+  function pairsFromChoices(q) {
+    if (q.pairs && q.pairs.length) return q.pairs;
+    return (q.choices || []).map(function (c) {
+      var p = String(c).split("|");
+      return { gauche: (p[0] || "").trim(), droite: (p[1] || "").trim() };
+    });
+  }
+  function ensureMatchBoard(q) {
+    var pairs = pairsFromChoices(q);
+    var rights = quiz.shuffles["m" + q.id];
+    if (!rights) {
+      rights = pairs.map(function (p, i) { return { oi: i, text: p.droite }; });
+      for (var i = rights.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = rights[i]; rights[i] = rights[j]; rights[j] = tmp;
+      }
+      quiz.shuffles["m" + q.id] = rights;
+    }
+    quiz.matchRights = rights;
+    // Reconstruit depuis les réponses enregistrées à chaque affichage
+    // (les paires sont persistées avant chaque re-render) ; la sélection
+    // en cours (matchSel) est conservée pour le tap en deux temps.
+    quiz.matchPairs = {};
+    var saved = quiz.answers[q.id];
+    if (saved) {
+      String(saved).split(",").forEach(function (pp) {
+        var m = pp.split(":");
+        var li = Number(m[0]), oi = Number(m[1]);
+        if (li >= 1 && li <= pairs.length && oi >= 0) quiz.matchPairs[li] = oi;
+      });
+    }
+  }
+  // Texte à trous : découpe "(1) ___" en segments.
+  function parseTrous(q) {
+    var segs = [], blanks = [];
+    var re = /\((\d+)\)\s*___/g;
+    var text = q.question || "";
+    var last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) segs.push({ text: text.slice(last, m.index) });
+      var n = Number(m[1]);
+      segs.push({ blank: n });
+      blanks.push(n);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) segs.push({ text: text.slice(last) });
+    return { segs: segs, blanks: blanks };
+  }
+  function trouFills(q) {
+    if (!quiz.trouFills) quiz.trouFills = {};
+    if (!quiz.trouFills[q.id]) {
+      var f = {};
+      var saved = quiz.answers[q.id];
+      if (saved) {
+        String(saved).split(";").forEach(function (e) {
+          var p = e.split("=");
+          var n = Number(String(p[0]).trim());
+          if (n >= 1 && p.length > 1) f[n] = p.slice(1).join("=");
+        });
+      }
+      quiz.trouFills[q.id] = f;
+    }
+    return quiz.trouFills[q.id];
   }
 
   function ensureRankBoard(q) {
@@ -383,36 +502,68 @@
     quiz.rankOrder = saved ? String(saved).split(",").map(function (l) { return l.trim().toUpperCase(); }).filter(Boolean) : [];
   }
 
+  /* ----- écran de station (transition entre deux sections) ----- */
+  function viewStation(q) {
+    var c = quiz.chapter;
+    var total = realQuestions().length;
+    var done = posBefore(quiz.index);
+    var first = quiz.index === 0;
+    var html =
+      '<div class="section">' +
+      "<p class='muted' style='font-weight:700'>" + esc(c.title) + "</p>" +
+      '<div class="progress" role="progressbar" aria-valuenow="' + done + '" aria-valuemax="' + total + '" aria-label="Progression">' +
+      '<div class="progress-label">' + (done === 0 ? "C'est parti !" : done + " " + plural(done, "question", "questions") + " sur " + total) + "</div>" +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + (total ? Math.round(100 * done / total) : 0) + '%"></div></div>' +
+      "</div>" +
+      '<div class="station-screen">' +
+      '<h2 class="station-title">' + esc(q.titre || q.question || "") + "</h2>" +
+      '<p><button class="btn btn-primary btn-block" id="st-next">' + (first ? "Commencer le quiz" : "Continuer") + "</button></p>" +
+      "</div></div>";
+    app.innerHTML = html;
+    scrollTop();
+    document.getElementById("st-next").addEventListener("click", function () {
+      quiz.index++;
+      viewQuestion();
+    });
+  }
+
   function viewQuestion() {
     var q = quiz.questions[quiz.index];
     if (!q) { spinner("Question introuvable…"); return; }
+    if (q.type === "station") { viewStation(q); return; }
     if (q.type === "classement") ensureRankBoard(q);
+    if (q.type === "appariement") ensureMatchBoard(q);
     var info = TYPE_INFO[q.type] || TYPE_INFO.qcm;
-    var isLast = quiz.index === quiz.questions.length - 1;
+    if (q.type === "qcm" && q.multi) info = TYPE_INFO.qcm_multi;
+    var isLast = isLastReal(quiz.index);
     var ready = canProceed(q);
     var c = quiz.chapter;
+    var totalReal = realQuestions().length;
+    var posReal = posBefore(quiz.index) + 1;
 
     var html =
       '<div class="section">' +
       "<p class='muted' style='font-weight:700'>" + esc(c.title) + "</p>" +
-      '<div class="progress" role="progressbar" aria-valuenow="' + (quiz.index + 1) + '" aria-valuemax="' + quiz.questions.length + '" aria-label="Progression">' +
-      '<div class="progress-label">Question ' + (quiz.index + 1) + " sur " + quiz.questions.length + "</div>" +
-      '<div class="progress-track"><div class="progress-fill" style="width:' + Math.round(100 * (quiz.index + 1) / quiz.questions.length) + '%"></div></div>' +
+      '<div class="progress" role="progressbar" aria-valuenow="' + posReal + '" aria-valuemax="' + totalReal + '" aria-label="Progression">' +
+      '<div class="progress-label">Question ' + posReal + " sur " + totalReal + "</div>" +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + Math.round(100 * posReal / totalReal) + '%"></div></div>' +
       "</div>" +
       '<div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:0.5rem">' +
       '<span class="type-tag">' + esc(info.label) + "</span>" +
-      "<h2>" + esc(q.question) + "</h2>" +
+      "<h2>" + escBr(q.question) + "</h2>" +
       "<p class='lead'>" + esc(info.hint) + "</p>" +
       "</div>";
 
-    /* ----- qcm ----- */
+    /* ----- qcm (simple ou à réponses multiples) ----- */
     if (q.type === "qcm") {
-      html += '<div class="answers" role="radiogroup" aria-label="' + esc(q.question) + '">';
+      var multi = !!q.multi;
+      var picked = multi ? pickedLetters(q) : [];
+      html += '<div class="answers" role="' + (multi ? "group" : "radiogroup") + '" aria-label="' + esc(q.question) + '">';
       for (var i = 0; i < q.choices.length; i++) {
         var letter = LETTERS[i] || "?";
-        var sel = (quiz.answers[q.id] || "").toUpperCase() === letter;
+        var sel = multi ? picked.indexOf(letter) >= 0 : (quiz.answers[q.id] || "").toUpperCase() === letter;
         html +=
-          '<button class="answer-btn" role="radio" aria-checked="' + sel + '" data-pick="' + letter + '">' +
+          '<button class="answer-btn" role="' + (multi ? "checkbox" : "radio") + '" aria-checked="' + sel + '" data-' + (multi ? "mpick" : "pick") + '="' + letter + '">' +
           '<span class="answer-letter" aria-hidden="true">' + letter + "</span>" +
           '<span class="answer-text">' + esc(q.choices[i]) + "</span>" +
           (sel ? '<span class="answer-check" aria-hidden="true">✓</span>' : "") +
@@ -421,10 +572,13 @@
       html += "</div>";
     }
 
-    /* ----- vrai_faux ----- */
-    if (q.type === "vrai_faux") {
+    /* ----- vrai_faux / vrai_faux_phrase / oui_non ----- */
+    if (isVF(q.type)) {
+      var isOuiNon = q.type === "oui_non";
       html += '<div class="vf-grid" role="radiogroup" aria-label="' + esc(q.question) + '">';
-      var opts = [{ letter: "V", text: "Vrai" }, { letter: "F", text: "Faux" }];
+      var opts = isOuiNon
+        ? [{ letter: "V", text: "Oui" }, { letter: "F", text: "Non" }]
+        : [{ letter: "V", text: "Vrai" }, { letter: "F", text: "Faux" }];
       for (var k = 0; k < opts.length; k++) {
         var s2 = (quiz.answers[q.id] || "").toUpperCase() === opts[k].letter;
         html +=
@@ -433,7 +587,10 @@
           "</button>";
       }
       html += "</div>";
-      if ((quiz.answers[q.id] || "").toUpperCase() === "F") {
+      // Phrase libre (optionnelle) quand la réponse est "Faux" (vrai_faux_phrase uniquement).
+      var showPhrase = (quiz.answers[q.id] || "").toUpperCase() === "F" &&
+        q.type === "vrai_faux_phrase";
+      if (showPhrase) {
         html +=
           '<div class="field"><label for="vf-comment">Ta phrase (optionnel)</label>' +
           '<textarea class="textinput" id="vf-comment" rows="3" maxlength="500" placeholder="Explique en une phrase…">' +
@@ -488,10 +645,85 @@
       html += "</div>";
     }
 
+    /* ----- appariement ----- */
+    if (q.type === "appariement") {
+      var pairs = pairsFromChoices(q);
+      var rights = quiz.matchRights || [];
+      var oiToLetter = {};
+      for (var rl = 0; rl < rights.length; rl++) oiToLetter[rights[rl].oi] = LETTERS[rl] || "?";
+      html += '<div class="match-wrap">';
+      html += '<div class="match-col" aria-label="Éléments à relier">';
+      for (var ml = 0; ml < pairs.length; ml++) {
+        var li = ml + 1;
+        var pairedOi = quiz.matchPairs[li];
+        var selL = quiz.matchSel === li;
+        html +=
+          '<button class="match-card left' + (selL ? " selected" : "") + (pairedOi !== undefined ? " paired" : "") + '" data-mleft="' + li + '" aria-pressed="' + selL + '">' +
+          '<span class="match-num" aria-hidden="true">' + li + "</span>" +
+          '<span class="match-text">' + esc(pairs[ml].gauche) + "</span>" +
+          (pairedOi !== undefined ? '<span class="match-link" aria-hidden="true">→ ' + esc(oiToLetter[pairedOi] || "?") + "</span>" : "") +
+          "</button>";
+      }
+      html += '</div><div class="match-col" aria-label="Descriptions">';
+      for (var mr = 0; mr < rights.length; mr++) {
+        var usedBy = null;
+        for (var ku in quiz.matchPairs) { if (quiz.matchPairs[ku] === rights[mr].oi) { usedBy = ku; break; } }
+        html +=
+          '<button class="match-card right' + (usedBy !== null ? " used" : "") + '" data-mright="' + rights[mr].oi + '" aria-pressed="' + (usedBy !== null) + '">' +
+          '<span class="answer-letter" aria-hidden="true">' + (LETTERS[mr] || "?") + "</span>" +
+          '<span class="match-text">' + esc(rights[mr].text) + "</span>" +
+          "</button>";
+      }
+      html += "</div></div>";
+    }
+
+    /* ----- trous ----- */
+    if (q.type === "trous") {
+      var tp = parseTrous(q);
+      var fills = trouFills(q);
+      var usedWords = {};
+      for (var fb in fills) usedWords[fills[fb]] = true;
+      html += '<div class="trous-text">';
+      for (var ts = 0; ts < tp.segs.length; ts++) {
+        var sg = tp.segs[ts];
+        if (sg.text !== undefined) {
+          html += esc(sg.text);
+        } else {
+          var bn = sg.blank;
+          var fv = fills[bn];
+          var selB = quiz.trouSel === bn;
+          html +=
+            '<button class="blank' + (fv ? " filled" : "") + (selB ? " selected" : "") + '" data-blank="' + bn + '" aria-label="Trou ' + bn + (fv ? ", rempli par " + fv : ", vide") + '">' +
+            (fv ? esc(fv) : bn) + "</button>";
+        }
+      }
+      html += "</div>";
+      html += '<p style="font-weight:700;color:var(--softink)">Banque de mots :</p><div class="bank" role="group" aria-label="Banque de mots">';
+      // Mélange stable de la banque (même ordre pendant tout le quiz).
+      var bankOrder = quiz.shuffles["t" + q.id];
+      if (!bankOrder) {
+        bankOrder = q.choices.map(function (_, i) { return i; });
+        for (var bi = bankOrder.length - 1; bi > 0; bi--) {
+          var bj = Math.floor(Math.random() * (bi + 1));
+          var btmp = bankOrder[bi]; bankOrder[bi] = bankOrder[bj]; bankOrder[bj] = btmp;
+        }
+        quiz.shuffles["t" + q.id] = bankOrder;
+      }
+      for (var bo = 0; bo < bankOrder.length; bo++) {
+        var bw = bankOrder[bo];
+        var w = q.choices[bw];
+        var used = !!usedWords[w];
+        html +=
+          '<button class="chip' + (used ? " used" : "") + '" data-chip="' + bw + '"' + (used ? " disabled" : "") + ">" +
+          esc(w) + "</button>";
+      }
+      html += "</div>";
+    }
+
     /* ----- texte ----- */
     if (q.type === "texte") {
       html +=
-        '<textarea class="textinput" id="freetext" aria-label="' + esc(q.question) + '" maxlength="500" rows="3" placeholder="Écris ta réponse en quelques mots…">' +
+        '<textarea class="textinput" id="freetext" aria-label="' + esc(q.question) + '" maxlength="500" rows="3" placeholder="Écris ta réponse…">' +
         esc(quiz.answers[q.id] || "") + "</textarea>";
     }
 
@@ -515,6 +747,34 @@
         quiz.answers[q.id] = this.getAttribute("data-pick");
         viewQuestion();
       });
+    }
+    var mpicks = app.querySelectorAll("[data-mpick]");
+    for (var mp = 0; mp < mpicks.length; mp++) {
+      mpicks[mp].addEventListener("click", function () {
+        var l = this.getAttribute("data-mpick");
+        var cur = pickedLetters(q);
+        var ix = cur.indexOf(l);
+        if (ix >= 0) cur.splice(ix, 1); else cur.push(l);
+        cur.sort();
+        quiz.answers[q.id] = cur.join(",");
+        viewQuestion();
+      });
+    }
+    var mlefts = app.querySelectorAll("[data-mleft]");
+    for (var ml2 = 0; ml2 < mlefts.length; ml2++) {
+      mlefts[ml2].addEventListener("click", function () { toggleMatch(q, "left", this.getAttribute("data-mleft")); });
+    }
+    var mrights = app.querySelectorAll("[data-mright]");
+    for (var mr2 = 0; mr2 < mrights.length; mr2++) {
+      mrights[mr2].addEventListener("click", function () { toggleMatch(q, "right", this.getAttribute("data-mright")); });
+    }
+    var blanks = app.querySelectorAll("[data-blank]");
+    for (var bl = 0; bl < blanks.length; bl++) {
+      blanks[bl].addEventListener("click", function () { toggleTrou(q, "blank", this.getAttribute("data-blank")); });
+    }
+    var chips = app.querySelectorAll("[data-chip]");
+    for (var ch2 = 0; ch2 < chips.length; ch2++) {
+      chips[ch2].addEventListener("click", function () { toggleTrou(q, "chip", this.getAttribute("data-chip")); });
     }
     var slider = document.getElementById("slider");
     if (slider) {
@@ -577,11 +837,51 @@
     viewQuestion();
   }
 
+  function persistMatch(q) {
+    var keys = Object.keys(quiz.matchPairs).map(Number).sort(function (a, b) { return a - b; });
+    quiz.answers[q.id] = keys.map(function (l) { return l + ":" + quiz.matchPairs[l]; }).join(",");
+  }
+
+  function toggleMatch(q, kind, val) {
+    if (kind === "left") {
+      var li = Number(val);
+      if (quiz.matchPairs[li] !== undefined) { delete quiz.matchPairs[li]; }
+      else { quiz.matchSel = (quiz.matchSel === li) ? null : li; }
+    } else {
+      var oi = Number(val);
+      var found = null;
+      for (var k in quiz.matchPairs) { if (quiz.matchPairs[k] === oi) { found = k; break; } }
+      if (found !== null) { delete quiz.matchPairs[found]; }
+      else if (quiz.matchSel !== null) { quiz.matchPairs[quiz.matchSel] = oi; quiz.matchSel = null; }
+    }
+    persistMatch(q);
+    viewQuestion();
+  }
+
+  function toggleTrou(q, kind, val) {
+    var fills = trouFills(q);
+    if (kind === "blank") {
+      var bn = Number(val);
+      if (fills[bn]) { delete fills[bn]; quiz.trouSel = null; }
+      else { quiz.trouSel = (quiz.trouSel === bn) ? null : bn; }
+    } else {
+      if (quiz.trouSel !== null && quiz.trouSel !== undefined) {
+        fills[quiz.trouSel] = q.choices[Number(val)];
+        quiz.trouSel = null;
+      }
+    }
+    var keys = Object.keys(fills).map(Number).sort(function (a, b) { return a - b; });
+    quiz.answers[q.id] = keys.map(function (n) { return n + "=" + fills[n]; }).join(";");
+    viewQuestion();
+  }
+
   function submitQuiz() {
     spinner("Envoi en cours…");
-    var payload = quiz.questions.map(function (q) {
-      return { question_id: q.id, reponse: reponseFor(q), commentaire: (quiz.comments[q.id] || "").trim() };
-    });
+    var payload = quiz.questions
+      .filter(function (q) { return q.type !== "station"; })
+      .map(function (q) {
+        return { question_id: q.id, reponse: reponseFor(q), commentaire: (quiz.comments[q.id] || "").trim() };
+      });
     callBackend("submit_quiz", {
       student_name: quiz.name,
       chapitre: quiz.chapter.numero,
@@ -764,16 +1064,24 @@
   }
 
   /* ---------------- ESPACE PROF : tableau de bord ---------------- */
-  function reponseDisplay(q, raw) {
+  function reponseDisplay(q, raw, aj) {
     if (!q) return esc(raw);
     if (q.type === "qcm") {
-      var li = LETTERS.indexOf(String(raw).toUpperCase());
-      var txt = li >= 0 ? (q.choices[li] || "") : "";
-      return esc(String(raw).toUpperCase()) + (txt ? " — " + esc(txt) : "");
+      var letters = String(raw).split(",").map(function (l) { return l.trim().toUpperCase(); }).filter(Boolean);
+      if (!letters.length) return '<span class="muted">—</span>';
+      return letters.map(function (L) {
+        var li = LETTERS.indexOf(L);
+        var txt = li >= 0 ? (q.choices[li] || "") : "";
+        return esc(L) + (txt ? " — " + esc(txt) : "");
+      }).join(", ");
     }
-    if (q.type === "vrai_faux") {
+    if (q.type === "vrai_faux" || q.type === "vrai_faux_phrase") {
       var v = String(raw).toUpperCase();
       return v === "V" ? "Vrai" : (v === "F" ? "Faux" : esc(raw));
+    }
+    if (q.type === "oui_non") {
+      var v2 = String(raw).toUpperCase();
+      return v2 === "V" ? "Oui" : (v2 === "F" ? "Non" : esc(raw));
     }
     if (q.type === "classement") {
       var parts = String(raw).split(",").map(function (l) { return l.trim().toUpperCase(); }).filter(Boolean);
@@ -783,23 +1091,70 @@
         return (i + 1) + ". " + t;
       }).map(esc).join("<br>");
     }
+    if (q.type === "appariement") {
+      var prs = pairsFromChoices(q);
+      var det = (aj && aj.detail) || {};
+      var mp = String(raw).split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+      if (!mp.length) {
+        // affichage de la correction (prof) : les paires correctes
+        return prs.map(function (p, i) { return esc((i + 1) + ". " + p.gauche + " → " + p.droite); }).join("<br>");
+      }
+      return mp.map(function (pp) {
+        var m = pp.split(":");
+        var li3 = Number(m[0]), oi = Number(m[1]);
+        var g = prs[li3 - 1] || {};
+        var rtext = (prs[oi] || {}).droite || "?";
+        var ok = det[String(li3)];
+        var badge = ok === true ? " ✓" : (ok === false ? " ✗" : "");
+        return esc(li3 + ". " + (g.gauche || "") + " → " + rtext) + badge;
+      }).join("<br>");
+    }
+    if (q.type === "trous") {
+      var det2 = (aj && aj.detail) || {};
+      var tp = String(raw).split(";").map(function (x) { return x.trim(); }).filter(Boolean);
+      if (!tp.length) return '<span class="muted">—</span>';
+      return tp.map(function (e) {
+        var p = e.split("=");
+        var n = String(p[0]).trim();
+        var val = p.slice(1).join("=");
+        var label;
+        if (n.indexOf("-") >= 0) {
+          var b = n.split("-");
+          label = "Trous " + b[0].trim() + " et " + b[1].trim() + " (ordre libre)";
+        } else {
+          label = "Trou " + n;
+        }
+        var ok2 = det2[n] !== undefined ? det2[n] : det2[String(Number(n))];
+        var badge2 = ok2 === true ? " ✓" : (ok2 === false ? " ✗" : "");
+        return esc(label + " : " + val) + badge2;
+      }).join("<br>");
+    }
     return esc(raw);
   }
 
-  function markBadge(q, isCorrect) {
+  function markBadge(q, isCorrect, earned, maxPts) {
     if (!q || GRADED.indexOf(q.type) < 0) {
       return '<span class="pill neutral">Réponse enregistrée</span>';
     }
-    return isCorrect
-      ? '<span class="pill good">✓ Bonne réponse</span>'
-      : '<span class="pill bad">✗ Ratée</span>';
+    if (isCorrect === null || isCorrect === undefined) {
+      return '<span class="pill warn">À corriger par le prof</span>';
+    }
+    var e = Number(earned) || 0, m = Number(maxPts) || 0;
+    var note = m > 0 ? " (" + fmtPts(e) + " / " + fmtPts(m) + ")" : "";
+    if (isCorrect) return '<span class="pill good">✓ Bonne réponse' + note + "</span>";
+    if (e > 0) return '<span class="pill partial">◐ Partiel' + note + "</span>";
+    return '<span class="pill bad">✗ Ratée' + note + "</span>";
   }
 
   function viewDashboard() {
     var body = document.getElementById("prof-body");
     body.innerHTML = '<div class="loading" role="status"><div class="spinner" aria-hidden="true"></div><p class="lead">Les résultats arrivent…</p></div>';
-    Promise.all([callBackend("get_teacher_results", {}), getConfig(true)]).then(function (pair) {
+    Promise.all([callBackend("get_teacher_results", { code: teacherCode }), getConfig(true)]).then(function (pair) {
       var res = pair[0];
+      if (res.error) {
+        body.innerHTML = '<p class="lead">⛔ ' + esc(res.error === "Code incorrect." ? "Code incorrect. Reconnecte-toi avec le bon code." : res.error) + "</p>";
+        return;
+      }
       var sessions = res.sessions || [];
       var stats = res.question_stats || [];
       var qref = {};
@@ -860,16 +1215,19 @@
             var s = cs[si];
             var p = pct(s.total_score, s.max_score);
             var date = s.completed_at || s.started_at;
+            var pending = (s.answers || []).filter(function (x) { return x.is_correct === null || x.is_correct === undefined; }).length;
             html +=
               '<article class="session"><button class="session-head" data-session="' + s.id + '" aria-expanded="false">' +
               '<span class="session-name"><span class="n">' + esc(s.student_name || "Sans nom") + "</span>" +
               '<span class="d">' + esc(fmtDateTime(date)) + "</span></span>" +
               (s.completed_at ? "" : '<span class="pill neutral">Interrompu</span>') +
-              '<span class="session-score">' + s.total_score + "/" + s.max_score + "</span>" +
+              (pending > 0 ? '<span class="pill warn">' + pending + " à corriger</span>" : "") +
+              '<span class="session-score">' + fmtPts(s.total_score) + "/" + fmtPts(s.max_score) + "</span>" +
               '<span aria-hidden="true">▾</span>' +
               "</button>" +
               '<div class="session-body" data-session-body="' + s.id + '" hidden>' +
-              "<p>" + (p !== null ? "<b>" + p + " %</b>" : "—") + " — " + s.total_score + " bonnes réponses sur " + s.max_score + ".</p>";
+              "<p>" + (p !== null ? "<b>" + p + " %</b>" : "—") + " — " + fmtPts(s.total_score) + " / " + fmtPts(s.max_score) + " points" +
+              (pending > 0 ? " · <b>" + pending + " " + plural(pending, "réponse à corriger", "réponses à corriger") + "</b>" : "") + ".</p>";
             if (!s.answers || !s.answers.length) {
               html += "<p class='muted'>Cet élève n'a laissé aucune réponse.</p>";
             } else {
@@ -878,15 +1236,25 @@
                 var qq = qref[a.question_id];
                 var raw = "";
                 var cmt = "";
-                try { var aj = JSON.parse(a.answer_json || "{}"); raw = String(aj.reponse || ""); cmt = String(aj.commentaire || ""); } catch (e) { raw = ""; }
+                var aj = {};
+                try { aj = JSON.parse(a.answer_json || "{}"); raw = String(aj.reponse || ""); cmt = String(aj.commentaire || ""); } catch (e) { raw = ""; aj = {}; }
                 var tlabel = qq ? ((TYPE_INFO[qq.type] || {}).label || "") : "";
+                var maxQ = (qq && qq.points) ? qq.points : 1;
+                var manual = (a.is_correct === null || a.is_correct === undefined);
                 html += '<div class="qblock">' +
                   "<p style='font-weight:700;font-size:1.15rem'>" + esc(qq ? qq.question : ("Question n° " + a.question_id)) +
                   (tlabel ? ' <span class="badge">' + esc(tlabel) + "</span>" : "") + "</p>" +
-                  "<p><b>Réponse :</b> " + reponseDisplay(qq, raw) + "</p>" +
+                  "<p><b>Réponse :</b> " + reponseDisplay(qq, raw, aj) + "</p>" +
                   (cmt ? "<p><b>Phrase de l'élève :</b> " + esc(cmt) + "</p>" : "") +
-                  "<p>" + markBadge(qq, a.is_correct) + "</p>" +
-                  "</div>";
+                  "<p><b>Note :</b> " + fmtPts(a.points_earned) + " / " + fmtPts(maxQ) + " — " + markBadge(qq, a.is_correct, a.points_earned, maxQ) + "</p>";
+                if (manual) {
+                  html += '<div class="manual-grade">' +
+                    '<label for="mg-' + s.id + "-" + a.question_id + '">Corriger à la main (0 à ' + fmtPts(maxQ) + ") : </label>" +
+                    '<input id="mg-' + s.id + "-" + a.question_id + '" type="number" min="0" max="' + maxQ + '" step="0.25" data-manual="' + s.id + ":" + a.question_id + '" style="width:5.5rem"> ' +
+                    '<button class="btn btn-secondary" data-save-manual="' + s.id + ":" + a.question_id + '" style="min-height:2.75rem;padding:0.4rem 1rem">Noter</button>' +
+                    "</div>";
+                }
+                html += "</div>";
               }
             }
             html += "</div></article>";
@@ -948,6 +1316,26 @@
           var open = panel.hidden;
           panel.hidden = !open;
           this.setAttribute("aria-expanded", String(open));
+        });
+      }
+      var savers = body.querySelectorAll("[data-save-manual]");
+      for (var sm = 0; sm < savers.length; sm++) {
+        savers[sm].addEventListener("click", function () {
+          var key = this.getAttribute("data-save-manual").split(":");
+          var sid = key[0], qid = Number(key[1]);
+          var input = body.querySelector('[data-manual="' + sid + ":" + qid + '"]');
+          var val = input ? Number(String(input.value).replace(",", ".")) : NaN;
+          if (!(val >= 0)) { alert("Entre une note (0 ou plus)."); if (input) input.focus(); return; }
+          var btn = this;
+          btn.disabled = true;
+          btn.textContent = "…";
+          callBackend("set_manual_points", { code: teacherCode, session_id: sid, question_id: qid, points: val })
+            .then(function () { viewDashboard(); })
+            .catch(function (err) {
+              btn.disabled = false;
+              btn.textContent = "Noter";
+              alert(backendErrorMessage(err));
+            });
         });
       }
     }).catch(function (err) {

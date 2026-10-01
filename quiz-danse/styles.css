@@ -2,6 +2,23 @@
    Lisibilité dyslexie : Atkinson Hyperlegible, interlignage généreux,
    fond chaud clair, une idée par écran, gros boutons. */
 
+/* Police auto-hébergée (fonctionne même si Google Fonts est bloqué) ;
+   le lien Google Fonts dans index.html complète les italiques. */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-latin-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-latin-700.woff2") format("woff2");
+}
+
 :root {
   color-scheme: light dark;
   --paper: #faf8f3;
@@ -470,6 +487,118 @@ input[type="range"] {
 .slider-labels span { font-size: 1.02rem; font-weight: 700; color: var(--softink); max-width: 45%; }
 .slider-labels span:last-child { text-align: right; }
 
+/* station : écran de transition entre deux sections */
+.station-screen {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+.station-title {
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0;
+}
+.station-screen .btn-block { max-width: 22rem; }
+
+/* appariement : deux colonnes à relier */
+.match-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1.25rem 0; }
+@media (max-width: 560px) { .match-wrap { grid-template-columns: 1fr; } }
+.match-col { display: flex; flex-direction: column; gap: 0.7rem; }
+.match-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 0.9rem 1rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+.match-card:active { transform: scale(0.98); }
+.match-card.selected { border-color: var(--accent); background: var(--accent-soft); }
+.match-card.paired { border-color: var(--leaf); background: var(--leaf-soft); }
+.match-card.used { opacity: 0.55; }
+.match-card.right.used { border-color: var(--leaf); background: var(--leaf-soft); }
+.match-num {
+  flex: none;
+  width: 2rem; height: 2rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+}
+.match-card.selected .match-num { background: var(--accent); color: #fff; }
+.match-card.paired .match-num { background: var(--leaf); color: #fff; }
+.match-text { flex: 1; min-width: 0; }
+.match-link { flex: none; font-weight: 700; color: var(--leaf); white-space: nowrap; }
+
+/* trous : texte à compléter + banque de mots */
+.trous-text {
+  font-size: 1.2rem;
+  line-height: 2.2;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.35rem;
+  margin: 1.25rem 0;
+}
+.blank {
+  display: inline-block;
+  min-width: 3.2rem;
+  padding: 0.15rem 0.9rem;
+  margin: 0 0.15rem;
+  border-radius: 980px;
+  border: 2px dashed var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  vertical-align: baseline;
+}
+.blank.selected { border-style: solid; box-shadow: 0 0 0 3px var(--accent-soft); }
+.blank.filled { border-style: solid; border-color: var(--leaf); background: var(--leaf-soft); color: var(--ink); }
+.bank { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.75rem 0 1.25rem; }
+.chip {
+  border-radius: 980px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  padding: 0.55rem 1.1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip:active { transform: scale(0.96); }
+.chip.used { opacity: 0.4; cursor: default; }
+
+/* correction manuelle (espace prof) */
+.manual-grade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fff8e6;
+  border: 1px solid #f0dfae;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  margin-top: 0.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  .manual-grade { background: rgba(255, 214, 64, 0.1); border-color: rgba(255, 214, 64, 0.25); }
+}
+.manual-grade label { font-weight: 700; }
+
 /* classement */
 .rank-board { display: flex; flex-direction: column; gap: 0.7rem; margin: 1.25rem 0; }
 
@@ -632,9 +761,12 @@ input[type="range"] {
 }
 .pill.good { background: var(--leaf-soft); color: var(--leaf); }
 .pill.bad { background: var(--warn-soft); color: var(--warn); }
+.pill.warn { background: #fff4d6; color: #8a6d00; }
+.pill.partial { background: var(--accent-soft); color: var(--accent); }
 .pill.neutral { background: rgba(0, 0, 0, 0.06); color: var(--softink); }
 @media (prefers-color-scheme: dark) {
   .pill.neutral { background: rgba(255, 255, 255, 0.1); }
+  .pill.warn { background: rgba(255, 214, 64, 0.18); color: #ffd64a; }
 }
 
 .qblock { border-top: 1px solid var(--line); padding-top: 1rem; }
