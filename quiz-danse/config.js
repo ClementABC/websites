@@ -11,6 +11,6 @@
 // 4. Enregistre ce fichier, puis déploie le site sur Vercel.
 
 window.QUIZ_CONFIG = {
-  backend_url: "https://script.google.com/macros/s/AKfycbxSG7234cfsjbf7YdfJ4GPMGrr-asqMWr4cm9d3Thl5XlhnYkcb6FPRiWS1Royab4iz/exec",
+  backend_url: "https://script.google.com/macros/s/AKfycbyzltxwV2XLy5R0Q2u09XCBZk3hwCiM0vs9Aea40AdhVBNvYj3ALEOAch2lwr6qHZ27/exec",
   sheet_url: "https://docs.google.com/spreadsheets/d/1ewHQBYYcOAFpbykPkkvd-isJoldr4CLTGJiAHk81Y-4/edit"
 };
